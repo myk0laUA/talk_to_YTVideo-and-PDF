@@ -23,6 +23,7 @@
     "test:sources:http": "node scripts/verify-sources-http.mjs",
     "test:youtube:http": "node scripts/verify-youtube-sources-http.mjs",
     "test:source-ui": "node scripts/verify-source-ui.mjs",
+    "test:youtube-ui": "node scripts/verify-youtube-ui.mjs",
     "browser:install": "playwright install chromium",
     "browser:cli": "playwright-cli",
     "db:generate": "prisma generate",

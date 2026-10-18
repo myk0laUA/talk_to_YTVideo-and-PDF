@@ -74,6 +74,14 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .source-page h3 { font-size: 1rem; margin: 0 0 1rem; }
 .page-text { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 75ch; color: var(--ink); }
 .source-warnings { margin: 1rem 0; }
+.youtube-form { display: grid; gap: .75rem; margin: 1.5rem 0; }
+.youtube-form label { font-weight: 600; }
+.youtube-form p { margin: 0; }
+.youtube-form input { width: 100%; min-width: 0; min-height: 48px; padding: .65rem; border: 1px solid var(--line); border-radius: 6px; font: inherit; color: var(--ink); caret-color: var(--accent); background: var(--surface); }
+.youtube-form input[aria-invalid="true"] { border-color: #713b26; }
+.youtube-form input::placeholder { color: var(--muted); opacity: 1; }
+.caption-time { font-variant-numeric: tabular-nums; }
+.caption-segment { content-visibility: auto; contain-intrinsic-size: auto 140px; }
 #source-heading, #conversation-heading { scroll-margin-top: 1.5rem; }
 @media (max-width: 700px) {
   .source-workspace { grid-template-columns: minmax(0, 1fr); }
