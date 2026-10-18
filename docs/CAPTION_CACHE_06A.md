@@ -1,5 +1,7 @@
 # Task 06a — validated public native-caption cache
 
+**PM review18October2026:** accepted for implementation/local and actual PostgreSQL scope. Application03eb7d8; fresh328unit/53cache checks pass. Real unique upsert/lock/ownership/expiry/rollback verified with narrow cleanup; hosted forced-direct bypass502blocked, not live cache success. Exact PM evidence and restoration are in PROJECT_STATE. Original worker report below is retained as historical evidence.
+
 Implemented locally; proposed **READY_FOR_REVIEW**. PM owns acceptance and actual PostgreSQL/deployment/provider checks. Step 06 remains IN_PROGRESS. No 06b coordination/fallback or 07 context work.
 
 ## Identity and changes

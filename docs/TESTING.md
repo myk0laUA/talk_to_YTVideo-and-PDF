@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Latest06A PM review:** application03eb7d8/local buildg-qTkOYGZcWIx5RNCe1BH. Fresh unit328 and built cache4scenarios/53checks PASS; real PostgreSQL two-client upsert,1599ms lock failure, expiry, handler miss/hit ownership, after-create rollback and exact cleanup PASS. Hosted bypassed direct trial21:11:56–21:12:05UTC returned502blocked, so real provider-populated hosted cache hit remains NOT_RUN. See PROJECT_STATE's appended PM review for exact commands/contexts/restoration. Next06B coalescing; these backend checks require no human phone/key action.
+
 These are engineering acceptance checks derived from the supplied assessment and the user's higher quality/deployed-YouTube targets. They are not claims that tests already ran. See `IMPLEMENTATION_PLAN.md` for architecture, source citations and Step 01–14 dependencies.
 
 **Latest05b evidence,18October2026:** applicatione3908e6/local buildgAnL8_ZqbnIBxM4j9Hc5l;12manifest entries match, fresh PM99browser checks PASS. Actual hosted direct502blocked; UI recovery preserves all384PDFlines/removal, nooverflow/JSerrors. PDF-only restored; full liveYouTube/physical phone remain unproven. Next06a cache. Worker final regression/build distinctions and PM exact results in PROJECT_STATE/YOUTUBE_UI_05B.

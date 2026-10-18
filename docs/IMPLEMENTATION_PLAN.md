@@ -225,7 +225,7 @@ Meet the strictest deployment and upload requirement early.
 
 Turn the ingestion proofs into a coherent user flow.
 
-PM sequencing, 18 October: 05a PDF UI and its user-reported iPhone check are accepted.03c owned-caption backend and05b YouTube UI implementation are accepted within their recorded local/DB/hosted-error scopes. Live YouTube success/phone and grounding remain open.06a now implements only validated public caching using those accepted contracts, with controlled providers; request coalescing/fallback remain a later06b task. Original full-step dependencies and live acceptance gates are not waived by these bounded implementation subchecks.
+PM sequencing, 18 October: 05a PDF UI and its user-reported iPhone check are accepted.03c owned-caption backend and05b YouTube UI implementation are accepted within their recorded local/DB/hosted-error scopes. Live YouTube success/phone and grounding remain open.06A validated public caching is accepted for implementation and real PostgreSQL scope.06B next adds bounded request coalescing with cancellation-safe waiters and unchanged extraction/request ceilings; automatic fallback/cooldown is separated into06C. Hosted provider availability remains a distinct open gate. Original full-step dependencies and live acceptance gates are not waived by these bounded implementation subchecks.
 
 - Use the selected Impeccable design skill to record concise product/design context from this plan, then shape the single-source mobile flow. Apply React best practices during implementation; avoid a separate branding or landing-page project.
 - Connect both source choices to shared Source and IngestionError contracts. Show clear PDF and YouTube actions before a single active-source card.
