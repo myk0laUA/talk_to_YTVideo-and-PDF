@@ -1,6 +1,8 @@
 # Talk to a Document
 
-A mobile web workspace for exploring one PDF or YouTube video through voice and text. **Current implementation: local application shell only.** Imports, preview, visitor authorization, conversation, cleanup, and external services are not implemented. Step 01 remains in progress; the PM coordinates the remaining work.
+A mobile web workspace for exploring one PDF or YouTube video through voice and text. **Current implementation: application shell and operator database probe.** Imports, preview, visitor authorization, conversation, and application cleanup are not implemented. Step 01 remains in progress; the PM coordinates the remaining work.
+
+**Public shell:** [talk-to-document-4pre.onrender.com](https://talk-to-document-4pre.onrender.com/), deployed on Render Free in Ohio. Free PostgreSQL is provisioned and migrated; the live local operator probe passes. Hosted restart persistence and physical-phone access remain unverified. Free hosting sleeps when idle; the database dashboard lists expiry on November 16, 2026. See `docs/PROJECT_STATE.md` for exact deployment identities and limitations.
 
 ## Local setup
 
@@ -62,7 +64,7 @@ This serves [localhost:3000](http://localhost:3000). `next build` does not run E
 
 ## PostgreSQL and secrets
 
-Prisma schema, client generation, a server-only lazy client, and an initial SQL migration are prepared. **No database connection or migration application has been tested.** Set `DATABASE_URL` to a real PostgreSQL connection URL supplied by the database owner/provider in `.env` or the server environment. Use the provider's required TLS configuration; do not disable certificate checks as a workaround.
+Prisma schema, client generation, a server-only lazy client, and the initial SQL migration are implemented. **The migration and local live operator probe passed against the PM-selected Render database.** For another checkout, set `DATABASE_URL` to the intended PostgreSQL connection URL supplied by its owner/provider in `.env` or the server environment. Use the provider's required TLS configuration; do not disable certificate checks as a workaround.
 
 Once the PM has selected and configured the target database:
 
@@ -92,6 +94,6 @@ The operator-only persistence probe is available with `npm run db:probe -- --hel
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md): requirements and original Step 01–14 acceptance checks.
 - [Bootstrap decisions](docs/BOOTSTRAP.md): verified compatibility sources, tool versions and local evidence.
 
-Next PM gate: apply the migration to the intended PostgreSQL database, then deploy the shell over HTTPS in the same region and verify a temporary server-written source survives a restart within its TTL. Phone access, database persistence, service credentials and deployment remain unverified. Do not mark Step 01 done until its acceptance evidence exists.
+Next PM gate: verify a temporary source written by the deployed runtime survives an actual Free service restart within its TTL, and verify HTTPS shell access on a physical phone. The worker's Free-host correction prepares that runtime execution method. Do not mark Step 01 done until both acceptance results exist.
 
-AI assistance was used for local scaffolding, configuration, documentation and verification. No external service success or deployment is implied.
+AI assistance was used for scaffolding, configuration, deployment, documentation and verification. The recorded shell/database checks do not establish ingestion or conversation capability.

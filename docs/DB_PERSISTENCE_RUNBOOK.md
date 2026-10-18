@@ -2,7 +2,7 @@
 
 **PM update, 18 October 2026: free hosting only.** The user has prohibited paid hosting. The SSH-based hosted procedure below is retained as the original worker proposal and is **not executable on the selected Render Free tier**. Do not upgrade or add paid services to follow it. Local probe commands remain applicable. A bounded worker revision must establish a free-compatible hosted execution method before Step 01 can pass; see `PROJECT_STATE.md`. No live checks have been waived or completed by this change.
 
-Code/runbook prepared for PM review; live migration, persistence and hosted restart are **NOT_RUN**. PostgreSQL and Render are not provisioned. This tool inserts one synthetic `Source`; it does not establish browser authorization, application TTL cleanup, ingestion or voice. Step 01 remains IN_PROGRESS; Steps 02–14 remain PENDING.
+**Live update, 18 October:** Free Render web service and PostgreSQL now exist in Ohio. The committed migration/status and separate-local-process live probe passed; the PM removed its fixture. Details are in `PROJECT_STATE.md` and ignored `artifacts/local/render-2026-10-18/`. Hosted runtime restart proof remains **NOT_RUN** and requires the free-host correction in `WORKER_TASK_01A_FREE_HOST.md`. Historical NOT_RUN labels below describe the initial worker handoff; current results belong to the tracker. This tool does not establish browser authorization, application TTL cleanup, ingestion or voice. Step 01 remains IN_PROGRESS; Steps 02–14 remain PENDING.
 
 ## Command contract
 
