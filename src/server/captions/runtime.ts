@@ -1,9 +1,5 @@
 import "server-only";
-import { parseCaptionConfig } from "./config";
-import { createCaptionHandler } from "./handler";
-import { createDirectCaptionProvider } from "./provider";
+import { createConfiguredCaptionHandler } from "./configured";
 
-const processState = globalThis as unknown as { captionProof03a?: ReturnType<typeof createCaptionHandler> };
-export const captionProof = processState.captionProof03a ??= createCaptionHandler({
-  config: () => parseCaptionConfig(process.env), provider: createDirectCaptionProvider(),
-});
+const processState = globalThis as unknown as { captionProof03b?: ReturnType<typeof createConfiguredCaptionHandler> };
+export const captionProof = processState.captionProof03b ??= createConfiguredCaptionHandler({ env: () => process.env });

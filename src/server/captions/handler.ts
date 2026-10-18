@@ -14,9 +14,14 @@ const reply = (status: number, result: CaptionResult, cookie?: string) => Respon
 const fail = (status: number, code: CaptionFailureCode, message: string) => reply(status, { ok: false, error: { code, message } });
 const statuses: Record<CaptionFailureCode, number> = { disabled: 503, forbidden: 403, invalid_request: 400,
   invalid_input: 400, limit_reached: 429, unavailable: 422, no_captions: 422, rate_limited: 429,
-  blocked: 502, timeout: 504, cancelled: 408, too_large: 413, malformed: 502, upstream_failure: 502, internal: 500 };
+  blocked: 502, timeout: 504, cancelled: 408, too_large: 413, malformed: 502, upstream_failure: 502, internal: 500,
+  quota_exhausted: 503, provider_limited: 503 };
 
-export function createCaptionHandler(deps: { config: () => VisitorConfig | null; provider: CaptionProvider; now?: () => number }) {
+export function createCaptionHandler<Config extends VisitorConfig>(deps: {
+  config: () => Config | null;
+  provider: (input: Parameters<CaptionProvider>[0], config: Config) => ReturnType<CaptionProvider>;
+  now?: () => number;
+}) {
   const now = deps.now ?? Date.now;
   // All IPs share one untrusted-network bucket; forwarding headers cannot bypass it.
   // Admission is separate from voice/text and from future stored-source ownership.
@@ -49,7 +54,7 @@ export function createCaptionHandler(deps: { config: () => VisitorConfig | null;
       const video = normalizeVideo(fields.video);
       if (!video || ("language" in fields && !validLanguage(fields.language))) return fail(400, "invalid_input", "Invalid YouTube URL, video ID or language");
       if (request.signal.aborted) return fail(408, "cancelled", "Caption request cancelled");
-      const result = await deps.provider({ videoId: video.videoId, ...(fields.language ? { language: fields.language as string } : {}), signal: request.signal });
+      const result = await deps.provider({ videoId: video.videoId, ...(fields.language ? { language: fields.language as string } : {}), signal: request.signal }, config);
       if (request.signal.aborted) return fail(408, "cancelled", "Caption request cancelled");
       // Signed cookie is for admission only; no Source, source ID, credential or owner DTO.
       return reply(result.ok ? 200 : statuses[result.error.code], result, visitorCookie(visitor, config, now()));

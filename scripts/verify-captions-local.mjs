@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { directCaptionEnvironment } from "./lib/caption-proof-env.ts";
 
 if (process.argv.length !== 3 || process.argv[2] !== "--allow-public-youtube") {
   console.error("Opt in explicitly: npm run proof:captions:local -- --allow-public-youtube");
@@ -21,13 +22,7 @@ try {
 
 const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3103"], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, NODE_ENV: "production", NODE_OPTIONS: "", APP_ORIGIN: origin,
-    CAPTION_PROOF_ENABLED: "true", CAPTION_PROOF_LOCAL_HTTP: "true",
-    PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false",
-    VISITOR_COOKIE_SECRET: randomBytes(32).toString("hex"),
-    NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_OPENAI_API_KEY: "",
-    OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "",
-    DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic?connect_timeout=1" },
+  env: directCaptionEnvironment(process.env, origin, randomBytes(32).toString("hex")),
 });
 let startupLog = "";
 child.stdout.on("data", data => { startupLog += data.toString(); });

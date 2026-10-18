@@ -48,7 +48,7 @@ test("ordinary HTTPS YouTube forms normalize to an ID and canonical watch URL", 
 
 test("caption configuration is independently gated, key/DB-free and strictly origin validated", () => {
   const env = { CAPTION_PROOF_ENABLED: "true", APP_ORIGIN: config.origin, VISITOR_COOKIE_SECRET: config.cookieSecret, NODE_ENV: "production" };
-  assert.deepEqual(parseCaptionConfig(env), config);
+  assert.deepEqual(parseCaptionConfig(env), { ...config, provider: "direct" });
   for (const patch of [{ CAPTION_PROOF_ENABLED: "false" }, { VISITOR_COOKIE_SECRET: "" }, { APP_ORIGIN: "https://proof.invalid/" },
     { APP_ORIGIN: "http://evil.test", CAPTION_PROOF_LOCAL_HTTP: "true" }, { APP_ORIGIN: "http://127.0.0.1:3103" },
     { NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "private" }, { NEXT_PUBLIC_OPENAI_API_KEY: "private" }]) {
