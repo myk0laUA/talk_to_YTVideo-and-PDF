@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current06C PM review:** bounded fallback/cooldown accepted for implementation/local/controlled realDB scope. Application39c785c published, not deployed. Fresh393unit/58fallback checks and synthetic-provider realDB tests PASS. Next single task `docs/WORKER_TASK_07A.md`, lossless authorized source context and offline evaluation fixtures. No keys/spend needed. Public03eb7d8 remains PDF-only; live grounding/provider gates stay open.
+
 **Current06B PM review:** coalescing accepted for implementation/local/realDB scope. Application675c12e published, not deployed; fresh352unit/61overlap checks and actualDB cancellation/rollback pass. Public service remains03eb7d8/PDF-only. Next single task `docs/WORKER_TASK_06C.md`, bounded fallback/cooldown for existing adapters. Keys pending; no paid calls. Latest PROJECT_STATE supersedes historical summaries below.
 
 **Current06A PM review:** cache implementation/local and actual PostgreSQL scope accepted, application03eb7d8; fresh328unit/53cache checks PASS. Hosted direct bypass returned502blocked; successful live cache population/hit remains open. Next single task `docs/WORKER_TASK_06B.md`: cancellation-safe sharing of identical public caption imports. Automatic fallback is later06C. Keys pending, hosting free. Latest PROJECT_STATE supersedes historical summaries below.

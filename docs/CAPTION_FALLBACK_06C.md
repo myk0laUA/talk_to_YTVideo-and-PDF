@@ -1,5 +1,7 @@
 # Task06C — automatic captions, deadline and cooldown handoff
 
+**PM06C review:** accepted implementation/local/controlled-provider realDB orchestration. Application39c785c published, not deployed; fresh393unit/58fallback checks and actualDB sharing/rollback/cancel PASS. Exact evidence in PROJECT_STATE; worker report below retained as history. Full Step06 remains IN_PROGRESS, managed/live gates blocked. Next07A offline context preparation.
+
 Worker implementation only; proposed **READY_FOR_REVIEW**, pending PM acceptance. Original Step06 remains IN_PROGRESS. Base `main` / `afa2fa3f12757bd3f7039e99f4971c16e21b4616`, initially clean; dirty delivery without commit/push/deployment. Local production build `SrvpjOM0z5eghhXbG4jBP`, Node24.22.0/npm11.19.1. Exact UTC command history/exits, safe counters, hashes and audit are in ignored `artifacts/local/06c/`. No real keys, database mutations or provider requests were used.
 
 ## Operator policy
