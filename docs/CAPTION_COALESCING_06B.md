@@ -1,5 +1,7 @@
 # Task 06B — cancellation-safe public caption sharing
 
+**PM06B review:** implementation/local and actualDB orchestration accepted; application675c12e published, not deployed. Fresh352unit/61coalescing checks and actualDB overlap/rollback/cancel PASS. Latest PROJECT_STATE records exact evidence; worker report below is historical. Next06C, full Step06 remains IN_PROGRESS.
+
 Worker outcome: implemented, proposed **READY_FOR_REVIEW** under original Step 06. PM owns acceptance. No 06C/07 work, live requests, database mutation, install, migration, commit, push or deployment.
 
 ## Identity and boundaries

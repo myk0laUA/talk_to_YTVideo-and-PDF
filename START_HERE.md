@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current06B PM review:** coalescing accepted for implementation/local/realDB scope. Application675c12e published, not deployed; fresh352unit/61overlap checks and actualDB cancellation/rollback pass. Public service remains03eb7d8/PDF-only. Next single task `docs/WORKER_TASK_06C.md`, bounded fallback/cooldown for existing adapters. Keys pending; no paid calls. Latest PROJECT_STATE supersedes historical summaries below.
+
 **Current06A PM review:** cache implementation/local and actual PostgreSQL scope accepted, application03eb7d8; fresh328unit/53cache checks PASS. Hosted direct bypass returned502blocked; successful live cache population/hit remains open. Next single task `docs/WORKER_TASK_06B.md`: cancellation-safe sharing of identical public caption imports. Automatic fallback is later06C. Keys pending, hosting free. Latest PROJECT_STATE supersedes historical summaries below.
 
 **Current05b PM review:** implementation/local UI and hosted error recovery accepted. Applicatione3908e6 deployed; fresh99browser checks PASS. Actual YouTube direct502blocked, priorPDF384lines/recovery/remove PASS; PDF-only availability restored. Full live YouTube/phone/grounding open. Next single task `docs/WORKER_TASK_06A.md`, validated public caption cache. Both keys pending, hosting free. See PROJECT_STATE for exact build/deployment/evidence.
