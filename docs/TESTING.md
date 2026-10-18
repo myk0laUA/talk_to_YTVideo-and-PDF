@@ -2,7 +2,7 @@
 
 These are engineering acceptance checks derived from the supplied assessment and the user's higher quality/deployed-YouTube targets. They are not claims that tests already ran. See `IMPLEMENTATION_PLAN.md` for architecture, source citations and Step 01–14 dependencies.
 
-**Latest caption evidence, 18 October 2026:** 03a accepted on `bf30c6f`. Unit 155/155, disabled smoke/voice/text browser suites 10/10 each; two real local direct fixtures independently checked. Actual Free Render direct trial returned one matching transcript (`dQw4w9WgXcQ`) and one player sign-in block (`Ks-_Mh1QhMc`), with cache/managed providers absent. This is a mixed hosted result, not full ingestion acceptance. Normal proof-disabled startup restored and verified. See `CAPTION_PROOF_03A.md` and `PROJECT_STATE.md`; ignored `artifacts/local/03a/pm-hosted-results.json` records exact times/outcomes. Task 03b is mocked-only managed adapter work; live managed/grounding and OpenAI/physical audio remain separate unrun gates.
+**Latest evidence, 18 October 2026:** 03b accepted locally on `01bfe8e`: PM unit 226/226, worker eight mocked caption HTTP scenarios/31 checks and smoke/voice/text 10/10 each. Live managed retrieval still NOT_RUN; 03b is not deployed. Prior 03a evidence remains two real local direct successes and mixed Free Render results (one matching transcript, one player sign-in block), with public `bf30c6f` proof gates disabled. Next 04a establishes real local PDF upload/extraction; hosted PDF acceptance stays separate. See `CAPTION_PROOF_03A.md`, `CAPTION_PROOF_03B.md` and `PROJECT_STATE.md`. Grounding, OpenAI and physical audio remain unrun gates.
 
 ## What counts as evidence
 

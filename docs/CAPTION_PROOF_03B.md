@@ -1,6 +1,6 @@
 # Task 03b — Supadata native-caption proof handoff
 
-Proposed **READY_FOR_REVIEW**, local adapter/mock scope only. Step 03 remains **IN_PROGRESS**. No live Supadata/OpenAI request, account/key setup, spend, deployment, database mutation or direct-caption rerun was performed. The accepted 03a local and mixed hosted evidence remains in `CAPTION_PROOF_03A.md` and `PROJECT_STATE.md`.
+**PM accepted — DONE for assigned local/mock scope**, 18 October 2026, application `01bfe8e62de1f01b4d1f3b42d4de8e18d70f2f59`. PM reviewed code/contracts/evidence, matched all 17 file hashes and reran unit tests: 226/226 PASS, exit 0. Worker local build `67AyRoPZgUArJUMFIlnY-`, eight mocked HTTP scenarios/31 checks and browser suites accepted. Step 03 remains **IN_PROGRESS**. No live Supadata/OpenAI request, account/key setup, spend, deployment, database mutation or direct-caption rerun. Next single worker assignment is `WORKER_TASK_04A.md`; live managed retrieval awaits private access and authorized quota. Prior 03a local/mixed hosted evidence is unchanged.
 
 ## Contracts and decisions
 
