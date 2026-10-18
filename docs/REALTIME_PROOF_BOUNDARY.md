@@ -73,3 +73,7 @@ PM later, all **NOT_RUN** for this task:
 2. Confirm cross-visitor, expired/not-ready source and invalid-Origin requests fail. Inspect only status/field names/expiry/cache headers; never record cookies or credential values.
 3. After funding/key and a bounded PM test allocation exist, configure the model/key and explicitly enable issuance. Check one owned-source mint and actual expiry/no-store without storing the credential. Real WebRTC, mic, Stop and physical spoken-answer proof belong to the next worker task.
 4. Disable issuance and proof after the verification. Record deployment/build, UTC times, outcomes and safe evidence in the tracker. No account purchase, top-up, deployment or live call has been performed here.
+
+## Task 02c local text proof
+
+`/proof/text` adds a separately gated microphone-free WebSocket proof. `TEXT_PROOF_ENABLED=false` by default. The existing credential POST additionally accepts optional `mode: "voice" | "text"`; omitted means voice. Text mode returns only the existing credential/expiry plus the validated configured `model`; voice DTO is unchanged. Both modes share all authorization/admission. See [02c contract and evidence](TEXT_PROOF_02C.md). This supersedes the earlier statement that the mode extension is unimplemented; live checks remain NOT_RUN.

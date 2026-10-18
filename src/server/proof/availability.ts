@@ -6,3 +6,7 @@ export function voiceProofAvailable(env: Record<string, string | undefined> = pr
   const config = parseProofConfig(env);
   return Boolean(config?.issuanceEnabled && config.apiKey && config.model && env.DATABASE_URL);
 }
+
+export function textProofAvailable(env: Record<string, string | undefined> = process.env): boolean {
+  return env.TEXT_PROOF_ENABLED === "true" && voiceProofAvailable(env);
+}

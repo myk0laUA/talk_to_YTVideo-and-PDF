@@ -341,3 +341,32 @@ Cleanup covers pending source/permission/mint/offer/local/SDP/body/remote operat
 | `git diff --check`; implementation commit | Local git | Both exit 0; application implementation was produced in worker chat. PM made no application changes. |
 
 **Single next worker task:** `docs/WORKER_TASK_02C.md`, microphone-free WebSocket text proof, mocked only. This is dependency-ready preparation while API funding/key are pending, not a waiver of live gates. Earliest unfinished PM check is real PostgreSQL ownership/reuse/concurrency/expiry with injected mint stub and fixture-only cleanup; it does not require API funding. Deployed HTTP authorization and live spoken/text answers remain separate checks. No deployment, live API call, API spend or real database mutation occurred in this review. Public source remains `c535122`. Both hosting plans remain Free.
+
+## Task 02c worker evidence — 18 October 2026
+
+**Implemented; proposed READY_FOR_REVIEW, not PM acceptance.** Added separately gated `/proof/text`, typed question/streamed answer/Stop, a cancellable injected browser WebSocket controller, shared credential mode handling and denial-to-text navigation. Step 01 stays DONE; Step 02 stays IN_PROGRESS; no later step advanced. Full changed-file list, acceptance-to-test map, public DTO/mode contract, official documentation and PM-only procedure: [02c handoff](TEXT_PROOF_02C.md).
+
+Arrival was clean `main`, HEAD `c8a6d19eef43d6ce1c86cbce5318b31407718a3b`, preserving later PM documentation and accepted 02b application `716e120`. Return is dirty, no commit/push/deploy. Final local build **`_rff5qjjMIHVm9LkxqVld`**; public deployment remains `c535122`. Exact changed-file SHA256 inventory, tracked diff hash, runtime, HEAD/build and teardown evidence are in ignored `artifacts/local/02c/{changed-files.sha256.json,identity.json}`. No dependency, package-lock, schema or migration changes.
+
+All commands used checkout-local Node **24.22.0**, npm **11.19.1** via pinned PATH. CLI database validation/build/typecheck used a synthetic loopback URL, not a real DB target. Private `.env` values were not read or edited. Build flags were false and API key overridden empty. Browser servers supply isolated synthetic child environments. No API key requested, paid tool, live provider call, actual database mutation, secret creation, service configuration, deployment or messaging another chat.
+
+| Actual command | UTC start–end, 18 October 2026 | Exit / result | Evidence under `artifacts/local/02c/` |
+|---|---|---|---|
+| `npm run lint` | 05:48:01–05:48:03 | 0 / PASS | `lint-final.log` |
+| `npm run typecheck` | 05:48:03–05:48:06 | 0 / PASS | `typecheck-final.log` |
+| `npm test` | 05:48:06–05:48:08 | 0 / 126 of 126 PASS | `test-final.log` |
+| `npm run db:validate` | 05:46:57–05:46:58 | 0 / schema PASS; no connection | `db-validate.log` |
+| `npm run build` | 05:50:02–05:50:06 | 0 / PASS, final build above | `build-verified.log` |
+| `npm run test:smoke` | 05:50:06–05:50:10 | 0 / 8 of 8 PASS | `test-smoke-verified.log` |
+| `npm run test:voice` | 05:50:10–05:50:16 | 0 / 10 of 10 PASS | `test-voice-verified.log` |
+| `npm run test:text` | 05:50:16–05:50:24 | 0 / 10 of 10 PASS | `test-text-verified.log` |
+
+Exact fractional timestamps/exits and prior runs are in `checks.json`. Initial exploratory typecheck literal inference and config-fixture expectation were fixed before these passes. First text browser run was 8/10, exit 1: validation locator also matched Next's route announcer; fixed test selector, retained historical log. Whitespace-only EOF cleanup preceded the final build/browser run; no application behavior changed after the passing unit/type/lint checks. `git diff --check` passes after that cleanup.
+
+Acceptance summary: new server tests prove explicit gate, strict allowlist, voice-default compatibility, fixed text-only session, minimal model DTO, shared alternating-mode quota/concurrency, ownership/expiry; existing 02a checks remain passing. Socket tests cover real event shapes, readiness, finals/deltas/identity, duplicate Start/Send, follow-up, bounded validation/retention, source/mint/connecting/answer Stop, old callbacks, retry/dispose, three deadlines, expired credentials and source/mint 401/403/404/429/503. Browser checks cover default off/no automatic requests, absent/denied media, keyboard send/busy controls/focus/390 px overflow, synthetic streamed/final success, Stop/retry/error/pagehide/navigation. All are mocks except real local Next/Chromium, request validation/crypto and execution itself.
+
+Browser isolation: port 3102, both proof POSTs intercepted; all external HTTP blocked; all real WebSockets routed to close plus an injected fake constructor; no peer/audio/media construction in text. Synthetic-only server config and existing preload block upstream fetch. Voice remains isolated on 3101; smoke 3100 keeps existing false flags and explicitly false text flag. Trace/video disabled; only six deliberate synthetic screenshots under `artifacts/local/02c/`: desktop/mobile success/error/ended. All six visually inspected: readable, no clipping. Playwright teardown left no listeners on 3100/3101/3102. No retained credential or handshake trace. Mobile viewport is not a physical-phone proof.
+
+Official OpenAI WebSocket, client-secret, conversations and server-event contracts rechecked **18 October 2026**, with exact URLs in the handoff. Session configuration preserves configured model/source/256-token output bound/60-second TTL; text output with null turn detection. Browser credential is a sensitive subprotocol, never URL/log/DOM/storage. Only text credential JSON adds validated non-secret `model`; no configuration object crosses the boundary. Both modes retain shared process-local admission. Client cleanup/TTL are not spending caps, and cancellation cannot reverse admitted server work. No cross-tab coordination or production conversation history.
+
+**PM-only NOT_RUN:** 02a real PostgreSQL two-visitor/reuse/concurrency/ownership/expiry checks first (provider stub, fixture-only cleanup); deployed authorization; funded bounded live text answer/follow-up and physical-phone microphone-denied/Stop/navigation; separate 02b spoken answer/Stop. PM owns secrets, funding, deployment and acceptance. After authorized live checks, disable text/proof/issuance flags. No API funding allocation is implied by the stated $50 overall ceiling. Stop at this task, proposed READY_FOR_REVIEW; do not mark Step 02 DONE.

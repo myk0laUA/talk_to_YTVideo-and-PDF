@@ -9,7 +9,7 @@ import { proofId, PROOF_TEXT, PROOF_TITLE, PROOF_PROVIDER, type ProofRecord, typ
 
 const epoch = 1792300000000;
 const config: ProofConfig = { origin: "https://example.test", secure: true, cookieSecret: "a1".repeat(32),
-  issuanceEnabled: true, apiKey: "mock-permanent-key", model: "gpt-realtime" };
+  issuanceEnabled: true, textEnabled: false, apiKey: "mock-permanent-key", model: "gpt-realtime" };
 const request = (body: unknown = {}, cookie?: string, headers: Record<string, string> = {}) => new Request(`${config.origin}/api/test`, {
   method: "POST", headers: { origin: config.origin, "content-type": "application/json", ...(cookie ? { cookie } : {}), ...headers }, body: JSON.stringify(body),
 });
@@ -251,4 +251,41 @@ test("mock HTTP upstream errors, malformed response, long TTL and timeout are re
   const mint = createMint(async (_, init) => { signal = init?.signal; return new Promise<Response>(() => {}); }, () => epoch, 10);
   await assert.rejects(mint({ apiKey: "mock", model: "mock", safetyIdentifier: "mock" }), { message: "Provider unavailable" });
   assert.equal(signal?.aborted, true);
+});
+
+test("text mode is gated, allowlisted, minimal and shares voice admission", async () => {
+  const h = harness(); const { dto, cookie } = await h.establish();
+  await expectError(await h.handlers.credential(request({ sourceId: dto.id, mode: "text" }, cookie)), 503);
+  h.setConfig({ ...config, textEnabled: true });
+  for (const body of [{ sourceId: dto.id, mode: "other" }, { sourceId: dto.id, mode: null }, { sourceId: dto.id, mode: "text", model: "override" }, { sourceId: dto.id, mode: "text", instructions: "override" }]) await expectError(await h.handlers.credential(request(body, cookie)), 400);
+  assert.equal(h.calls.length, 0);
+  for (const mode of ["text", "voice", "text"]) {
+    const response = await h.handlers.credential(request({ sourceId: dto.id, mode }, cookie));
+    assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(Object.keys(await response.json()).sort(), mode === "text" ? ["clientSecret", "expiresAt", "model"] : ["clientSecret", "expiresAt"]);
+  }
+  await expectError(await h.handlers.credential(request({ sourceId: dto.id }, cookie)), 429);
+  assert.deepEqual(h.calls.map(call => call.mode), ["text", "voice", "text"]);
+});
+test("text provider config has only text output, disabled VAD, fixed source/model/TTL/bound", async () => {
+  let body: Record<string, unknown> = {};
+  const mint = createMint(async (_url, init) => { body = JSON.parse(init!.body as string); return Response.json({ value: "ek_synthetic", expires_at: Math.floor(epoch / 1000) + 60 }); }, () => epoch);
+  await mint({ apiKey: "synthetic", model: "gpt-realtime", safetyIdentifier: "synthetic", mode: "text" });
+  assert.deepEqual(body, { expires_after: { anchor: "created_at", seconds: 60 }, session: { type: "realtime", model: "gpt-realtime", max_output_tokens: 256, output_modalities: ["text"], audio: { input: { turn_detection: null } }, instructions: `Answer briefly using only this synthetic proof source: ${PROOF_TEXT}` } });
+});
+
+
+test("alternating mode cannot bypass concurrent issuance; text ownership and expiry remain enforced", async () => {
+  let finish!: (value: { clientSecret: string; expiresAt: number }) => void;
+  const h = harness(() => new Promise(resolve => { finish = resolve; })); h.setConfig({ ...config, textEnabled: true });
+  const a = await h.establish(); const b = await h.establish();
+  await expectError(await h.handlers.credential(request({ sourceId: a.dto.id, mode: "text" }, b.cookie)), 404);
+  await expectError(await h.handlers.credential(request({ sourceId: a.dto.id, mode: "text" })), 401);
+  const pending = h.handlers.credential(request({ sourceId: a.dto.id, mode: "text" }, a.cookie));
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
+  await expectError(await h.handlers.credential(request({ sourceId: a.dto.id, mode: "voice" }, a.cookie)), 429);
+  finish({ clientSecret: "ek_synthetic", expiresAt: Math.floor(epoch / 1000) + 60 }); assert.equal((await pending).status, 200);
+  h.rows.get(a.dto.id)!.expiresAt = new Date(epoch - 1);
+  await expectError(await h.handlers.credential(request({ sourceId: a.dto.id, mode: "text" }, a.cookie)), 404);
+  assert.equal(h.calls.length, 1);
 });

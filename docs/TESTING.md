@@ -127,3 +127,7 @@ The manager reviews all four rubric areas against evidence and keeps untested li
 | Check / task | Build | Environment / fixture / provider / device | Command or actions | Expected | Observed | Status / exit | Artifact / limit |
 |---|---|---|---|---|---|---|---|
 | Fill after running | Actual identity | Distinguish local/deployed and mock/live | Exact verified command or manual steps | Concrete outcome | Actual observation | PASS / FAIL / NOT_RUN / BLOCKED | Sanitized path; state gaps |
+
+### Task 02c isolated text checks
+
+Build first, use pinned Node 24.22.0/npm 11.19.1 and free port 3102, then `npm run test:text`. `playwright.text.config.ts` starts/tears down an isolated production server with synthetic config, loopback unusable DB and existing provider-blocking preload. Both proof POSTs are intercepted, external HTTP blocked, real WebSockets closed by routing and a fake constructor supplies controlled events. Media/peer/audio counters prove zero text-path calls even with denied or absent mediaDevices. Trace/video are off; deliberate synthetic screenshots go to ignored `artifacts/local/02c/`. Existing smoke flags remain false (including TEXT_PROOF_ENABLED); voice remains a separate port-3101 suite. Read [02c acceptance map and PM-only checks](TEXT_PROOF_02C.md). No live funding/key is required or authorized by these commands.

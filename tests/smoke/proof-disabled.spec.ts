@@ -23,3 +23,18 @@ test("default voice page never requests media or proof endpoints", async ({ page
   await expect(page.getByRole("button", { name: "Start unavailable" })).toBeDisabled();
   expect(requests).toBe(0); expect(errors).toEqual([]);
 });
+
+test("default text page is unavailable with no requests, sockets or media", async ({ page }) => {
+  let requests = 0;
+  await page.route("**/api/**", route => { requests++; return route.abort(); });
+  await page.routeWebSocket(/.*/, ws => ws.close());
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", { value: undefined });
+    for (const name of ["WebSocket", "RTCPeerConnection", "Audio"]) Object.defineProperty(window, name, { value: class { constructor() { throw new Error("Unexpected transport/media"); } } });
+  });
+  const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
+  await page.goto("/proof/text");
+  await expect(page.getByRole("heading", { name: "Text proof unavailable" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start unavailable" })).toBeDisabled();
+  expect(requests).toBe(0); expect(errors).toEqual([]);
+});

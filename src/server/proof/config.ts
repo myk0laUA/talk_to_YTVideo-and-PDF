@@ -1,7 +1,7 @@
 // Pure configuration validation; runtime environment access stays in runtime.ts.
 export type ProofConfig = {
   origin: string; secure: boolean; cookieSecret: string;
-  issuanceEnabled: boolean; apiKey?: string; model?: string;
+  issuanceEnabled: boolean; textEnabled?: boolean; apiKey?: string; model?: string;
 };
 
 export function parseProofConfig(env: Record<string, string | undefined>): ProofConfig | null {
@@ -18,6 +18,7 @@ export function parseProofConfig(env: Record<string, string | undefined>): Proof
     return {
       origin: url.origin, secure: url.protocol === "https:", cookieSecret,
       issuanceEnabled: env.REALTIME_ISSUANCE_ENABLED === "true",
+      textEnabled: env.TEXT_PROOF_ENABLED === "true",
       apiKey: env.OPENAI_API_KEY?.trim() || undefined,
       model: model && /^[a-zA-Z0-9._-]{1,100}$/.test(model) ? model : undefined,
     };

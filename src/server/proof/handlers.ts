@@ -58,8 +58,9 @@ export function createProofHandlers(deps: { config: () => ProofConfig | null; st
       if (credential && !existing) return failure(401, "Visitor required");
       const input = await readInput(request);
       if (!input || (credential
-        ? Object.keys(input).length !== 1 || typeof input.sourceId !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(input.sourceId)
+        ? Object.keys(input).some(key => key !== "sourceId" && key !== "mode") || ("mode" in input && input.mode !== "voice" && input.mode !== "text") || typeof input.sourceId !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(input.sourceId)
         : Object.keys(input).length !== 0)) return failure(400, "Invalid request");
+      if (credential && input.mode === "text" && !config.textEnabled) return failure(503, "Feature unavailable");
       const visitor = existing ?? createVisitor(config, now());
       release = (credential ? issuanceAdmission : proofAdmission).acquire(visitor.owner, ipBucket, now()) ?? undefined;
       if (!release) return failure(429, "Limit reached");
@@ -72,9 +73,9 @@ export function createProofHandlers(deps: { config: () => ProofConfig | null; st
       if (request.signal.aborted) return failure(400, "Request cancelled");
       // Distinct domain from database owner marker; never forward the cookie bearer.
       const safetyIdentifier = createHash("sha256").update(`realtime-safety-v1:${visitor.owner}`).digest("hex");
-      const result = await deps.mint({ apiKey: config.apiKey!, model: config.model!, safetyIdentifier });
+      const result = await deps.mint({ apiKey: config.apiKey!, model: config.model!, safetyIdentifier, ...(input.mode ? { mode: input.mode as "voice" | "text" } : {}) });
       if (!isOwnedReady(record, visitor, now()) || request.signal.aborted) return failure(404, "Source unavailable");
-      return reply(200, { clientSecret: result.clientSecret, expiresAt: result.expiresAt });
+      return reply(200, { clientSecret: result.clientSecret, expiresAt: result.expiresAt, ...(input.mode === "text" ? { model: config.model } : {}) });
     } catch { return failure(503, "Service unavailable"); }
     finally { release?.(); }
   }

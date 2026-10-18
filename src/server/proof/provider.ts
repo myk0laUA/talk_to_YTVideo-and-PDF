@@ -4,12 +4,12 @@ import { PROOF_TEXT } from "./source.ts";
 
 export const CLIENT_SECRET_TTL_SECONDS = 60;
 export const PROVIDER_DEADLINE_MS = 8000;
-export type MintInput = { apiKey: string; model: string; safetyIdentifier: string };
+export type MintInput = { apiKey: string; model: string; safetyIdentifier: string; mode?: "voice" | "text" };
 export type Mint = (input: MintInput) => Promise<RealtimeCredentialDto>;
 
 // Injectable transport; no SDK retries and no upstream body/error logging.
 export function createMint(transport: typeof fetch = fetch, now = Date.now, deadlineMs = PROVIDER_DEADLINE_MS): Mint {
-  return async ({ apiKey, model, safetyIdentifier }) => {
+  return async ({ apiKey, model, safetyIdentifier, mode = "voice" }) => {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
@@ -22,10 +22,10 @@ export function createMint(transport: typeof fetch = fetch, now = Date.now, dead
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "OpenAI-Safety-Identifier": safetyIdentifier },
           body: JSON.stringify({ expires_after: { anchor: "created_at", seconds: CLIENT_SECRET_TTL_SECONDS },
             session: { type: "realtime", model, max_output_tokens: 256,
-              output_modalities: ["audio"],
+              ...(mode === "text" ? { output_modalities: ["text"], audio: { input: { turn_detection: null } } } : { output_modalities: ["audio"],
               audio: { input: { transcription: { model: "gpt-4o-mini-transcribe" },
                 turn_detection: { type: "server_vad", create_response: true, interrupt_response: true } },
-                output: { voice: "marin" } },
+                output: { voice: "marin" } } }),
               instructions: `Answer briefly using only this synthetic proof source: ${PROOF_TEXT}` } }),
         });
         if (!response.ok) { await response.body?.cancel(); throw new Error("Provider unavailable"); }
