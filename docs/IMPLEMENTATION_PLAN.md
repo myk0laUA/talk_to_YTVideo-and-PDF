@@ -225,7 +225,7 @@ Meet the strictest deployment and upload requirement early.
 
 Turn the ingestion proofs into a coherent user flow.
 
-PM sequencing, 18 October: 05a is the bounded PDF-only UI subcheck following accepted Step 04, now accepted locally/on host with physical phone pending. Task03c next closes the Step03→05 owned-caption-source handoff using existing adapters, without public YouTube UI, cache or automatic fallback. It requires no provider key for isolated worker implementation. The original combined Step05 dependency on Steps03/04 remains: YouTube workflow and conversation readiness are not advanced or marked complete by05a/03c. FullStep06 remains downstream.
+PM sequencing, 18 October: 05a is the bounded PDF-only UI subcheck following accepted Step 04, now accepted locally/on host and with the requested iPhone PDF workflow passed by user report. Task03c next closes the Step03→05 owned-caption-source handoff using existing adapters, without public YouTube UI, cache or automatic fallback. It requires no provider key for isolated worker implementation. The original combined Step05 dependency on Steps03/04 remains: YouTube workflow and conversation readiness are not advanced or marked complete by05a/03c. FullStep06 remains downstream.
 
 - Use the selected Impeccable design skill to record concise product/design context from this plan, then shape the single-source mobile flow. Apply React best practices during implementation; avoid a separate branding or landing-page project.
 - Connect both source choices to shared Source and IngestionError contracts. Show clear PDF and YouTube actions before a single active-source card.
