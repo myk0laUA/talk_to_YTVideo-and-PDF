@@ -1,5 +1,7 @@
 # Task 07C — model budget evidence and PM reproduction
 
+**Current PM07C review:** accepted for the permitted fail-closed implementation only. Application522ef69, build08ISOATOl0GFXkeubsLS2; all8 hashes match, fresh42budget/589unit PASS. Real model/tokenizer/framing readiness remains BLOCKED; no live grounding claim. Next single task `docs/WORKER_TASK_11A.md`: bounded expired-row cleanup, an independent Step11 storage subcheck. Public03eb7d8 remains PDF-only; keys pending and no spend. Prior summaries are historical.
+
 Proposed **READY_FOR_REVIEW** for the bounded offline implementation. Actual model readiness is **BLOCKED**. No supported tokenizer/framing binding was established; no production `measured_fit` can be created by this adapter. Full Step 07 remains IN_PROGRESS. PM owns acceptance and subsequent sequencing.
 
 ## Official evidence actually opened

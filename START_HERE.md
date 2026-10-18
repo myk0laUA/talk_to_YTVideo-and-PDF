@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM07C review:** accepted for the permitted fail-closed implementation only. Application522ef69, build08ISOATOl0GFXkeubsLS2; all8 hashes match, fresh42budget/589unit PASS. Real model/tokenizer/framing readiness remains BLOCKED; no live grounding claim. Next single task `docs/WORKER_TASK_11A.md`: bounded expired-row cleanup, an independent Step11 storage subcheck. Public03eb7d8 remains PDF-only; keys pending and no spend. Prior summaries are historical.
+
 **Current PM07B review:** acknowledged context priming accepted for offline/scripted scope. Application227b359, local build2md7yaSuVz21TjLpuplBd; all9 hashes match and fresh priming75/unit547 PASS. No live provider/model/phone readiness inferred. Next single task `docs/WORKER_TASK_07C.md`: evidence-backed server model/token budget binding, failing closed on unsupported mappings. Public03eb7d8 remains PDF-only; keys pending, no API spend. Older summaries below are historical.
 
 **Current07A PM review:** offline authorized/lossless context and budget/evaluation preparation accepted. Application7095457 published, not deployed; fresh79context/472unit checks PASS. Next `docs/WORKER_TASK_07B.md`: acknowledged context priming using scripted Realtime transport. Model binding, credentials, live grounding and phone checks remain open; public03eb7d8 stays PDF-only.
