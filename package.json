@@ -26,6 +26,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "db:probe": "node --conditions=react-server scripts/verify-db-persistence.ts",
+    "proof:captions:local": "node scripts/verify-captions-local.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -36,7 +37,8 @@
     "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "youtube-transcript-plus": "2.0.3"
   },
   "devDependencies": {
     "@playwright/cli": "0.1.22",

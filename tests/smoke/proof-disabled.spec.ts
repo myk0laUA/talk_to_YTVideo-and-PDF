@@ -1,5 +1,16 @@
 import { expect, test } from "@playwright/test";
 
+test("caption proof is disabled in the production app", async ({ request }) => {
+  const response = await request.post("/api/proof-captions", {
+    data: { video: "dQw4w9WgXcQ" }, headers: { origin: "http://127.0.0.1:3100" },
+  });
+  expect(response.status()).toBe(503);
+  expect(response.headers()["cache-control"]).toBe("no-store");
+  expect(response.headers()["set-cookie"]).toBeUndefined();
+  expect(await response.json()).toEqual({ ok: false, error: { code: "disabled", message: "Feature unavailable" } });
+  expect((await request.get("/api/proof-captions")).status()).toBe(405);
+});
+
 test("production proof endpoints fail closed with no-store when disabled", async ({ request }) => {
   for (const path of ["/api/proof-source", "/api/realtime/client-secret"]) {
     const response = await request.post(path, { data: {}, headers: { origin: "http://127.0.0.1:3100" } });
