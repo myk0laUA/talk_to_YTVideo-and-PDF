@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current status:** The paragraph below describes the original planning package. Local bootstrap is now committed at `c68258e` and accepted by the PM. Step 01 remains IN_PROGRESS because PostgreSQL/Render provisioning and live acceptance checks are outstanding. Resume from `docs/PROJECT_STATE.md`; the single issued worker brief is `docs/WORKER_TASK_01A.md`.
+
 This package captures the completed planning work. It contains no application implementation. The last known implementation status is **unverified: none of Steps 01–14 has been demonstrated in this planning session**. Reconcile this with your actual repository before starting.
 
 ## Use this package

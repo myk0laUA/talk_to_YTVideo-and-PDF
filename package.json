@@ -23,6 +23,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
+    "db:probe": "node --conditions=react-server scripts/verify-db-persistence.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
