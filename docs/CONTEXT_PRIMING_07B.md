@@ -1,5 +1,7 @@
 # Task 07B — acknowledged context priming
 
+**Current PM07B review:** acknowledged context priming accepted for offline/scripted scope. Application227b359, local build2md7yaSuVz21TjLpuplBd; all9 hashes match and fresh priming75/unit547 PASS. No live provider/model/phone readiness inferred. Next single task `docs/WORKER_TASK_07C.md`: evidence-backed server model/token budget binding, failing closed on unsupported mappings. Public03eb7d8 remains PDF-only; keys pending, no API spend. Older summaries below are historical.
+
 Worker outcome: implemented offline; proposed **READY_FOR_REVIEW**, pending PM acceptance. Original Step 07 remains open. Arrival was clean `main` at `2136e3cf5d1bf6a4fd869edf310e8b786c6ebaee` (accepted application `7095457` plus PM handoff). Delivery is a dirty working tree; no commit, push, deployment, provider request, database mutation or service change.
 
 ## Official contract used
