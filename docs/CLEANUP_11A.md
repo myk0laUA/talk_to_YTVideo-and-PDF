@@ -1,5 +1,7 @@
 # Task 11A — expired-row cleanup operator runbook and review
 
+**Current PM11A review:** local cleanup implementation accepted in3961af4; build0rWK8RA2kP8W59_6R1mUe, all11 hashes match, fresh52cleanup/641unit PASS. Real PostgreSQL cleanup/race validation remains NOT_RUN, no deployment/scheduling. Next single task `docs/WORKER_TASK_08A.md`: simulated voice lifecycle/controls using07B priming. Full08–10 remain unfinished;07 model binding/live gates remain blocked. Public03eb7d8 stays PDF-only.
+
 Worker proposes **READY_FOR_REVIEW** for this storage subcheck only. PM owns acceptance and production execution. Full Step 11, deployment and scheduling remain open. No schema/migration, existing repository/cache adapter, application route, client bundle import, UI or provider gate is changed.
 
 ## Operation and bounds

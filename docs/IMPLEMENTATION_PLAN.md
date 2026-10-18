@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+PM sequencing18October:11A cleanup accepted locally in3961af4; real SQL validation remains NOT_RUN. Next08A prepares voice lifecycle/controls with simulated resources using accepted07B priming.08–10 were deferred, not skipped or completed:07's actual model binding and live checks remain blocked. Preparatory controller work may proceed without implying full-step acceptance. No public source-session activation or waiver of original dependencies.
+
 Three day implementation roadmap targeting exceptional quality
 
 Build a polished mobile web application that accepts one PDF or YouTube video at a time, displays its extracted text, and supports a live, interruptible voice conversation with a genuine text fallback. Working deployed YouTube ingestion is now a completion target alongside deployed PDF ingestion. Include a verified local caption-extraction backup and a direct deployed extraction trial with no transcript-service fee.
