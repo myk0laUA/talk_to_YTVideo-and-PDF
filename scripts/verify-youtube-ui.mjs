@@ -26,6 +26,7 @@ const server = spawn(process.execPath, ["--require", path.resolve("tests/pdf/ser
     DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic", APP_ORIGIN: "http://127.0.0.1:3109",
     VISITOR_COOKIE_SECRET: randomBytes(32).toString("hex"), NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_DATABASE_URL: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "", NEXT_PUBLIC_SCRAPECREATORS_API_KEY: "",
     YOUTUBE_INGESTION_ENABLED: "true", YOUTUBE_INGESTION_LOCAL_HTTP: "true", YOUTUBE_INGESTION_PROVIDER: "direct",
+    YOUTUBE_CAPTION_CACHE_BYPASS: "true", // Keep forced direct-adapter/error journeys uncached.
     PDF_INGESTION_ENABLED: "true", PDF_INGESTION_LOCAL_HTTP: "true", PDF_HTTP_SCENARIO: "real", PDF_PROOF_ENABLED: "false",
     PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", CAPTION_PROOF_ENABLED: "false",
     OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "" },

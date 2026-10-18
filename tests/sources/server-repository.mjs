@@ -10,11 +10,21 @@ process.on("message", message => {
     const value = { ...message.row, expiresAt: new Date(message.row.expiresAt) };
     database.rows.set(value.id, value);
   } else if (command === "fail-create") database.failCreate = true;
+  else if (command === "fail-cache-read") database.failCacheRead = true;
+  else if (command === "fail-cache-write") database.failCacheWrite = true;
+  else if (command === "expire-cache") { for (const row of database.cacheRows.values()) row.expiresAt = new Date(0); }
+  else if (command === "configure-cache") {
+    // Explicit test process IPC, never reachable from HTTP/application code.
+    process.env.YOUTUBE_CAPTION_CACHE_BYPASS = message.bypass ? "true" : "false";
+    if (message.provider) process.env.YOUTUBE_INGESTION_PROVIDER = message.provider;
+  }
   else if (command === "delay-create") database.delayCreateMs = message.ms;
   else if (command === "delay-read") database.delayReadMs = message.ms;
   else if (command !== "snapshot") throw new Error("Unknown test command");
   process.send?.({ sourceTestReply: requestId, snapshot: {
     ids: [...database.rows.keys()], uploaded: [...database.rows.values()].filter(row => row.activeSourceOwner !== null).length,
     transactions: database.transactions, creates: database.creates, reads: database.reads, deletes: database.deletes,
+    cacheRows: database.cacheRows.size, cacheReads: database.cacheReads, cacheWrites: database.cacheWrites,
+    cacheExpiries: [...database.cacheRows.values()].map(row => row.expiresAt.toISOString()),
   } });
 });

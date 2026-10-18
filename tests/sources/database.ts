@@ -3,10 +3,16 @@
 import assert from "node:assert/strict";
 import type { PrismaClient } from "../../src/generated/prisma/client.ts";
 import type { UploadedSource } from "../../src/server/sources/service.ts";
+import type { Prisma } from "../../src/generated/prisma/client.ts";
 
 type Where = Record<string, unknown>;
 export class SyntheticSourceDatabase {
   rows = new Map<string, UploadedSource>();
+  cacheRows = new Map<string, Prisma.TranscriptCacheGetPayload<object>>();
+  cacheReads = 0;
+  cacheWrites = 0;
+  failCacheRead = false;
+  failCacheWrite = false;
   transactions = 0;
   deletes = 0;
   creates = 0;
@@ -29,6 +35,7 @@ export class SyntheticSourceDatabase {
     const work = this.queue.then(async () => {
       this.transactions++;
       const staged = structuredClone(this.rows);
+      const cache = structuredClone(this.cacheRows);
       const tx = {
         $queryRaw: async (sql: TemplateStringsArray) => {
           assert.match(sql.join(""), /lock_timeout.*1500ms.*statement_timeout.*3000ms/); return [];
@@ -62,9 +69,26 @@ export class SyntheticSourceDatabase {
             return row ? structuredClone(row) : null;
           },
         },
+        transcriptCache: {
+          findUnique: async ({ where }: { where: { videoId_languagePreference_mode: unknown } }) => {
+            this.cacheReads++;
+            if (this.failCacheRead) { this.failCacheRead = false; throw new Error("PRIVATE cache read"); }
+            return structuredClone(cache.get(JSON.stringify(where.videoId_languagePreference_mode)) ?? null);
+          },
+          upsert: async ({ where, create, update }: { where: { videoId_languagePreference_mode: unknown };
+            create: Prisma.TranscriptCacheGetPayload<object>; update: Prisma.TranscriptCacheGetPayload<object> }) => {
+            this.cacheWrites++;
+            if (this.failCacheWrite) { this.failCacheWrite = false; throw new Error("PRIVATE cache write"); }
+            const key = JSON.stringify(where.videoId_languagePreference_mode);
+            assert.deepEqual(create, update);
+            cache.set(key, structuredClone(create));
+            return { id: "synthetic-cache-id" };
+          },
+        },
       };
       const result = await callback(tx);
       this.rows = staged;
+      this.cacheRows = cache;
       return result;
     });
     this.queue = work.catch(() => {});

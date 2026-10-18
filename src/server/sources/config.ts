@@ -2,6 +2,8 @@ import { parseVisitorConfig } from "../proof/config.ts";
 import { parseServerEnvironment, requireDatabaseUrl } from "../env-schema.ts";
 import { validSupadataKey, type CaptionConfig } from "../captions/config.ts";
 
+export type YoutubeSourceConfig = CaptionConfig & { cacheBypass?: boolean };
+
 export function parseSourceConfig(env: Record<string, string | undefined>) {
   if (env.PDF_INGESTION_ENABLED !== "true") return null;
   try {
@@ -10,7 +12,7 @@ export function parseSourceConfig(env: Record<string, string | undefined>) {
   } catch { return null; }
 }
 
-export function parseYoutubeSourceConfig(env: Record<string, string | undefined>): CaptionConfig | null {
+export function parseYoutubeSourceConfig(env: Record<string, string | undefined>): YoutubeSourceConfig | null {
   if (env.YOUTUBE_INGESTION_ENABLED !== "true" || env.NEXT_PUBLIC_SUPADATA_API_KEY) return null;
   const provider = env.YOUTUBE_INGESTION_PROVIDER;
   if (provider !== "direct" && provider !== "supadata") return null;
@@ -19,7 +21,8 @@ export function parseYoutubeSourceConfig(env: Record<string, string | undefined>
   try {
     requireDatabaseUrl(parseServerEnvironment(env));
     const visitor = parseVisitorConfig(env, env.YOUTUBE_INGESTION_LOCAL_HTTP === "true");
-    return visitor ? { ...visitor, provider, ...(provider === "supadata" ? { supadataApiKey: key } : {}) } : null;
+    return visitor ? { ...visitor, provider, ...(provider === "supadata" ? { supadataApiKey: key } : {}),
+      ...(env.YOUTUBE_CAPTION_CACHE_BYPASS === "true" ? { cacheBypass: true } : {}) } : null;
   } catch { return null; }
 }
 

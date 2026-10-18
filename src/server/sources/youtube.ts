@@ -1,4 +1,6 @@
 import "server-only";
+import { captionCacheKey, type CaptionCache } from "../captions/cache.ts";
+import type { YoutubeSourceConfig } from "./config.ts";
 import type { CaptionConfig } from "../captions/config.ts";
 import type { CaptionProvider } from "../captions/provider.ts";
 import { normalizeVideo, validLanguage } from "../captions/input.ts";
@@ -33,7 +35,7 @@ const reply = (status: number, value: SourceResult, cookie?: string) => Response
 } });
 const fail = (code: SourceFailureCode, cookie?: string) => reply(errors[code][0], { ok: false, error: { code, message: errors[code][1] } }, cookie);
 
-export function createYoutubeSourceHandler(deps: { config: () => CaptionConfig | null; repository: SourceRepository;
+export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceConfig | null; repository: SourceRepository; cache: CaptionCache;
   provider: (input: Parameters<CaptionProvider>[0], config: CaptionConfig) => ReturnType<CaptionProvider>;
   admission?: Admission; now?: () => number }) {
   const admission = deps.admission ?? new Admission(captionLimits);
@@ -65,14 +67,25 @@ export function createYoutubeSourceHandler(deps: { config: () => CaptionConfig |
       const fields = value as Record<string, unknown>;
       const video = normalizeVideo(fields.video);
       if (!video || ("language" in fields && !validLanguage(fields.language))) return fail("invalid_input");
-      const result = await deps.provider({ videoId: video.videoId, ...(fields.language ? { language: fields.language as string } : {}), signal: request.signal }, config);
+      const key = captionCacheKey(video.videoId, fields.language as string | undefined);
+      let transcript = config.cacheBypass ? null : await deps.cache.get(key, new Date(now()));
       guard();
-      if (!result.ok) return fail(result.error.code);
+      const hit = transcript !== null;
+      if (!transcript) {
+        const result = await deps.provider({ videoId: video.videoId, ...(fields.language ? { language: fields.language as string } : {}), signal: request.signal }, config);
+        guard();
+        if (!result.ok) return fail(result.error.code);
+        transcript = result.transcript;
+      }
       let candidate;
       try {
-        candidate = captionRecord(result.transcript, visitor);
-        if (candidate.canonicalOrigin !== video.canonicalUrl || candidate.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata")) return fail("malformed");
+        candidate = captionRecord(transcript, visitor);
+        if (candidate.canonicalOrigin !== video.canonicalUrl
+          || (key.languagePreference && candidate.language?.toLowerCase() !== key.languagePreference)
+          || (!hit && candidate.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) return fail("malformed");
       } catch { return fail("malformed"); }
+      guard();
+      if (!hit && !config.cacheBypass) await deps.cache.put(key, transcript, new Date(now()));
       guard();
       const saved = await deps.repository.replace(candidate, guard);
       guard(); requireOwned(saved, visitor, now());

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
-import { createYoutubeSourceHandler } from "../../src/server/sources/youtube.ts";
+import { createYoutubeSourceHandler as createHandler } from "../../src/server/sources/youtube.ts";
 import { parseSourceReadConfig, parseYoutubeSourceConfig } from "../../src/server/sources/config.ts";
 import { createSourceHandlers } from "../../src/server/sources/handler.ts";
 import { createSourceRepository } from "../../src/server/sources/repository.ts";
@@ -18,6 +18,9 @@ import type { PdfExtraction } from "../../src/shared/pdf.ts";
 import { SyntheticSourceDatabase } from "../sources/database.ts";
 
 const config: CaptionConfig = { origin: "https://source.invalid", secure: true, cookieSecret: "ab".repeat(32), provider: "direct" };
+// These pre-cache boundary tests deliberately exercise uncached imports. Cache tests use the real adapter.
+const createYoutubeSourceHandler = (deps: Omit<Parameters<typeof createHandler>[0], "cache">) => createHandler({ ...deps,
+  cache: { get: async () => null, put: async () => {} } });
 const id = "dQw4w9WgXcQ";
 const transcript: CaptionTranscript = { videoId: id, canonicalUrl: `https://www.youtube.com/watch?v=${id}`, language: "en",
   provider: "youtube-transcript-plus@2.0.3", trackType: "automatic", fullText: " FIRST \nMIDDLE\nLAST",
