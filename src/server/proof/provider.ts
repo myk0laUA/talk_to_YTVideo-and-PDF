@@ -22,6 +22,10 @@ export function createMint(transport: typeof fetch = fetch, now = Date.now, dead
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "OpenAI-Safety-Identifier": safetyIdentifier },
           body: JSON.stringify({ expires_after: { anchor: "created_at", seconds: CLIENT_SECRET_TTL_SECONDS },
             session: { type: "realtime", model, max_output_tokens: 256,
+              output_modalities: ["audio"],
+              audio: { input: { transcription: { model: "gpt-4o-mini-transcribe" },
+                turn_detection: { type: "server_vad", create_response: true, interrupt_response: true } },
+                output: { voice: "marin" } },
               instructions: `Answer briefly using only this synthetic proof source: ${PROOF_TEXT}` } }),
         });
         if (!response.ok) { await response.body?.cancel(); throw new Error("Provider unavailable"); }

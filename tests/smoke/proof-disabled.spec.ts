@@ -10,3 +10,16 @@ test("production proof endpoints fail closed with no-store when disabled", async
     expect((await request.get(path)).status()).toBe(405);
   }
 });
+
+test("default voice page never requests media or proof endpoints", async ({ page }) => {
+  let requests = 0;
+  await page.route("**/api/**", route => { requests++; return route.abort(); });
+  await page.addInitScript(() => {
+    navigator.mediaDevices.getUserMedia = async () => { throw new Error("Unexpected microphone request"); };
+  });
+  const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
+  await page.goto("/proof/voice");
+  await expect(page.getByRole("heading", { name: "Voice proof unavailable" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start unavailable" })).toBeDisabled();
+  expect(requests).toBe(0); expect(errors).toEqual([]);
+});

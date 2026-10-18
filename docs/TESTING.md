@@ -26,6 +26,8 @@ Use targeted checks after a change. Run the final clean-install/build/migration/
 
 ## Gate A — foundation and first real voice (01–02)
 
+Task 02b adds `/proof/voice`, 38 injected lifecycle/availability checks in `tests/unit/voice-proof.test.ts`, and `npm run test:voice` with its own `playwright.voice.config.ts`. Build first, use pinned Node/npm and leave port 3101 free. The isolated config supplies synthetic server environment values, a loopback unusable database URL and a preload that blocks external fetch; browser routes mock both POSTs and all OpenAI requests, with fake media/RTC/audio and traces disabled. It starts and tears down the production server. The normal smoke config still forces both proof flags false on port 3100. See [02b evidence and acceptance mapping](VOICE_PROOF_02B.md); these tests do not establish live database/provider/phone or microphone-free text success.
+
 Task 02a adds `tests/unit/proof.test.ts` to the existing `npm test` command, now using `node --conditions=react-server --test tests/unit/*.test.ts` so real server-only modules load in Node tests. It covers signed cookies, two-visitor ownership, source/configuration/input/origin rejection before provider calls, admission/concurrency, minimal no-store DTOs and mocked HTTP timeouts/redaction. Database and provider boundaries are mocks, not live acceptance. `tests/smoke/proof-disabled.spec.ts` checks real production route wiring with both feature flags forced false by Playwright; GET is 405 and POST is uncached 503. [Contracts, limits and PM live procedure](REALTIME_PROOF_BOUNDARY.md).
 
 ### Local bootstrap checks now available

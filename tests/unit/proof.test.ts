@@ -225,6 +225,9 @@ test("mock HTTP provider uses verified contract, 60-second TTL, safety header, n
     assert.deepEqual(body.expires_after, { anchor: "created_at", seconds: 60 });
     assert.equal(body.session.type, "realtime"); assert.equal(body.session.model, "configured-model");
     assert.equal(body.session.max_output_tokens, 256); assert.ok(body.session.instructions.includes(PROOF_TEXT));
+    assert.deepEqual(body.session.output_modalities, ["audio"]);
+    assert.deepEqual(body.session.audio, { input: { transcription: { model: "gpt-4o-mini-transcribe" },
+      turn_detection: { type: "server_vad", create_response: true, interrupt_response: true } }, output: { voice: "marin" } });
     return Response.json({ value: "ek_mock", expires_at: epoch / 1000 + 60, session: { private: "not returned" }, unexpected: "not returned" });
   };
   const result = await createMint(transport, () => epoch)({ apiKey: "mock-permanent-key", model: "configured-model", safetyIdentifier: "mock-hashed-visitor" });
