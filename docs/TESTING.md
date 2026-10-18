@@ -77,6 +77,8 @@ Use public videos that currently have accessible captions. Record canonical ID, 
 
 ## Gate C — deployed PDF and preview (04–05)
 
+Task 04a establishes the separately default-disabled `POST /api/proof-pdf` extraction proof. Generate deterministic synthetic fixtures with `python scripts/generate-pdf-fixtures.py` (reportlab 4.4.9, pypdf 6.10.0, Pillow 11.1.0), build, then run `npm run test:pdf:http`. This runs the actual production Node route with real parser, valid 25,000,000-byte and 25,000,001-byte PDFs, full 12-page coverage, unsupported fixtures, and separately identified injected CPU-worker lifecycle checks. No database/provider access is used. See [configuration, bounds, evidence and PM hosted procedure](PDF_PROOF_04A.md). Local extraction is not hosted acceptance, stored Source creation, preview or grounding. The same fixtures on Free Render remain NOT_RUN until PM executes Gate C there.
+
 1. Upload a synthetic multi-page PDF containing distinctive beginning, middle and last-page markers. Verify all markers in extracted preview and preserve page/section boundaries where available.
 2. Upload a valid PDF near the documented 25 MB boundary to the actual production endpoint. Record exact file bytes and the chosen MB definition. Multipart request allowance must include framing overhead. Check the accepted boundary and the next-byte/oversized behavior using valid fixtures where practical; do not use only a client-side size check.
 3. Check missing file, wrong content despite a `.pdf` name, corrupt PDF, encrypted PDF and image-only/no-text PDF. Expected: useful distinct outcomes, no false claim of successful text extraction, no stuck spinner.

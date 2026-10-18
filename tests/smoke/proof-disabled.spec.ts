@@ -1,5 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+test("PDF proof is disabled in the production app", async ({ request }) => {
+  const response = await request.post("/api/proof-pdf", { headers: { origin: "http://127.0.0.1:3100" } });
+  expect(response.status()).toBe(503);
+  expect(response.headers()["cache-control"]).toBe("no-store");
+  expect(response.headers()["set-cookie"]).toBeUndefined();
+  expect(await response.json()).toEqual({ ok: false, error: { code: "disabled", message: "Feature unavailable" } });
+  expect((await request.get("/api/proof-pdf")).status()).toBe(405);
+});
+
 test("caption proof is disabled in the production app", async ({ request }) => {
   const response = await request.post("/api/proof-captions", {
     data: { video: "dQw4w9WgXcQ" }, headers: { origin: "http://127.0.0.1:3100" },
