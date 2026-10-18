@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SourceKind {
+  PDF
+  YOUTUBE
+}
+
+enum ExtractionStatus {
+  PENDING
+  READY
+  FAILED
+}
+
+model Source {
+  id               String           @id @default(uuid()) @db.Uuid
+  ownerSessionHash String           @db.VarChar(64)
+  kind             SourceKind
+  canonicalOrigin  String?
+  title            String
+  fullText         String           @default("") @db.Text
+  sections         Json             @default("[]")
+  language         String?
+  provider         String?
+  extractionStatus ExtractionStatus @default(PENDING)
+  providerJobId    String?
+  characterCount   Int              @default(0)
+  wordCount        Int              @default(0)
+  pageCount        Int?
+  warnings         Json             @default("[]")
+  createdAt        DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime         @updatedAt @db.Timestamptz(3)
+  expiresAt        DateTime         @db.Timestamptz(3)
+
+  @@index([ownerSessionHash, expiresAt])
+  @@index([expiresAt])
+}
+
+// Validated public captions only. Never store PDF or visitor-private content here.
+model TranscriptCache {
+  id                 String   @id @default(uuid()) @db.Uuid
+  videoId            String   @db.VarChar(11)
+  languagePreference String   @default("")
+  mode               String   @default("native")
+  selectedLanguage   String?
+  provider           String
+  providerMetadata   Json     @default("{}")
+  title              String
+  fullText           String   @db.Text
+  sections           Json
+  characterCount     Int
+  wordCount          Int
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+  expiresAt          DateTime @db.Timestamptz(3)
+
+  @@unique([videoId, languagePreference, mode])
+  @@index([expiresAt])
+}
