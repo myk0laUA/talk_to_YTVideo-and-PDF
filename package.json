@@ -15,6 +15,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "prisma generate && next typegen && tsc --noEmit",
     "test": "node --conditions=react-server --test tests/unit/*.test.ts",
+    "test:budget": "node --conditions=react-server --test tests/unit/model-budget.test.ts",
     "test:context": "node --conditions=react-server --test tests/unit/context.test.ts",
     "test:priming": "node --conditions=react-server --test tests/unit/priming.test.ts",
     "test:smoke": "playwright test",
