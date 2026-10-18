@@ -225,6 +225,8 @@ Meet the strictest deployment and upload requirement early.
 
 Turn the ingestion proofs into a coherent user flow.
 
+PM sequencing, 18 October: 05a is the bounded PDF-only UI subcheck following accepted Step 04. It does not require the unavailable managed-caption key. The original combined Step 05 dependency on Steps 03/04 remains: YouTube workflow and conversation readiness are not advanced or marked complete by 05a.
+
 - Use the selected Impeccable design skill to record concise product/design context from this plan, then shape the single-source mobile flow. Apply React best practices during implementation; avoid a separate branding or landing-page project.
 - Connect both source choices to shared Source and IngestionError contracts. Show clear PDF and YouTube actions before a single active-source card.
 - Build a Conversation view and an easy-to-open Source view for mobile; desktop side-by-side layout is optional. Show readiness, metadata, readable extraction and two or three fixed starter questions.
