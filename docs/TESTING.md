@@ -131,3 +131,8 @@ The manager reviews all four rubric areas against evidence and keeps untested li
 ### Task 02c isolated text checks
 
 Build first, use pinned Node 24.22.0/npm 11.19.1 and free port 3102, then `npm run test:text`. `playwright.text.config.ts` starts/tears down an isolated production server with synthetic config, loopback unusable DB and existing provider-blocking preload. Both proof POSTs are intercepted, external HTTP blocked, real WebSockets closed by routing and a fake constructor supplies controlled events. Media/peer/audio counters prove zero text-path calls even with denied or absent mediaDevices. Trace/video are off; deliberate synthetic screenshots go to ignored `artifacts/local/02c/`. Existing smoke flags remain false (including TEXT_PROOF_ENABLED); voice remains a separate port-3101 suite. Read [02c acceptance map and PM-only checks](TEXT_PROOF_02C.md). No live funding/key is required or authorized by these commands.
+
+
+## PM local database verification — 18 October 2026
+
+The ignored `artifacts/local/02c/pm-live-db.mjs` harness was run with pinned Node and `--conditions=react-server`, exit 0. It loads actual runtime handlers/Prisma against the existing real database while stubbing all provider fetches. Two visitors, reuse/no expiry renewal, same-process concurrency, cross-visitor/origin rejection, real not-ready/expired rows and voice/text shared admission passed; both fixtures were narrowly cleaned up. Safe evidence: `artifacts/local/02c/pm-live-db.log`. This closes that local runtime/DB subcheck only. Deployed HTTP/browser wiring, cross-process initial-upsert races, provider negotiation and physical audio still require separate evidence. Do not include live DB mutation in routine unit/browser commands.

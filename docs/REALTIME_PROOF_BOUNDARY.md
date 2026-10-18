@@ -2,7 +2,7 @@
 
 **02b local worker addition:** the server-gated voice page is `/proof/voice`; it reuses these endpoints and cookie. The mint session now explicitly configures audio output, `marin`, `gpt-4o-mini-transcribe` input transcription and server VAD. Configured Realtime model/source/TTL/admission remain unchanged. See [02b handoff](VOICE_PROOF_02B.md) for cancellation, 60-second client limit, mocked evidence and NOT_RUN live checks. PM accepted this addition for its local/mock scope; Step 02 remains IN_PROGRESS.
 
-PM accepted 02a at `eae9444e520707a427602b88b535feb2b2135686` and 02b at `716e120aff0823952fd0255f2a86a9877e5c6db6` for local/mocked verification: 93 unit tests, six disabled smoke checks and ten voice browser checks pass. The gated WebRTC client exists; live spoken-answer/Stop, real database authorization and deployed proof checks remain NOT_RUN. No live database or OpenAI request is authorized for the worker by this task. The public shell remains disabled. Next single brief: `WORKER_TASK_02C.md`, microphone-free text transport; its proposed mode extension is not implemented yet.
+PM accepted 02a/02b/02c for local/mock implementation; current application commit `2e01cdd2c437dc382f5f35afb2ab31e612e5eebe`. There are 126 passing unit tests, eight disabled smoke checks, ten voice and ten text browser checks. The text mode extension described below is implemented. PM local runtime/real database authorization passed with provider stub and fixture cleanup; deployed authorization, live responses and physical audio remain unverified. No live database or OpenAI call is authorized for the worker by these proof tasks. Next single worker brief: `WORKER_TASK_03A.md`.
 
 ## Configuration
 
@@ -77,3 +77,8 @@ PM later, all **NOT_RUN** for this task:
 ## Task 02c local text proof
 
 `/proof/text` adds a separately gated microphone-free WebSocket proof. `TEXT_PROOF_ENABLED=false` by default. The existing credential POST additionally accepts optional `mode: "voice" | "text"`; omitted means voice. Text mode returns only the existing credential/expiry plus the validated configured `model`; voice DTO is unchanged. Both modes share all authorization/admission. See [02c contract and evidence](TEXT_PROOF_02C.md). This supersedes the earlier statement that the mode extension is unimplemented; live checks remain NOT_RUN.
+
+
+## PM status after 02c review
+
+02c accepted locally at `2e01cdd2c437dc382f5f35afb2ab31e612e5eebe`: 126 unit, 8 disabled smoke, 10 voice and 10 text checks pass. On 18 October 2026 at 06:06:39 UTC, actual runtime handlers with real Prisma/PostgreSQL passed two-visitor isolation, reuse, same-process concurrency, ownership/readiness/expiry and shared-mode admission checks; only the provider was stubbed. Both generated fixtures were removed and absence verified. This is local in-process handler/DB evidence, not deployed HTTP, cross-process initial-upsert race or live OpenAI evidence. Earlier NOT_RUN wording describes the original worker submission. See PROJECT_STATE.md for scope and exact invocation. Next worker is WORKER_TASK_03A.md; live Step 02 checks remain open.
