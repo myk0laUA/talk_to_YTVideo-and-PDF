@@ -12,6 +12,8 @@ export default defineConfig({
     { name: "mobile-viewport-chromium", use: { browserName: "chromium", viewport: { width: 390, height: 844 } } },
   ],
   webServer: {
+    // Smoke checks must never opt into a real database write or provider request.
+    env: { PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false" },
     command: "npm run start -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,

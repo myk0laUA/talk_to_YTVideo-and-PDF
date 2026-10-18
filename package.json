@@ -14,7 +14,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "prisma generate && next typegen && tsc --noEmit",
-    "test": "node --test tests/unit/*.test.ts",
+    "test": "node --conditions=react-server --test tests/unit/*.test.ts",
     "test:smoke": "playwright test",
     "browser:install": "playwright install chromium",
     "browser:cli": "playwright-cli",

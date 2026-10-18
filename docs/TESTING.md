@@ -26,6 +26,8 @@ Use targeted checks after a change. Run the final clean-install/build/migration/
 
 ## Gate A — foundation and first real voice (01–02)
 
+Task 02a adds `tests/unit/proof.test.ts` to the existing `npm test` command, now using `node --conditions=react-server --test tests/unit/*.test.ts` so real server-only modules load in Node tests. It covers signed cookies, two-visitor ownership, source/configuration/input/origin rejection before provider calls, admission/concurrency, minimal no-store DTOs and mocked HTTP timeouts/redaction. Database and provider boundaries are mocks, not live acceptance. `tests/smoke/proof-disabled.spec.ts` checks real production route wiring with both feature flags forced false by Playwright; GET is 405 and POST is uncached 503. [Contracts, limits and PM live procedure](REALTIME_PROOF_BOUNDARY.md).
+
 ### Local bootstrap checks now available
 
 Use Node 24.22.0 / npm 11.19.1. Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run db:validate`, `npm run build`, `npm run browser:install`, then `npm run test:smoke`. The smoke command starts the production build on port 3100 (must be free) and stops it when done. `npm run dev` serves development on port 3000; `npm run start` serves the built app.
