@@ -41,7 +41,7 @@ for (const scenario of ["disabled", "missing-config", "real", "invalid", "admiss
   report.scenarios.push(item);
   const child = spawn(process.execPath, ["--require", path.resolve("tests/pdf/server-observer.cjs"), "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3105"], {
     windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"], env: { ...process.env, NODE_ENV: "production", NODE_OPTIONS: "", NEXT_TELEMETRY_DISABLED: "1",
-      PDF_INGESTION_ENABLED: "false", APP_ORIGIN: origin, PDF_PROOF_ENABLED: scenario === "disabled" ? "false" : "true", PDF_PROOF_LOCAL_HTTP: "true", PDF_HTTP_SCENARIO: scenario,
+      YOUTUBE_INGESTION_ENABLED: "false", PDF_INGESTION_ENABLED: "false", APP_ORIGIN: origin, PDF_PROOF_ENABLED: scenario === "disabled" ? "false" : "true", PDF_PROOF_LOCAL_HTTP: "true", PDF_HTTP_SCENARIO: scenario,
       VISITOR_COOKIE_SECRET: scenario === "missing-config" ? "" : randomBytes(32).toString("hex"), NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "",
       PROOF_ENABLED: "false", TEXT_PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", CAPTION_PROOF_ENABLED: "false", OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "",
       DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic?connect_timeout=1" },

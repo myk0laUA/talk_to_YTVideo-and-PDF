@@ -14,7 +14,7 @@ process.on("message", message => {
   else if (command === "delay-read") database.delayReadMs = message.ms;
   else if (command !== "snapshot") throw new Error("Unknown test command");
   process.send?.({ sourceTestReply: requestId, snapshot: {
-    ids: [...database.rows.keys()], uploaded: [...database.rows.values()].filter(row => row.uploadedPdfOwner !== null).length,
+    ids: [...database.rows.keys()], uploaded: [...database.rows.values()].filter(row => row.activeSourceOwner !== null).length,
     transactions: database.transactions, creates: database.creates, reads: database.reads, deletes: database.deletes,
   } });
 });

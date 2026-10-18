@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PDF_MAX_FILE_BYTES } from "@/shared/pdf";
-import type { SourceContent, SourceFailureCode, SourceMetadata, SourceResult } from "@/shared/source";
+import type { PdfSourceContent as SourceContent, PdfSourceFailureCode as SourceFailureCode, PdfSourceMetadata as SourceMetadata, SourceResult } from "@/shared/source";
 
 type Phase = "idle" | "importing" | "loading" | "loaded" | "removing" | "checking" | "error" | "uncertain";
 type State = { phase: Phase; known: SourceMetadata | null; content: SourceContent | null; filename: string; message: string };
@@ -32,13 +32,16 @@ class ApiError extends Error {
 async function request(url: string, signal: AbortSignal, init?: RequestInit) {
   const response = await fetch(url, { ...init, signal, credentials: "same-origin", cache: "no-store" });
   const value: SourceResult = await response.json();
-  if (!value.ok) throw new ApiError(value.error.code, response.status);
+  if (!value.ok) {
+    if (!(value.error.code in recovery)) throw new Error("Unexpected source error");
+    throw new ApiError(value.error.code as SourceFailureCode, response.status);
+  }
   if (!response.ok) throw new Error("Unexpected response");
   return { value, status: response.status };
 }
 async function read(id: string, signal: AbortSignal): Promise<SourceContent> {
   const { value } = await request(`/api/sources/${encodeURIComponent(id)}`, signal);
-  if (!("source" in value) || !("sections" in value.source) || value.source.id !== id) throw new Error("Missing content");
+  if (!("source" in value) || value.source.kind !== "PDF" || !("sections" in value.source) || value.source.id !== id) throw new Error("Missing PDF content");
   return value.source;
 }
 const uncertain = (error: unknown) => !(error instanceof ApiError)
@@ -105,7 +108,7 @@ export function usePdfSource() {
         result = await upload(); // Exactly one cookie-establishment retry, no general retry.
       }
       if (!work.current()) return;
-      if (result.status !== 201 || !("source" in result.value)) throw new Error("Missing created ID");
+      if (result.status !== 201 || !("source" in result.value) || result.value.source.kind !== "PDF") throw new Error("Missing PDF ID");
       const known = result.value.source;
       created = true;
       setState({ phase: "loading", known, content: null, filename: file.name, message: "PDF stored. Fetching its full text…" });

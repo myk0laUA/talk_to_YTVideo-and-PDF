@@ -73,7 +73,7 @@ test("origin, visitor, gate, UUID and admission reject before parsing/database/b
 
 test("committed UUID, full text DTO, replacement/delete isolate two visitors and proof fixtures", async () => {
   const { db, handlers } = setup(); const a = visitor(), b = visitor();
-  const proof = { ...uploadedRecord(extraction, a), id: randomUUID(), uploadedPdfOwner: null, provider: "synthetic-proof-02a-v1" };
+  const proof = { ...uploadedRecord(extraction, a), id: randomUUID(), activeSourceOwner: null, provider: "synthetic-proof-02a-v1" };
   db.rows.set(proof.id, proof);
   const first = (await result(await handlers.upload(request(a)), 201)).source;
   assert.equal(db.rows.has(first.id), true); assert.equal(first.fullText, undefined);
@@ -149,7 +149,7 @@ test("expiry/cancellation after commit cannot undo commit, response never report
 
 test("expired/non-ready/non-uploaded records inaccessible; read expiry never renewed", async () => {
   const { db, handlers } = setup(); const a = visitor();
-  for (const override of [{ expiresAt: new Date(0) }, { uploadedPdfOwner: null }, { extractionStatus: "FAILED" }, { provider: "synthetic-proof-02a-v1" }]) {
+  for (const override of [{ expiresAt: new Date(0) }, { activeSourceOwner: null }, { extractionStatus: "FAILED" }, { provider: "synthetic-proof-02a-v1" }]) {
     const row = { ...uploadedRecord(extraction, a), ...override }; db.rows.set(row.id, row);
     await result(await handlers.read(request(a, "GET"), row.id), 404, "unavailable");
     await result(await handlers.remove(request(a, "DELETE"), row.id), 404, "unavailable");

@@ -3,6 +3,7 @@ export function directCaptionEnvironment(parent: Record<string, string | undefin
   return { ...parent, NODE_ENV: "production", NODE_OPTIONS: "", APP_ORIGIN: origin,
     CAPTION_PROOF_ENABLED: "true", CAPTION_PROOF_LOCAL_HTTP: "true", CAPTION_PROOF_PROVIDER: "direct",
     PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false",
+    YOUTUBE_INGESTION_ENABLED: "false", PDF_INGESTION_ENABLED: "false", PDF_PROOF_ENABLED: "false",
     VISITOR_COOKIE_SECRET: signingSecret,
     NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "",
     OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "",

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Worker 03c update:** backend implementation proposed READY_FOR_REVIEW on dirty `main` / base `c82d96b`, local build `OpZ8Pxv_gLlUxBYDMRUYr`. See `docs/SOURCE_YOUTUBE_03C.md` and latest `docs/PROJECT_STATE.md`. New shared-slot migration is authored but not applied; no deployment/provider/shared DB change. PM acceptance remains pending; do not start another implementation task.
+
 **Current status:** Task 05a accepted for local/hosted PDF UI; physical iPhone PDF flow subsequently passed by user report (device/version unspecified). Application `1cfbfeb`, Free Render deploy `dep-dbahlpbrjlhs73aj95a0`; PDF import enabled. Fresh PM browser 75/75 and actual HTTPS complete 384-line preview/replacement/removal PASS. All diagnostic/credential gates remain off. Steps 01/04 DONE; Step 05 IN_PROGRESS. Next single worker task: `docs/WORKER_TASK_03C.md`, visitor-owned YouTube source handoff. Keys/quota/grounding/phone gates remain open. No provider spend or paid change. Original planning statements below are historical; resume from `docs/PROJECT_STATE.md`.
 
 This package captures the completed planning work. It contains no application implementation. The last known implementation status is **unverified: none of Steps 01–14 has been demonstrated in this planning session**. Reconcile this with your actual repository before starting.

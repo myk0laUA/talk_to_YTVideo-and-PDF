@@ -1,5 +1,5 @@
 import "server-only";
-import type { SourceFailureCode, SourceResult } from "../../shared/source.ts";
+import type { PdfSourceFailureCode, SourceFailureCode, SourceResult } from "../../shared/source.ts";
 import type { VisitorConfig } from "../proof/config.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import { Admission } from "../proof/admission.ts";
@@ -9,26 +9,29 @@ import { readPdfMultipart } from "../pdf/multipart.ts";
 import type { PdfParser } from "../pdf/worker.ts";
 import { SourceError, requireLive, requireOwned, sourceDto, uploadedRecord, type SourceRepository } from "./service.ts";
 
-const errors: Record<SourceFailureCode, [number, string]> = { ...pdfErrors,
+const errors: Record<PdfSourceFailureCode, [number, string]> = { ...pdfErrors,
   unavailable: [404, "Source unavailable"], storage_unavailable: [503, "Source storage unavailable; try again later"],
   replacement_conflict: [409, "Another upload completed; retrieve the current source or retry the upload"],
 };
 const reply = (status: number, value: SourceResult, cookie?: string) => Response.json(value, { status, headers: {
   "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", ...(cookie ? { "Set-Cookie": cookie } : {}),
 } });
-const fail = (code: SourceFailureCode, cookie?: string) => reply(errors[code][0], { ok: false, error: { code, message: errors[code][1] } }, cookie);
+const fail = (code: SourceFailureCode, cookie?: string) => {
+  const [status, message] = errors[code as PdfSourceFailureCode] ?? errors.storage_unavailable;
+  return reply(status, { ok: false, error: { code, message } }, cookie);
+};
 const validId = (id: string) => /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id);
 
 export function createSourceHandlers(deps: { config: () => VisitorConfig | null; repository: SourceRepository;
-  parse: PdfParser; admission?: Admission; now?: () => number }) {
+  readConfig?: () => VisitorConfig | null; parse: PdfParser; admission?: Admission; now?: () => number }) {
   const admission = deps.admission ?? new Admission(pdfLimits);
   const now = deps.now ?? Date.now;
   const handle = async (request: Request, id?: string): Promise<Response> => {
     let release: (() => void) | undefined;
     try {
-      const config = deps.config();
-      if (!config) return fail("disabled");
       const upload = request.method === "POST" && id === undefined;
+      const config = upload ? deps.config() : (deps.readConfig ?? deps.config)();
+      if (!config) return fail("disabled");
       if (!upload && !["GET", "DELETE"].includes(request.method)) return reply(405, { ok: false, error: { code: "invalid_request", message: "Method not allowed" } });
       if (request.method !== "GET" && (request.headers.get("origin") !== config.origin
         || ![null, "same-origin"].includes(request.headers.get("sec-fetch-site")))) return fail("forbidden");

@@ -2,6 +2,7 @@ import "server-only";
 import type { CaptionFailureCode, CaptionResult } from "../../shared/captions.ts";
 import type { VisitorConfig } from "../proof/config.ts";
 import { Admission } from "../proof/admission.ts";
+import { captionLimits } from "./admission.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import type { CaptionProvider } from "./provider.ts";
 import { normalizeVideo, validLanguage } from "./input.ts";
@@ -21,11 +22,11 @@ export function createCaptionHandler<Config extends VisitorConfig>(deps: {
   config: () => Config | null;
   provider: (input: Parameters<CaptionProvider>[0], config: Config) => ReturnType<CaptionProvider>;
   now?: () => number;
+  admission?: Admission;
 }) {
   const now = deps.now ?? Date.now;
   // All IPs share one untrusted-network bucket; forwarding headers cannot bypass it.
-  // Admission is separate from voice/text and from future stored-source ownership.
-  const admission = new Admission({ visitor: 4, ip: 8, global: 8, lifetime: 16, windowMs: 3600000, concurrent: 1 });
+  const admission = deps.admission ?? new Admission(captionLimits);
   return async (request: Request): Promise<Response> => {
     let release: (() => void) | undefined;
     try {

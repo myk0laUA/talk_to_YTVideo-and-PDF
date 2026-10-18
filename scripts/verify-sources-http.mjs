@@ -44,7 +44,7 @@ for (const scenario of ["disabled", "missing-config", "real", "failures", "expir
     windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"], env: { ...process.env, NODE_OPTIONS: "", NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1",
       DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic", APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: scenario === "missing-config" ? "" : secret, NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_DATABASE_URL: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "", NEXT_PUBLIC_SCRAPECREATORS_API_KEY: "",
-      PDF_INGESTION_ENABLED: scenario === "disabled" ? "false" : "true", PDF_INGESTION_LOCAL_HTTP: "true",
+      YOUTUBE_INGESTION_ENABLED: "false", PDF_INGESTION_ENABLED: scenario === "disabled" ? "false" : "true", PDF_INGESTION_LOCAL_HTTP: "true",
       PDF_PROOF_ENABLED: scenario === "shared-admission" ? "true" : "false", PDF_PROOF_LOCAL_HTTP: "true", PDF_HTTP_SCENARIO: "real",
       PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", CAPTION_PROOF_ENABLED: "false",
       OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "" },
@@ -90,7 +90,7 @@ for (const scenario of ["disabled", "missing-config", "real", "failures", "expir
   const get = (id, visitor) => send(`/api/sources/${id}`, { cookie: visitor.cookie });
   const remove = (id, visitor) => send(`/api/sources/${id}`, { method: "DELETE", cookie: visitor.cookie });
   const seed = async (visitor, overrides = {}) => {
-    const row = { id: randomUUID(), ownerSessionHash: visitor.owner, uploadedPdfOwner: visitor.owner, kind: "PDF", extractionStatus: "READY", canonicalOrigin: null,
+    const row = { id: randomUUID(), ownerSessionHash: visitor.owner, activeSourceOwner: visitor.owner, kind: "PDF", extractionStatus: "READY", canonicalOrigin: null,
       provider: "pdf-parse@2.4.5", title: "Uploaded PDF", fullText: "SYNTHETIC SEED", sections: [{ id: "page-1", pageNumber: 1, text: "SYNTHETIC SEED" }],
       pageCount: 1, characterCount: 14, wordCount: 2, warnings: [], expiresAt: new Date(visitor.expiresAt).toISOString(), ...overrides };
     await command("seed", { row }); return row.id;
@@ -107,7 +107,7 @@ for (const scenario of ["disabled", "missing-config", "real", "failures", "expir
     } else if (scenario === "real") {
       const handshake = await send("/api/sources/pdf", { method: "POST" }); check("visitor before body", handshake, 401, "visitor_required");
       const a = signedVisitor(), b = signedVisitor();
-      const proofId = await seed(a, { uploadedPdfOwner: null, provider: "synthetic-proof-02a-v1" });
+      const proofId = await seed(a, { activeSourceOwner: null, provider: "synthetic-proof-02a-v1" });
       const first = check("upload A committed metadata", await upload("small", a), 201);
       assert.equal(first.fullText, undefined); assert.ok((await command("snapshot")).ids.includes(first.id));
       const other = check("upload B", await upload("small", b), 201);

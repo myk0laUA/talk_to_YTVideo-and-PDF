@@ -1,26 +1,17 @@
 import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
-import { SourceError, UPLOADED_PDF_PARSER, type SourceRepository, type UploadedSource } from "./service.ts";
+import { checkedSource, SourceError, UPLOADED_PDF_PARSER, type SourceRepository, type UploadedSource } from "./service.ts";
 
-const select = { id: true, ownerSessionHash: true, uploadedPdfOwner: true, kind: true, extractionStatus: true,
+const select = { id: true, ownerSessionHash: true, activeSourceOwner: true, kind: true, extractionStatus: true, language: true,
   canonicalOrigin: true, provider: true, title: true, fullText: true, sections: true, pageCount: true,
   characterCount: true, wordCount: true, warnings: true, expiresAt: true } as const;
-const identity = (owner: string) => ({ ownerSessionHash: owner, uploadedPdfOwner: owner,
-  kind: "PDF" as const, extractionStatus: "READY" as const, provider: UPLOADED_PDF_PARSER, canonicalOrigin: null });
+const identity = (owner: string) => ({ ownerSessionHash: owner, activeSourceOwner: owner, extractionStatus: "READY" as const,
+  OR: [{ kind: "PDF" as const, provider: UPLOADED_PDF_PARSER, canonicalOrigin: null },
+    { kind: "YOUTUBE" as const, provider: { in: ["youtube-transcript-plus@2.0.3", "supadata"] }, canonicalOrigin: { not: null } }] });
 const owned = (id: string, owner: string, at: Date) => ({ ...identity(owner), id, expiresAt: { gt: at } });
 type Row = Prisma.SourceGetPayload<{ select: typeof select }>;
 function record(row: Row): UploadedSource {
-  // Stored JSON comes only from the parser on writes; validate its shape on reads too.
-  if (!row.pageCount || !Array.isArray(row.sections) || !Array.isArray(row.warnings)
-    || !row.warnings.every(w => typeof w === "string") || row.sections.length !== row.pageCount
-    || !row.sections.every((s, i) => s && typeof s === "object" && !Array.isArray(s)
-      && s.id === `page-${i + 1}` && s.pageNumber === i + 1 && typeof s.text === "string")
-    || row.fullText !== row.sections.map(s => (s as { text: string }).text).join("\n\n")
-    || row.characterCount !== row.fullText.length) throw new SourceError("storage_unavailable");
-  // Copy explicit fields; never hand a Prisma object or arbitrary JSON properties to a DTO.
-  return { ...row, pageCount: row.pageCount, warnings: row.warnings as string[],
-    sections: row.sections.map(s => { const section = s as { id: string; pageNumber: number; text: string };
-      return { id: section.id, pageNumber: section.pageNumber, text: section.text }; }) };
+  return checkedSource(row);
 }
 function storageError(error: unknown): never {
   if (error instanceof SourceError) throw error;
@@ -41,11 +32,13 @@ export function createSourceRepository(database: () => PrismaClient): SourceRepo
   return {
     replace: (value, guard) => transaction(async tx => {
       guard();
-      // Unique uploadedPdfOwner is the cross-process invariant. Concurrent insert/delete
+      const candidate = checkedSource(value);
+      if (candidate.activeSourceOwner !== candidate.ownerSessionHash) throw new SourceError("storage_unavailable");
+      // Unique activeSourceOwner (legacy SQL column) is the cross-process invariant. Concurrent insert/delete
       // conflicts roll this whole transaction back; no automatic retry of a replacement.
       await tx.source.deleteMany({ where: identity(value.ownerSessionHash) });
       guard();
-      const saved = await tx.source.create({ data: { ...value, kind: "PDF", extractionStatus: "READY" }, select });
+      const saved = await tx.source.create({ data: { ...candidate, kind: candidate.kind as "PDF" | "YOUTUBE", extractionStatus: "READY" }, select });
       guard();
       const result = record(saved);
       if (result.expiresAt.getTime() <= Date.now()) throw new SourceError("visitor_required");

@@ -16,9 +16,11 @@ export class SyntheticSourceDatabase {
   delayReadMs = 0;
   afterCreate?: () => void;
   private queue: Promise<unknown> = Promise.resolve();
-  private matches(row: UploadedSource, where: Where) {
-    return Object.entries(where).every(([key, value]) => key === "expiresAt"
+  private matches(row: UploadedSource, where: Where): boolean {
+    return Object.entries(where).every(([key, value]) => key === "OR" ? (value as Where[]).some(w => this.matches(row, w)) : key === "expiresAt"
       ? row.expiresAt.getTime() > (value as { gt: Date }).gt.getTime()
+      : value && typeof value === "object" && "in" in value ? (value.in as unknown[]).includes(row[key as keyof UploadedSource])
+      : value && typeof value === "object" && "not" in value ? row[key as keyof UploadedSource] !== value.not
       : row[key as keyof UploadedSource] === value);
   }
   asClient(): PrismaClient { return this as unknown as PrismaClient; }
@@ -34,9 +36,8 @@ export class SyntheticSourceDatabase {
         source: {
           deleteMany: async ({ where }: { where: Where }) => {
             this.deletes++;
-            assert.equal(where.ownerSessionHash, where.uploadedPdfOwner);
-            assert.equal(where.kind, "PDF"); assert.equal(where.extractionStatus, "READY");
-            assert.equal(where.provider, "pdf-parse@2.4.5"); assert.equal(where.canonicalOrigin, null);
+            assert.equal(where.ownerSessionHash, where.activeSourceOwner);
+            assert.equal(where.extractionStatus, "READY"); assert.equal((where.OR as unknown[]).length, 2);
             let count = 0;
             for (const [id, row] of staged) if (this.matches(row, where)) { staged.delete(id); count++; }
             return { count };
@@ -45,7 +46,7 @@ export class SyntheticSourceDatabase {
             this.creates++;
             if (this.delayCreateMs) await new Promise(resolve => setTimeout(resolve, this.delayCreateMs));
             if (this.failCreate) { this.failCreate = false; throw new Error("PRIVATE SQL postgresql://hidden"); }
-            if ([...staged.values()].some(row => row.uploadedPdfOwner === data.uploadedPdfOwner)) {
+            if ([...staged.values()].some(row => row.activeSourceOwner === data.activeSourceOwner)) {
               throw Object.assign(new Error("PRIVATE UNIQUE"), { code: "P2002" });
             }
             staged.set(data.id, structuredClone(data)); this.afterCreate?.();
@@ -54,9 +55,8 @@ export class SyntheticSourceDatabase {
           findFirst: async ({ where }: { where: Where }) => {
             this.reads++;
             assert.ok(where.id); assert.ok(where.expiresAt);
-            assert.equal(where.ownerSessionHash, where.uploadedPdfOwner);
-            assert.equal(where.kind, "PDF"); assert.equal(where.extractionStatus, "READY");
-            assert.equal(where.provider, "pdf-parse@2.4.5"); assert.equal(where.canonicalOrigin, null);
+            assert.equal(where.ownerSessionHash, where.activeSourceOwner);
+            assert.equal(where.extractionStatus, "READY"); assert.equal((where.OR as unknown[]).length, 2);
             const row = [...staged.values()].find(row => this.matches(row, where));
             if (this.delayReadMs) await new Promise(resolve => setTimeout(resolve, this.delayReadMs));
             return row ? structuredClone(row) : null;

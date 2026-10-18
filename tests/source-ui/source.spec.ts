@@ -8,7 +8,13 @@ const source = (id = idA): SourceContent => ({ id, title: "Uploaded PDF", kind: 
   sections: [{ id: "page-1", pageNumber: 1, text: "First page\n<script>alert('untrusted')</script>\n" + "longword".repeat(40) }, { id: "page-2", pageNumber: 2, text: "Final marker" }] });
 const reply = (route: Route, status: number, body: unknown) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 const fail = (route: Route, status: number, code: string) => reply(route, status, { ok: false, error: { code, message: "PRIVATE parser SQL internals must not appear" } });
-const choose = (page: Page, name = "Résumé 日本語.pdf", size = 10) => page.locator('input[type="file"]').setInputFiles({ name, mimeType: "application/pdf", buffer: Buffer.alloc(size, "x") });
+// Exercise the actual chooser button: writing a hidden input immediately after navigation
+// can dispatch change before hydration has installed the React listener.
+const choose = async (page: Page, name = "Résumé 日本語.pdf", size = 10) => {
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: /^(Upload a PDF|Replace PDF)$/ }).click();
+  await (await chooser).setFiles({ name, mimeType: "application/pdf", buffer: Buffer.alloc(size, "x") });
+};
 async function load(page: Page) { await choose(page); await expect(page.getByRole("status")).toContainText("PDF text ready"); }
 async function remove(page: Page) { await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove", exact: true }).click(); }
 
