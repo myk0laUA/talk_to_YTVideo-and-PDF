@@ -1,5 +1,7 @@
 # Task 07A context preparation — worker runbook
 
+**PM07A decision:** accepted for offline preparation; application7095457 published, not deployed. Fresh79context/472unit checks PASS,11manifest hashes match. No provider readiness/grounding claim; exact evidence in PROJECT_STATE. Next07B acknowledged context priming. Worker report below remains historical.
+
 Proposed READY_FOR_REVIEW for the bounded offline task. Full Step 07, provider grounding and voice/text transport acceptance remain open. PM owns acceptance and sequencing.
 
 ## Contract and authorization
