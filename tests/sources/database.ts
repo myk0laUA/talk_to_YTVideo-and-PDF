@@ -12,6 +12,7 @@ export class SyntheticSourceDatabase {
   cacheReads = 0;
   cacheWrites = 0;
   failCacheRead = false;
+  delayCacheReadMs = 0;
   failCacheWrite = false;
   transactions = 0;
   deletes = 0;
@@ -72,6 +73,7 @@ export class SyntheticSourceDatabase {
         transcriptCache: {
           findUnique: async ({ where }: { where: { videoId_languagePreference_mode: unknown } }) => {
             this.cacheReads++;
+            if (this.delayCacheReadMs) await new Promise(resolve => setTimeout(resolve, this.delayCacheReadMs));
             if (this.failCacheRead) { this.failCacheRead = false; throw new Error("PRIVATE cache read"); }
             return structuredClone(cache.get(JSON.stringify(where.videoId_languagePreference_mode)) ?? null);
           },

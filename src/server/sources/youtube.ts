@@ -6,7 +6,11 @@ import type { CaptionProvider } from "../captions/provider.ts";
 import { normalizeVideo, validLanguage } from "../captions/input.ts";
 import { readBounded } from "../captions/bounded-body.ts";
 import { Admission } from "../proof/admission.ts";
-import { captionLimits } from "../captions/admission.ts";
+import { CaptionAdmission, captionLimits } from "../captions/admission.ts";
+import { CaptionCoordinator, captionJobKey } from "../captions/coordinator.ts";
+import { validatedTranscript } from "../captions/validated.ts";
+import { captionBounds } from "../captions/provider.ts";
+import { supadataBounds } from "../captions/supadata.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import type { SourceFailureCode, SourceResult } from "../../shared/source.ts";
 import { captionRecord, requireLive, requireOwned, SourceError, sourceDto, type SourceRepository } from "./service.ts";
@@ -37,8 +41,9 @@ const fail = (code: SourceFailureCode, cookie?: string) => reply(errors[code][0]
 
 export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceConfig | null; repository: SourceRepository; cache: CaptionCache;
   provider: (input: Parameters<CaptionProvider>[0], config: CaptionConfig) => ReturnType<CaptionProvider>;
-  admission?: Admission; now?: () => number }) {
-  const admission = deps.admission ?? new Admission(captionLimits);
+  admission?: Admission; coordinator?: CaptionCoordinator; now?: () => number }) {
+  const admission = deps.admission ?? new CaptionAdmission(captionLimits);
+  const coordinator = deps.coordinator ?? new CaptionCoordinator();
   const now = deps.now ?? Date.now;
   return async (request: Request): Promise<Response> => {
     let release: (() => void) | undefined;
@@ -51,7 +56,10 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
       if (!visitor) return fail("visitor_required", visitorCookie(createVisitor(config, now()), config, now()));
       const guard = () => requireLive(visitor, request.signal, now());
       guard();
-      release = admission.acquire(visitor.owner, "unverified-network", now()) ?? undefined;
+      // Next may bundle the proof route separately; do not rely on cross-bundle instanceof.
+      const sharedAdmission = "acquireImport" in admission ? admission as CaptionAdmission : null;
+      const lease = sharedAdmission?.acquireImport(visitor.owner, "unverified-network", now());
+      release = sharedAdmission ? lease?.release : admission.acquire(visitor.owner, "unverified-network", now()) ?? undefined;
       if (!release) return fail("limit_reached");
       if (request.headers.get("content-type")?.split(";", 1)[0].trim() !== "application/json") return fail("invalid_request");
       const length = request.headers.get("content-length");
@@ -67,26 +75,40 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
       const fields = value as Record<string, unknown>;
       const video = normalizeVideo(fields.video);
       if (!video || ("language" in fields && !validLanguage(fields.language))) return fail("invalid_input");
-      const key = captionCacheKey(video.videoId, fields.language as string | undefined);
-      let transcript = config.cacheBypass ? null : await deps.cache.get(key, new Date(now()));
+      const language = fields.language as string | undefined;
+      const key = captionCacheKey(video.videoId, language);
+      const jobKey = captionJobKey(key, config);
+      if (lease && !lease.bind(config.cacheBypass ? Symbol() : jobKey)) return fail("limit_reached");
+      const work = async (signal: AbortSignal) => {
+        const live = () => { if (signal.aborted) throw signal.reason instanceof SourceError ? signal.reason : new SourceError("cancelled"); };
+        let transcript = config.cacheBypass ? null : await deps.cache.get(key, new Date(now()));
+        live();
+        const hit = transcript !== null;
+        if (!transcript) {
+          const result = await deps.provider({ videoId: video.videoId, ...(language ? { language } : {}), signal }, config);
+          live();
+          if (!result.ok) throw new SourceError(result.error.code);
+          transcript = result.transcript;
+        }
+        try {
+          transcript = validatedTranscript(transcript);
+          if (transcript.canonicalUrl !== video.canonicalUrl
+            || (key.languagePreference && transcript.language.toLowerCase() !== key.languagePreference)
+            || (!hit && transcript.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) throw new Error();
+        } catch { throw new SourceError("malformed"); }
+        live();
+        if (!hit && !config.cacheBypass) await deps.cache.put(key, transcript, new Date(now()));
+        live();
+        // The registry holds public data only. Neither a caller nor an adapter can mutate it.
+        for (const segment of transcript.segments) Object.freeze(segment);
+        Object.freeze(transcript.segments);
+        return Object.freeze(transcript);
+      };
+      // Operator bypass is structurally uncoalesced, just like the proof handler.
+      const transcript = config.cacheBypass ? await work(request.signal) : await coordinator.run(jobKey, request.signal,
+        config.provider === "direct" ? captionBounds.deadlineMs : supadataBounds.deadlineMs, work);
       guard();
-      const hit = transcript !== null;
-      if (!transcript) {
-        const result = await deps.provider({ videoId: video.videoId, ...(fields.language ? { language: fields.language as string } : {}), signal: request.signal }, config);
-        guard();
-        if (!result.ok) return fail(result.error.code);
-        transcript = result.transcript;
-      }
-      let candidate;
-      try {
-        candidate = captionRecord(transcript, visitor);
-        if (candidate.canonicalOrigin !== video.canonicalUrl
-          || (key.languagePreference && candidate.language?.toLowerCase() !== key.languagePreference)
-          || (!hit && candidate.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) return fail("malformed");
-      } catch { return fail("malformed"); }
-      guard();
-      if (!hit && !config.cacheBypass) await deps.cache.put(key, transcript, new Date(now()));
-      guard();
+      const candidate = captionRecord(transcript, visitor);
       const saved = await deps.repository.replace(candidate, guard);
       guard(); requireOwned(saved, visitor, now());
       if (saved.id !== candidate.id) throw new SourceError("storage_unavailable");

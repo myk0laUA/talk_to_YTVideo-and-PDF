@@ -21,7 +21,8 @@ globalThis.fetch = async (input, init) => {
   process.send?.({ captionUpstream: stage });
   if (mode === "hold") await new Promise((resolve, reject) => {
     const finish = () => { waiting.delete(finish); init.signal.removeEventListener("abort", abort); resolve(); };
-    const abort = () => { waiting.delete(finish); reject(new Error("Synthetic request cancelled")); };
+    const abort = () => { waiting.delete(finish); init.signal.removeEventListener("abort", abort);
+      process.send?.({ captionAbort: stage }); reject(new Error("Synthetic request cancelled")); };
     waiting.add(finish); init.signal.addEventListener("abort", abort, { once: true });
     if (init.signal.aborted) abort();
   });

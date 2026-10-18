@@ -2,7 +2,7 @@ import "server-only";
 import type { CaptionFailureCode, CaptionResult } from "../../shared/captions.ts";
 import type { VisitorConfig } from "../proof/config.ts";
 import { Admission } from "../proof/admission.ts";
-import { captionLimits } from "./admission.ts";
+import { CaptionAdmission, captionLimits } from "./admission.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import type { CaptionProvider } from "./provider.ts";
 import { normalizeVideo, validLanguage } from "./input.ts";
@@ -26,7 +26,7 @@ export function createCaptionHandler<Config extends VisitorConfig>(deps: {
 }) {
   const now = deps.now ?? Date.now;
   // All IPs share one untrusted-network bucket; forwarding headers cannot bypass it.
-  const admission = deps.admission ?? new Admission(captionLimits);
+  const admission = deps.admission ?? new CaptionAdmission(captionLimits);
   return async (request: Request): Promise<Response> => {
     let release: (() => void) | undefined;
     try {
