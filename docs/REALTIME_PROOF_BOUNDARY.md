@@ -1,6 +1,6 @@
 # Task 02a server boundary
 
-Local implementation only; proposed READY_FOR_REVIEW. Step 02 still requires the separate WebRTC client and live spoken-answer/Stop proof. No live database or OpenAI request is authorized by this task. The public shell remains disabled.
+PM accepted the local implementation/mocked verification on 18 October 2026 at commit `eae9444e520707a427602b88b535feb2b2135686`: 55 tests and four production smoke checks pass. Real database ownership/provider/deployed checks remain NOT_RUN. Step 02 still requires the separate WebRTC client and live spoken-answer/Stop proof. No live database or OpenAI request is authorized for the worker by this task. The public shell remains disabled. Next single brief: `WORKER_TASK_02B.md`.
 
 ## Configuration
 
