@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { mkdtemp, mkdir, readFile, rm, writeFile, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { prepareManifest } from "../../scripts/lib/probe-manifest.ts";
 import { createManifest, databaseUrl, fixture, identity, parseManifest, perform, ProbeError, runProbe, TTL_MS } from "../../scripts/lib/db-persistence.ts";
 import type { Category, Identity, ProbeDatabase } from "../../scripts/lib/db-persistence.ts";
@@ -40,13 +40,16 @@ test("real private manifest I/O refuses tracked paths, overwrites and invalid fi
 });
 
 // All persistence tests use this in-memory boundary, NOT a live PostgreSQL service.
-function mockDatabase() {
-  const rows = new Map<string, Record<string, unknown>>();
+function mockDatabase(rows = new Map<string, Record<string, unknown>>()) {
   const deletes: Identity[] = [];
   let closed = 0;
   let writes = 0;
   const db: ProbeDatabase = {
-    async create(data) { writes++; rows.set(data.id, structuredClone(data)); },
+    async create(data) {
+      if (rows.has(data.id)) throw new Error(`duplicate row private owner=${data.ownerSessionHash}`);
+      writes++;
+      rows.set(data.id, structuredClone(data));
+    },
     async find(id) { return rows.get(id) ?? null; },
     async deleteFixture(where) {
       deletes.push(where);
@@ -201,20 +204,24 @@ test("mocked late read after deadline cannot start a cleanup deletion", async ()
   assert.equal(mock.closed(), 1);
 });
 
-test("real CLI help is credential-free and all modes reject invalid config without output leaks", () => {
+test("real CLI help is credential-free and all modes reject invalid config without output leaks", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "td-cli-config-test-"));
+  const script = resolve("scripts/verify-db-persistence.ts");
   const env = { ...process.env, DATABASE_URL: "private-invalid-config-marker", DOTENV_CONFIG_QUIET: "true" };
   const cli = (args: string[]) => spawnSync(process.execPath,
-    ["--conditions=react-server", "scripts/verify-db-persistence.ts", ...args], { env, encoding: "utf8", timeout: 10_000 });
-  const help = cli(["--help"]);
-  assert.equal(help.status, 0, help.stderr);
-  assert.match(help.stdout, /TTL: exactly 2 hours/);
-  for (const mode of ["write", "verify", "cleanup"]) {
-    const result = cli([mode, "--manifest", process.cwd() + "/unused.json"]);
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /CONFIGURATION/);
-    assert.ok(!(result.stdout + result.stderr).includes("private-invalid-config-marker"));
-  }
-  assert.equal(cli([]).status, 1);
+    ["--conditions=react-server", script, ...args], { cwd: directory, env, encoding: "utf8", timeout: 10_000 });
+  try {
+    const help = cli(["--help"]);
+    assert.equal(help.status, 0, help.stderr);
+    assert.match(help.stdout, /TTL: exactly 2 hours/);
+    for (const mode of ["write", "verify", "cleanup"]) {
+      const result = cli([mode, "--manifest", join(directory, "unused.json")]);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /CONFIGURATION/);
+      assert.ok(!(result.stdout + result.stderr).includes("private-invalid-config-marker"));
+    }
+    assert.equal(cli([]).status, 1);
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
 test("real Node operator condition loads existing generated Prisma adapter without credentials", () => {
@@ -222,4 +229,102 @@ test("real Node operator condition loads existing generated Prisma adapter witho
     ["--conditions=react-server", "--input-type=module", "-e", "await import('./scripts/lib/probe-database.ts')"],
     { encoding: "utf8", timeout: 10_000 });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("prepared file is read unchanged for hosted write, validate, verify and cleanup", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "td-prepared-test-"));
+  const root = join(directory, "repository");
+  const path = join(directory, "handle.json");
+  try {
+    await mkdir(root);
+    await assert.rejects(prepareManifest("prepare", join(root, "handle.json"), root), rejects("MANIFEST"));
+    const m = await prepareManifest("prepare", path, root);
+    const before = await readFile(path, "utf8");
+    await assert.rejects(prepareManifest("prepare", path, root), rejects("MANIFEST"));
+    for (const mode of ["write-existing", "validate", "verify", "cleanup"] as const) {
+      assert.deepEqual(await prepareManifest(mode, path, root), m);
+      assert.equal(await readFile(path, "utf8"), before);
+      await assert.rejects(prepareManifest(mode, join(directory, "missing.json"), root), rejects("MANIFEST"));
+      await assert.rejects(prepareManifest(mode, "relative.json", root), rejects("MANIFEST"));
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test("mocked retained-manifest write rejects duplicates; independent readers never recreate missing data", async () => {
+  const manifest = createManifest();
+  const writer = mockDatabase();
+  const unrelated = createManifest();
+  writer.rows.set(unrelated.id, fixture(unrelated));
+  assert.equal(await runProbe("write-existing", manifest, () => writer.db), "WRITTEN");
+  await assert.rejects(runProbe("write-existing", manifest, () => writer.db), rejects("DATABASE"));
+  assert.equal(writer.writes(), 1);
+  assert.equal(writer.closed(), 2);
+  // A distinct boundary/handle reads only a copy of the persisted mock state.
+  // This is NOT a real process restart or hosted PostgreSQL evidence.
+  const reader = mockDatabase(structuredClone(writer.rows));
+  const retained = parseManifest(JSON.parse(JSON.stringify(manifest)));
+  for (let start = 0; start < 2; start++) {
+    assert.equal(await runProbe("verify", retained, () => reader.db), "VERIFIED");
+    assert.equal(reader.writes(), 0);
+  }
+  assert.equal(await runProbe("cleanup", retained, () => reader.db), "REMOVED");
+  for (let start = 0; start < 2; start++) {
+    await assert.rejects(runProbe("verify", retained, () => reader.db), rejects("MISSING"));
+  }
+  assert.deepEqual(reader.rows.get(unrelated.id), fixture(unrelated));
+  assert.equal(reader.writes(), 0);
+});
+
+test("mocked hosted write rejects expiry and sanitizes operational errors with pool closure", async () => {
+  const mock = mockDatabase();
+  const expired = createManifest(new Date(Date.now() - TTL_MS - 1000));
+  await assert.rejects(runProbe("write-existing", expired, () => mock.db), rejects("EXPIRED"));
+  assert.equal(mock.writes(), 0);
+  assert.equal(mock.closed(), 1);
+  mock.db.create = async () => { throw new Error("private connection / owner / row marker"); };
+  await assert.rejects(runProbe("write-existing", createManifest(), () => mock.db), rejects("DATABASE"));
+  assert.equal(mock.closed(), 2);
+});
+
+test("real CLI prepare/validate need no credentials; hosted write rejects invalid inputs before config", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "td-cli-prepared-test-"));
+  const path = join(directory, "handle.json");
+  const script = resolve("scripts/verify-db-persistence.ts");
+  // Isolated cwd contains no .env. Deliberately invalid configuration is never a live target.
+  const env = { ...process.env, DATABASE_URL: "private-invalid-config-marker" };
+  const cli = (mode: string, manifest = path) => spawnSync(process.execPath,
+    ["--conditions=react-server", script, mode, "--manifest", manifest],
+    { cwd: directory, env, encoding: "utf8", timeout: 10_000 });
+  const check = (result: ReturnType<typeof cli>, expected: string, code: number, secret = "") => {
+    assert.equal(result.status, code);
+    const output = result.stdout + result.stderr;
+    assert.ok(output.includes(expected));
+    assert.ok(!output.includes("private-invalid-config-marker"));
+    if (secret) assert.ok(!output.includes(secret));
+  };
+  try {
+    check(cli("prepare"), "PREPARED", 0);
+    const before = await readFile(path, "utf8");
+    const m = parseManifest(JSON.parse(before));
+    check(cli("prepare"), "MANIFEST", 1, m.ownerSessionHash);
+    check(cli("validate"), "VALIDATED", 0, m.ownerSessionHash);
+    check(cli("write-existing"), "CONFIGURATION", 1, m.ownerSessionHash);
+    assert.equal(await readFile(path, "utf8"), before);
+    for (const mode of ["validate", "write-existing"]) {
+      check(cli(mode, join(directory, "missing.json")), "MANIFEST", 1);
+      const expired = createManifest(new Date(Date.now() - TTL_MS - 1000));
+      await writeFile(path, JSON.stringify(expired));
+      check(cli(mode), "EXPIRED", 1, expired.ownerSessionHash);
+      await writeFile(path, JSON.stringify({ ...m, ownerSessionHash: "private-malformed-owner-marker" }));
+      check(cli(mode), "MANIFEST", 1, "private-malformed-owner-marker");
+      await writeFile(path, "x".repeat(4097));
+      check(cli(mode), "MANIFEST", 1);
+      if (process.platform !== "win32") {
+        await writeFile(path, before);
+        await chmod(path, 0o644);
+        check(cli(mode), "MANIFEST", 1, m.ownerSessionHash);
+        await chmod(path, 0o600);
+      }
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

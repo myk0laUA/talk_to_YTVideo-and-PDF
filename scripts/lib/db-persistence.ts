@@ -4,7 +4,8 @@ import { isDeepStrictEqual } from "node:util";
 import { parseServerEnvironment, requireDatabaseUrl } from "../../src/server/env-schema.ts";
 
 export const TTL_MS = 2 * 60 * 60 * 1000;
-export type Mode = "write" | "verify" | "cleanup";
+export type Mode = "write" | "write-existing" | "verify" | "cleanup";
+export type ProbeCommand = Mode | "prepare" | "validate";
 export type Category = "USAGE" | "CONFIGURATION" | "MANIFEST" | "DATABASE" | "TIMEOUT" | "MISSING" | "EXPIRED" | "ALTERED" | "IDENTITY_MISMATCH";
 export class ProbeError extends Error {
   readonly category: Category;
@@ -29,6 +30,10 @@ export function createManifest(now = new Date()): Manifest {
     ownerSessionHash: randomBytes(32).toString("hex"),
     createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + TTL_MS).toISOString(),
   };
+}
+
+export function requireUnexpiredManifest(m: Manifest, now = new Date()) {
+  if (Date.parse(m.expiresAt) <= now.getTime()) throw new ProbeError("EXPIRED");
 }
 
 export function parseManifest(value: unknown): Manifest {
@@ -95,8 +100,8 @@ export interface ProbeDatabase {
 
 export async function perform(mode: Mode, m: Manifest, db: ProbeDatabase, now = () => new Date(), signal?: AbortSignal) {
   if (signal?.aborted) throw new ProbeError("TIMEOUT");
-  if (mode !== "cleanup" && Date.parse(m.expiresAt) <= now().getTime()) throw new ProbeError("EXPIRED");
-  if (mode === "write") {
+  if (mode !== "cleanup") requireUnexpiredManifest(m, now());
+  if (mode === "write" || mode === "write-existing") {
     await db.create(fixture(m));
     return "WRITTEN";
   }
