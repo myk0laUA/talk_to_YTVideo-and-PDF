@@ -85,3 +85,11 @@ Port **3103** must be free. The explicit flag authorizes real unauthenticated pu
 Changed existing files: package/lock, README proof note, `.env.example`, shared visitor configuration/type signatures, disabled smoke and isolated browser configs. New files: caption route/server/shared modules, `tests/unit/captions.test.ts`, the explicit live harness and this handoff. `docs/PROJECT_STATE.md` retains earlier evidence and adds this result.
 
 **PM next:** review the dirty change/hash manifest and evidence; then decide the separate hosted direct trial (same adapter/route, real HTTPS origin, managed credentials off, no caches, 30–45 minute budget). Hosted direct/managed retrieval/source persistence/source preview/grounding/physical audio remain NOT_RUN. Normal imports remain unavailable. No architecture reserve is needed from this local result. Do not mark Step 03 DONE or advance another task from this handoff.
+
+## PM review and hosted result — supersedes the handoff status above
+
+18 October 2026: **03a accepted**, application `bf30c6f5c78bd9edcb97e3ccf7bd94d635feb2e0`. All 23 hashes matched; PM fresh unit suite 155/155 exit 0. Two local real-caption results and independent comparisons accepted. Actual Free Render deployment `dep-dba6go3vi4us73a9cpfg` used this reviewed commit, temporarily enabled only caption proof, and had no managed provider/cache.
+
+At 06:36:08–06:36:12 UTC, `Ks-_Mh1QhMc` returned HTTP 502/`blocked` at player stage requiring sign-in (1678ms); `dQw4w9WgXcQ` returned HTTP 200, 61 segments/2165 characters, local counts and three excerpts matching (1472ms). Both no-store. One free hosted direct success is proved; reliability is mixed. Do not infer an IP block beyond the observed sign-in response or enable production direct-first selection. No retries, proxy, cookie export or paid requests.
+
+Normal startup restored in `dep-dba6hr7btjjs73e03j10`, Live on the same commit. At 06:37:43 UTC, public root 200 and caption POST 503/disabled/no-store confirmed. Evidence under `artifacts/local/03a/`: `pm-hosted.mjs`, `pm-hosted-results.json`, `pm-restored.json`, `pm-render-restored.png`. Detailed PM ledger in `PROJECT_STATE.md` is canonical. Managed captions, source persistence/preview/grounding and live audio remain NOT_RUN. Next single worker task is `WORKER_TASK_03B.md`; Step 03 stays IN_PROGRESS.

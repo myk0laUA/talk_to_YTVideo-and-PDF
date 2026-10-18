@@ -2,6 +2,8 @@
 
 These are engineering acceptance checks derived from the supplied assessment and the user's higher quality/deployed-YouTube targets. They are not claims that tests already ran. See `IMPLEMENTATION_PLAN.md` for architecture, source citations and Step 01–14 dependencies.
 
+**Latest caption evidence, 18 October 2026:** 03a accepted on `bf30c6f`. Unit 155/155, disabled smoke/voice/text browser suites 10/10 each; two real local direct fixtures independently checked. Actual Free Render direct trial returned one matching transcript (`dQw4w9WgXcQ`) and one player sign-in block (`Ks-_Mh1QhMc`), with cache/managed providers absent. This is a mixed hosted result, not full ingestion acceptance. Normal proof-disabled startup restored and verified. See `CAPTION_PROOF_03A.md` and `PROJECT_STATE.md`; ignored `artifacts/local/03a/pm-hosted-results.json` records exact times/outcomes. Task 03b is mocked-only managed adapter work; live managed/grounding and OpenAI/physical audio remain separate unrun gates.
+
 ## What counts as evidence
 
 Use PASS, FAIL, NOT_RUN or BLOCKED for each check. Record the date, task ID, branch/commit or dirty build identity, environment, fixture, actual provider, browser/device, expected result, observed result and artifact path. Never include keys, temporary credentials, database passwords, private source bodies or raw microphone audio in reports.
