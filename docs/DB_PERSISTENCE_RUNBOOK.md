@@ -1,5 +1,7 @@
 # Task 01a — operator persistence acceptance runbook
 
+**PM acceptance, 18 October 2026:** This procedure passed on deployed `c535122`: hosted write, verify-only startup, two actual dashboard restarts, exact verification, fixture-only cleanup, expected MISSING/1, and full normal-start/Secret-File restoration. Step 01 is DONE. See the PM acceptance table in `PROJECT_STATE.md` for exact times, deployments, instance markers and evidence. Earlier NOT_RUN statements below describe the worker handoff; they are superseded by that PM execution record. Do not rerun or recreate its cleaned-up fixture.
+
 **18 October 2026 correction: Free hosting only.** The hosted procedure below replaces the original SSH proposal with a retained Render Secret File and temporary explicit start commands. No SSH, paid jobs, upgrades or new services are needed or authorized. Local probe commands remain intact. This correction is prepared for PM review; actual hosted restart persistence remains NOT_RUN.
 
 **Live update, 18 October:** Free Render web service and PostgreSQL exist in Ohio. The committed migration/status, separate-local-process live probe, and user-reported iPhone shell access passed; the PM removed the original fixture. Details are in `PROJECT_STATE.md` and ignored `artifacts/local/render-2026-10-18/`. Hosted runtime restart proof remains **NOT_RUN**. This tool does not establish browser authorization, application TTL cleanup, ingestion or voice. Step 01 remains IN_PROGRESS; Steps 02–14 remain PENDING.

@@ -1,6 +1,6 @@
 # Talk to a Document — repository handoff
 
-**Current status:** The paragraph below describes the original planning package. Bootstrap and the local operator probe are accepted; the Free Render HTTPS shell and PostgreSQL are live, migrated, and checked with a local live database probe. Physical iPhone shell access passes by user report and screenshot. Step 01 remains IN_PROGRESS for hosted restart persistence. Resume from `docs/PROJECT_STATE.md`; the single current worker correction is `docs/WORKER_TASK_01A_FREE_HOST.md`.
+**Current status:** The paragraph below describes the original planning package. Bootstrap and the local operator probe are accepted; the Free Render HTTPS shell and PostgreSQL are live, migrated, and checked with a local live database probe. Physical iPhone shell access passes by user report and screenshot. Step 01 is DONE: exact source state survived two actual hosted restarts; fixture cleanup and normal startup restoration passed. Resume from `docs/PROJECT_STATE.md`; the single next worker task is `docs/WORKER_TASK_02A.md`. API funding/key are pending; use mocked provider tests.
 
 This package captures the completed planning work. It contains no application implementation. The last known implementation status is **unverified: none of Steps 01–14 has been demonstrated in this planning session**. Reconcile this with your actual repository before starting.
 
