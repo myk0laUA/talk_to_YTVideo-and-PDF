@@ -2,7 +2,7 @@
 
 These are engineering acceptance checks derived from the supplied assessment and the user's higher quality/deployed-YouTube targets. They are not claims that tests already ran. See `IMPLEMENTATION_PLAN.md` for architecture, source citations and Step 01–14 dependencies.
 
-**Latest evidence, 18 October 2026:** 03b accepted locally on `01bfe8e`: PM unit 226/226, worker eight mocked caption HTTP scenarios/31 checks and smoke/voice/text 10/10 each. Live managed retrieval still NOT_RUN; 03b is not deployed. Prior 03a evidence remains two real local direct successes and mixed Free Render results (one matching transcript, one player sign-in block), with public `bf30c6f` proof gates disabled. Next 04a establishes real local PDF upload/extraction; hosted PDF acceptance stays separate. See `CAPTION_PROOF_03A.md`, `CAPTION_PROOF_03B.md` and `PROJECT_STATE.md`. Grounding, OpenAI and physical audio remain unrun gates.
+**Latest evidence, 18 October 2026:** 04a accepted on deployed `b25d944`; PM unit 250/250, worker smoke 12/12, voice/text 10/10 each, caption mocked HTTP eight scenarios/31 checks. Actual Free Render exact 25 MB accepted fixed-length and chunked, one-byte-over 413, full 384-line/12-page coverage PASS. Text-heavy stress fixture hit the 15-second deadline (local text ceiling expectation differs); stalled upload ended ECONNRESET, with subsequent upload recovery PASS. Hosted server-side abort propagation and memory usage remain unmeasured; no paid metrics upgrade. Final normal deployment `dep-dba7a17btjjs73e2s98g`: shell 200, all four proof POSTs 503/no-store at 07:29:26 UTC. See `PDF_PROOF_04A.md` and `PROJECT_STATE.md`; next 04b adds owned Source storage. Live managed captions/OpenAI/phone/grounding remain open.
 
 ## What counts as evidence
 
