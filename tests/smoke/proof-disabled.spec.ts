@@ -1,5 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+test("owned PDF routes are disabled with no-store", async ({ request }) => {
+  for (const [method, path] of [["POST", "/api/sources/pdf"], ["GET", "/api/sources/00000000-0000-4000-8000-000000000001"], ["DELETE", "/api/sources/00000000-0000-4000-8000-000000000001"]]) {
+    const response = await request.fetch(path, { method, headers: { origin: "http://127.0.0.1:3100" } });
+    expect(response.status()).toBe(503); expect(response.headers()["cache-control"]).toBe("no-store");
+    expect(response.headers()["set-cookie"]).toBeUndefined();
+    expect(await response.json()).toEqual({ ok: false, error: { code: "disabled", message: "Feature unavailable" } });
+  }
+});
+
 test("PDF proof is disabled in the production app", async ({ request }) => {
   const response = await request.post("/api/proof-pdf", { headers: { origin: "http://127.0.0.1:3100" } });
   expect(response.status()).toBe(503);

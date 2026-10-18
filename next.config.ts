@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@napi-rs/canvas"],
   outputFileTracingIncludes: {
+    "/api/sources/pdf": ["./src/server/pdf/parse-worker.mjs", "./node_modules/pdf-parse/dist/**/*", "./node_modules/pdfjs-dist/legacy/build/**/*", "./node_modules/@napi-rs/canvas*/**/*"],
     "/api/proof-pdf": ["./src/server/pdf/parse-worker.mjs", "./node_modules/pdf-parse/dist/**/*", "./node_modules/pdfjs-dist/legacy/build/**/*", "./node_modules/@napi-rs/canvas*/**/*"],
   },
 };

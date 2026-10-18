@@ -31,7 +31,7 @@ for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "
       CAPTION_PROOF_PROVIDER: scenario === "direct" ? "direct" : scenario === "invalid-provider" ? "auto" : "supadata",
       CAPTION_MOCK_SCENARIO: scenario, SUPADATA_API_KEY: scenario === "missing-key" ? "" : "synthetic-03b-http-key",
       VISITOR_COOKIE_SECRET: randomBytes(32).toString("hex"), NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "",
-      PDF_PROOF_ENABLED: "false", PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", OPENAI_API_KEY: "", SCRAPECREATORS_API_KEY: "",
+      PDF_INGESTION_ENABLED: "false", PDF_PROOF_ENABLED: "false", PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", OPENAI_API_KEY: "", SCRAPECREATORS_API_KEY: "",
       DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic?connect_timeout=1",
     },
   });

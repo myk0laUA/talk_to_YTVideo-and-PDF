@@ -21,6 +21,8 @@ enum ExtractionStatus {
 model Source {
   id               String           @id @default(uuid()) @db.Uuid
   ownerSessionHash String           @db.VarChar(64)
+  // Only genuine uploaded PDFs occupy this slot; synthetic proof rows leave it null.
+  uploadedPdfOwner String?          @unique @db.VarChar(64)
   kind             SourceKind
   canonicalOrigin  String?
   title            String
