@@ -15,6 +15,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "prisma generate && next typegen && tsc --noEmit",
     "test": "node --conditions=react-server --test tests/unit/*.test.ts",
+    "test:context": "node --conditions=react-server --test tests/unit/context.test.ts",
     "test:smoke": "playwright test",
     "test:text": "playwright test --config playwright.text.config.ts",
     "test:voice": "playwright test --config playwright.voice.config.ts",
