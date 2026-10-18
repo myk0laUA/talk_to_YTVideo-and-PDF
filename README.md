@@ -2,7 +2,7 @@
 
 A mobile web workspace for exploring one PDF or YouTube video through voice and text. **Current implementation: application shell and operator database probe.** Imports, preview, visitor authorization, conversation, and application cleanup are not implemented. Step 01 remains in progress; the PM coordinates the remaining work.
 
-**Public shell:** [talk-to-document-4pre.onrender.com](https://talk-to-document-4pre.onrender.com/), deployed on Render Free in Ohio. Free PostgreSQL is provisioned and migrated; the live local operator probe passes. Hosted restart persistence and physical-phone access remain unverified. Free hosting sleeps when idle; the database dashboard lists expiry on November 16, 2026. See `docs/PROJECT_STATE.md` for exact deployment identities and limitations.
+**Public shell:** [talk-to-document-4pre.onrender.com](https://talk-to-document-4pre.onrender.com/), deployed on Render Free in Ohio. Free PostgreSQL is provisioned and migrated; the live local operator probe and physical iPhone shell-access check pass. Hosted restart persistence remains unverified. Free hosting sleeps when idle; the database dashboard lists expiry on November 16, 2026. See `docs/PROJECT_STATE.md` for exact deployment identities and limitations.
 
 ## Local setup
 
@@ -75,7 +75,7 @@ npm run db:status
 
 `db:deploy` applies committed migrations. For future schema edits on a development database, use `npm run db:migrate -- --name descriptive_name`; Prisma's development migration workflow may require shadow-database privileges. Do not point it at the production database. `npm run db:generate` regenerates types after edits.
 
-The operator-only persistence probe is available with `npm run db:probe -- --help`. Its three modes are `npm run db:probe -- write --manifest <absolute-private-file>`, `verify --manifest <same-file>`, and `cleanup --manifest <same-file>`. Handles must be outside the checkout, protected as private files, and retained off-host across a service restart. The fixed TTL is two hours; verification never writes or extends it. Follow the [exact local/hosted persistence runbook](docs/DB_PERSISTENCE_RUNBOOK.md), including target confirmation, secure handle transfer, restart evidence and fixture cleanup. Live database/hosted acceptance remains NOT_RUN. This command is never invoked automatically and does not implement application cleanup or browser authorization.
+The operator-only persistence probe is available with `npm run db:probe -- --help`. Its three modes are `npm run db:probe -- write --manifest <absolute-private-file>`, `verify --manifest <same-file>`, and `cleanup --manifest <same-file>`. Handles must be outside the checkout, protected as private files, and retained off-host across a service restart. The fixed TTL is two hours; verification never writes or extends it. Follow the [exact local/hosted persistence runbook](docs/DB_PERSISTENCE_RUNBOOK.md), including target confirmation, secure handle transfer, restart evidence and fixture cleanup. The local live database probe passes; hosted runtime restart acceptance remains NOT_RUN. The Free-host correction in `docs/WORKER_TASK_01A_FREE_HOST.md` supersedes the SSH procedure. This command is never invoked automatically and does not implement application cleanup or browser authorization.
 
 `Source` stores temporary source text/sections, owner-session hashes, extraction metadata and explicit expiry. `TranscriptCache` stores only validated public captions under a unique video/language-preference/mode key. TTL enforcement, deletion, visitor sessions, and access checks still need implementation; database indexes alone do not enforce them. Conversation turns and audio are not stored.
 
@@ -94,6 +94,6 @@ The operator-only persistence probe is available with `npm run db:probe -- --hel
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md): requirements and original Step 01–14 acceptance checks.
 - [Bootstrap decisions](docs/BOOTSTRAP.md): verified compatibility sources, tool versions and local evidence.
 
-Next PM gate: verify a temporary source written by the deployed runtime survives an actual Free service restart within its TTL, and verify HTTPS shell access on a physical phone. The worker's Free-host correction prepares that runtime execution method. Do not mark Step 01 done until both acceptance results exist.
+Next PM gate: verify a temporary source written by the deployed runtime survives an actual Free service restart within its TTL. Physical iPhone HTTPS shell access is accepted. The worker's Free-host correction prepares the runtime execution method. Do not mark Step 01 done until the hosted restart evidence exists.
 
 AI assistance was used for scaffolding, configuration, deployment, documentation and verification. The recorded shell/database checks do not establish ingestion or conversation capability.

@@ -1,14 +1,14 @@
 # Project state — Talk to a Document
 
-**Snapshot:** 18 October 2026, Toronto time. Free HTTPS shell and Free PostgreSQL are provisioned in Ohio; the committed migration and local live database probe pass. Hosted restart persistence and physical-phone evidence remain open. Bootstrap history: `docs/BOOTSTRAP.md`.
+**Snapshot:** 18 October 2026, Toronto time. Free HTTPS shell and Free PostgreSQL are provisioned in Ohio; the committed migration and local live database probe pass. Physical iPhone shell access passes by user report and screenshot. Hosted restart persistence remains open. Bootstrap history: `docs/BOOTSTRAP.md`.
 
-**Current phase:** Step 01 — deployed shell/database foundation; finish hosted restart proof and physical-phone access.
+**Current phase:** Step 01 — deployed shell/database foundation; finish hosted restart proof.
 
 **18 October PM update:** User has signed into Render and reached the new Web Service form. GitHub remote was confirmed empty with `git ls-remote --heads origin` (exit 0, no refs). PM reviewed all 01a operator code/tests and accepted the local probe portion; fresh `npm test` passed 18/18 (exit 0) and `git diff --check` passed. The free-tier hosted execution correction remains outstanding, so the full live Step 01 gate is not accepted. Preparing the reviewed shell/probe for the first GitHub publication; deployment is not yet verified. No application implementation changed in this PM review.
 
 **Publication result:** Reviewed shell/probe and planning updates committed as `ef3f98bf48745f03d647fabcda678c4ad81718d9` and pushed to `origin/main`; commit and `git push -u origin main` exited 0. `git ls-remote --heads origin main` independently returned that exact SHA; working tree was clean after publication. The repository is no longer empty. User then attached Browser; the in-app Render tab opens at `/login`, so its separate session needs the user's OAuth login before PM can configure the free service. No service creation/deployment or billing change has occurred. This subsequent update is documentation only.
 
-**Active worker assignment:** `01a` free-host correction — issued in `docs/WORKER_TASK_01A_FREE_HOST.md`, execution not yet reported. PM accepts the original local operator probe with real database evidence. The original SSH runbook is incompatible with Free hosting; this correction is the only active implementation assignment. **Verified completed implementation steps:** none in full. **Next unfinished acceptance check:** verify the same deployed-runtime-written source across an actual free-service restart, and open the public HTTPS shell on a physical phone. Provisioning and migration are now complete; do not repeat the historical no-service blocker.
+**Active worker assignment:** `01a` free-host correction — issued in `docs/WORKER_TASK_01A_FREE_HOST.md`, execution not yet reported. PM accepts the original local operator probe with real database evidence. The original SSH runbook is incompatible with Free hosting; this correction is the only active implementation assignment. **Verified completed implementation steps:** none in full. **Next unfinished acceptance check:** verify the same deployed-runtime-written source across an actual free-service restart. Provisioning, migration, and physical iPhone shell access are now complete; do not repeat the historical no-service blocker.
 
 The user authorized this bootstrap and tracker update. The manager resumes ownership of sequencing and completion decisions. Preserve this evidence when opening a new chat.
 
@@ -41,7 +41,7 @@ The user authorized this bootstrap and tracker update. The manager resumes owner
 
 | ID | Step | Status | Evidence / next gate |
 |---|---|---|---|
-| 01 | Foundation and HTTPS deployment | IN_PROGRESS | Free HTTPS shell live; actual PostgreSQL migration/status and local live probe pass. Actual hosted runtime restart persistence and physical-phone check remain. |
+| 01 | Foundation and HTTPS deployment | IN_PROGRESS | Free HTTPS shell live; actual PostgreSQL migration/status, local live probe, and physical iPhone shell access pass. Actual hosted runtime restart persistence remains. |
 | 02 | Realtime voice proof | PENDING | Real question/answer, anonymous credential route, stop cleanup |
 | 03 | Local/deployed YouTube proof | PENDING | Local uncached captions, deployed managed result, separate free-direct outcome |
 | 04 | Deployed PDF ingestion | PENDING | Near-limit PDF and beginning/middle/end completeness |
@@ -70,7 +70,7 @@ Allowed task statuses: PENDING, IN_PROGRESS, READY_FOR_REVIEW, DONE, BLOCKED. Ev
 | Deployed managed YouTube path | NOT_RUN |
 | Deployed free direct YouTube path | NOT_RUN |
 | Deployed 25 MB PDF boundary | NOT_RUN |
-| Physical iOS Safari / Android Chrome | NOT_RUN / NOT_RUN |
+| Physical iPhone / Android | iPhone shell access PASS by user report and screenshot; exact model, iOS/browser versions and explicit reload unreported. Full mobile workflow/audio NOT_RUN; Android NOT_RUN. |
 | Selected skills installed in project | All four in `.agents/skills`; executable/skill versions in `docs/SKILLS.md`. Impeccable hook trust/automatic execution requires harness confirmation; no global package installation. |
 | GitHub connector in planning environment | Public web research worked; connector requested reauthentication. This does not determine the worker repository's access. |
 
@@ -115,13 +115,14 @@ Append concise rows; store detailed logs/screenshots in the repository's appropr
 | 18 Oct 2026 Toronto, 00:19 EDT | Real database migration/status | `cfe3932`, deploy `dep-dba4hfbbc2fs73a1ldkg` | Render build process → same-region real PostgreSQL | PASS | Temporary build chain ran `db:deploy` and `db:status`; initial migration applied at 00:19:37, schema up to date at 00:19:38, subsequent build/deploy succeeded (chained commands exited 0). Normal build restored afterward. `artifacts/local/render-2026-10-18/migration-deploy-snapshot.txt`. This is migration evidence, not hosted runtime persistence. |
 | 18 Oct 2026 Toronto, 00:20:14–00:20:20 EDT | 01a live separate-process probe | `cfe3932` application/probe files; Node 24.22.0/npm 11.19.1 | Local Windows processes → real Render PostgreSQL via external TLS `verify-full` | PASS | `npm run db:probe -- <mode> --manifest <private-file>` produced WRITTEN/0, VERIFIED/0, REMOVED/0, ALREADY_ABSENT/0, MISSING/1 (expected final failure). Same fixture `4ad9cb32-1890-4224-b003-e8f53d7ed41d`; cleaned up. `artifacts/local/render-2026-10-18/live-probe-checks.json`, `live-probe.log`. Private manifest outside checkout, ACL restricted; never included in evidence. |
 | 18 Oct 2026 Toronto | Public HTTPS shell | `cfe3932`, final normal deploy above | In-app desktop browser, 1280 px; direct HTTPS request | PASS | `Invoke-WebRequest` HTTP 200 and expected shell notices; browser title/heading/disabled imports present, document width 1265 <= viewport 1280; reload after final deployment passed. `artifacts/local/render-2026-10-18/http-check.json`, `public-shell.png`. Physical phone and audio NOT_RUN. |
+| 18 Oct 2026 Toronto | Physical iPhone HTTPS shell | Last verified deployed source `cfe3932`, deploy `dep-dba4i5bbc2fs73a1npjg`; screenshot does not independently expose build identity | User's physical iPhone, browser/version and iOS version unreported | PASS for shell access | User reports "opened on my iphone, it works" and supplies screenshot. Heading, preview notice and source card fit the captured width with no visible horizontal clipping; import controls retain unavailable-preview presentation. Screenshot saved unchanged to ignored `artifacts/local/render-2026-10-18/iphone-shell-user.png`. Lower-page content, explicit reload, ingestion, conversation and audio are not established by this evidence. |
 
 ## Blockers and next actions
 
 - PM provisioning/migration/local live probe are complete. Keep secrets in ignored `.env` and Render environment only. The service uses the provider's internal same-region URL; local verification uses the external URL with certificate verification. No permanent credential was printed or committed.
 - Worker: complete only the bounded free-host correction in `docs/WORKER_TASK_01A_FREE_HOST.md`. Preserve the accepted local probe; support explicit hosted write/verify/cleanup without SSH, paid jobs, public diagnostic routes or silent reseeding. The PM will configure/deploy/restart after review.
-- Human: open `https://talk-to-document-4pre.onrender.com/` on a physical phone, reload, and report device/OS/browser plus readable labels/disabled controls/no horizontal clipping. NOT_RUN until returned; desktop browser evidence is insufficient.
-- OpenAI model/API access, Supadata/ScrapeCreators credentials and physical iOS/Android availability remain unverified. Steps 02–14 stay PENDING.
+- Physical-phone shell gate accepted from the user's iPhone report and screenshot. No further human action is needed for this narrow shell-access check; full physical-device workflow/audio coverage remains for later steps.
+- OpenAI model/API access, Supadata/ScrapeCreators credentials and physical Android availability remain unverified. Steps 02–14 stay PENDING.
 - Review/approve `.codex/hooks.json` in Codex `/hooks` if prompted; refresh `/skills` discovery. On-disk skill installation and manual Impeccable context loading passed; automatic hook execution was not verified.
 - Track the dev-only braces advisory and ESLint 9 support notice. No unsafe forced downgrade or audit suppression was applied. Do not mistake a clean production-only dependency audit for complete security verification.
 
