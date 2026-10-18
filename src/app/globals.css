@@ -49,3 +49,34 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
   .conversation-empty { padding-top: 0; }
 }
 #question { display: block; width: 100%; min-height: 48px; margin: .5rem 0; padding: .65rem; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+
+.workspace-nav { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+.workspace-nav a { display: inline-flex; align-items: center; min-height: 48px; color: var(--accent); text-underline-offset: .25em; }
+.source-workspace { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.source-workspace button, .source-reader button { color: var(--ink); touch-action: manipulation; -webkit-tap-highlight-color: #cee5d4; }
+.source-workspace button:not(:disabled), .source-reader button { cursor: pointer; }
+.source-workspace button:not(:disabled):hover, .source-reader button:hover { background: #e5ede5; border-color: var(--accent); }
+.source-workspace .primary { background: var(--accent); color: var(--surface); border-color: var(--accent); font-weight: 600; }
+.source-workspace .primary:not(:disabled):hover { background: #1c4939; color: var(--surface); }
+.source-workspace button:disabled { background: var(--paper); color: var(--muted); }
+.source-workspace p, .source-reader, .source-workspace button { overflow-wrap: anywhere; }
+.source-status { padding: 1rem 0; border-top: 1px solid var(--line); margin-bottom: .5rem; color: var(--ink); }
+.source-problem { color: #713b26; }
+.active-source { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.source-summary { color: var(--ink); font-weight: 600; }
+.source-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.remove-confirm { margin-top: 1rem; }
+.reload-policy { margin: 1.5rem 0 0; }
+.source-reader { margin-top: 2rem; padding: 2rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.reader-header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.reader-header h2 { margin-bottom: 0; }
+.source-page { padding: 1.5rem 0; border-top: 1px solid var(--line); }
+.source-page h3 { font-size: 1rem; margin: 0 0 1rem; }
+.page-text { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 75ch; color: var(--ink); }
+.source-warnings { margin: 1rem 0; }
+#source-heading, #conversation-heading { scroll-margin-top: 1.5rem; }
+@media (max-width: 700px) {
+  .source-workspace { grid-template-columns: minmax(0, 1fr); }
+  .source-reader { padding: 1.5rem; }
+  .source-actions > button { flex: 1 1 8rem; }
+}

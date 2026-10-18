@@ -12,6 +12,8 @@
 
 **Single worker assignment:** 05a — `docs/WORKER_TASK_05A.md`, mobile PDF import, complete source preview, replacement/removal and honest failure/cancel recovery. Worker uses synthetic repository/browser tests; PM retains real DB and deployment. Application implementation stays in the separate worker chat.
 
+**Worker 05a submission, pending PM review:** PDF-only UI implemented; proposed READY_FOR_REVIEW. Dirty `main` over `67c0359`; final local production build `GG-G88bXofP0QTLRgDfdX`. Full report and runbook: `docs/PDF_UI_05A.md`; local evidence `artifacts/local/05a/`. Step05 stays IN_PROGRESS, including YouTube/context gates; no deployment/physical-phone/conversation acceptance is implied.
+
 The user authorized this bootstrap and tracker update. The manager resumes ownership of sequencing and completion decisions. Preserve this evidence when opening a new chat.
 
 ## Canonical files
@@ -656,3 +658,33 @@ All authored trial results no-store. Nine uploads per HTTP run, within admission
 **Restoration:** original `npm run start -- --hostname 0.0.0.0 --port $PORT` restored in **`dep-dba862fbtjjs73e64iq0`**, Live **08:28:08 UTC**, same e065b35. Final public verification `node artifacts/local/04b/pm-restored.mjs` exit **0**, **08:29:57.263 UTC**: shell 200; source POST/GET/DELETE and all four proof/credential POSTs 503/no-store. Initial restoration script assertions incorrectly assumed the legacy credential routes used the PDF nested error shape; corrected operator assertions to their existing `Feature unavailable` string, no application change. Safe report `pm-restored.json`; visually inspected screenshot `pm-render-restored.png`. Temporary gate/signing settings discarded. Free hosting/database retained, no provider call/spend.
 
 **Limits and next task:** no UI/physical-phone/grounded-conversation acceptance implied. Prior 04a hosted stress timeout, stalled reset/cancellation uncertainty and unmeasured RSS/CPU remain; hosted 04b restart was not separately tested (actual local restart/real DB and original hosted persistence evidence are distinct). General cleanup/distributed admission remain later work. Next single task **05a** is the PDF-only mobile import/preview subcheck now enabled by completed Step 04. Combined Step 05 still depends on Step 03 YouTube and context readiness; unavailable keys/quota are not waived. Keep original Step 01–14 IDs and application implementation in the worker chat.
+
+## Worker handoff — Task 05a PDF import and preview (proposed READY_FOR_REVIEW)
+
+18 October 2026 UTC. Implemented only the bounded PDF UI. Branch `main`, base HEAD `67c03591084cb480f522bd6aad685eb37ae40243`, dirty working tree, no commit/push/deployment. Final build **`GG-G88bXofP0QTLRgDfdX`**; Node **24.22.0** / npm **11.19.1** selected from ignored `.tools`. Host-default Node26/npm12 was observed during inspection and not used for verification. Full acceptance map, state/retry/cancel/reload policy, changed files, browser/repository boundaries and PM/phone runbook: [PDF_UI_05A.md](PDF_UI_05A.md).
+
+**Behavior:** server serializes only explicit gate/config availability; one native PDF chooser, decimal 25 MB limit, ASCII transport filename with Unicode local display, one 401 cookie bootstrap retry, 201→ownedGET→full ordered preview, temporary expiry, replace without pre-delete and authorized confirmed removal. Error/cancel/network/409/503 uncertainty remains explicit. One mutation at a time, bounded revalidation, AbortController and generation guard; saved new ID permits GET retry without reupload. Source/Conversation anchors and reader open/close focus work; YouTube and conversations stay unavailable. No source/browser persistence; reload policy is visible. Backend/parser/proof authorization/schema/lockfile unchanged.
+
+Every row below is local, exit **0 / PASS**. CLI environment uses only synthetic loopback DB configuration and blank provider secrets. Final retained logs and full command history/UTC are under ignored `artifacts/local/05a/`; repeated checks in `commands.jsonl` document the source-reader correction and final native-chooser/capture check. Prior logs may be superseded at the same log path; the table identifies final retained invocations.
+
+| Command | UTC start–end (2026-10-18) | Actual result / log |
+|---|---|---|
+| `npm run lint` | 19:07:22.595–19:07:27.228 | No warnings; `lint.log` |
+| `npm run typecheck` | 19:07:22.596–19:07:26.791 | Prisma/type generation and TS PASS; `typecheck.log` |
+| `npm test` (invoked as `npm run test`) | 19:00:53.373–19:00:56.568 | **265/265**, no skipped; `test.log` |
+| `npm run build` | 19:03:15.930–19:03:22.352 | Final build above; `build.log` |
+| `npm run test:smoke` | 19:04:35.403–19:04:39.539 | **14/14**, final build; `test-smoke.log` |
+| `npm run test:source-ui` | 19:04:25.204–19:05:19.417 | **75/75**, final build; `test-source-ui.log`, `browser-results.json` |
+| `npm run test:sources:http` | 19:04:54.823–19:05:09.300 | **6 scenarios / 51 checks**, final build; `test-sources-http.log`; details also in `artifacts/local/04b/http-results.json` |
+| `npm run test:voice` | 19:02:07.402–19:02:14.095 | **10/10**, fake media/RTC/provider; `test-voice.log` |
+| `npm run test:text` | 19:02:18.924–19:02:27.395 | **10/10**, fake socket/provider; `test-text.log` |
+
+Voice/text were run on preceding UI build `2H102dLtdTDa_bSgcK-tW`. The subsequent correction only hides the duplicate source file input, focuses its reader and removes source-page content-visibility; no proof styles/layout/code changed. Caption and PDF diagnostic suites were not rerun because their implementations/admission/limits are unchanged; accepted 04a/04b evidence remains separate. No migration/dependency upgrade, model/context/credential activation, live provider, real database or deployed mutation occurred.
+
+**Browser evidence:** 1440×1000, 390×844, 360×780 Chromium emulation; 72 intercepted error/order checks + 3 integrated actual-parser/synthetic-repository journeys. Each integrated journey uses native file chooser and real signed-cookie 401 handshake, then actual small upload, multi replacement, all **384 lines/12 pages** including final marker, failed corrupt replacement preserving the source, and DELETE/old-ID 404. Nine actual parser workers exit; zero external server fetch attempts. `integration-boundaries.json` records server SIGTERM and 3107 release. No fake parsing is presented as real; synthetic Prisma is not PostgreSQL.
+
+**Visual/a11y:** saved/inspected `desktop`, `mobile390`, `narrow360` screenshots with `-integrated-loaded.png`, `-integrated-first.png`, `-integrated-final.png`, `-mocked-reader.png`. Corrected an initial blank final-page capture by removing source-page content-visibility. Final narrow screenshot visibly includes `PAGE 12 FINAL marker` and close/return action. No horizontal clipping; long text wraps; source pages scroll normally; keyboard skip/navigation/reader-focus/return, visible 3 px focus, labels and concise polite status pass. Source body is escaped text outside live announcements. No unexpected console/JS errors in observed success/keyboard journeys (expected synthetic HTTP 401/422 are identified). Contrast audit: body 12.08:1, secondary 6.13:1 on white /5.61:1 on paper, primary 7.88:1, error 8.91:1. This is browser emulation, not physical phone or screen-reader proof.
+
+**Audit/teardown:** `audit.json` records successful rebind of 3100/3101/3102/3106/3107; no tests/docs/artifacts/.env in final page/source traces (133/324/224 files); checked server-secret/DB/repository markers absent from browser chunks; lockfile byte-identical to HEAD; `git diff --check` PASS. Final exact 11-file SHA256 manifest is `changed-files.sha256.json`; `identity.json` records HEAD/runtime/build and dirty state. All test servers are stopped; no raw source/cookie/credential browser persistence or real database cleanup is needed.
+
+**NOT_RUN / handoff:** reviewed UI on actual Free Render + PostgreSQL, physical iPhone Files→preview→replace/remove, Android, screen-reader speech, complex/large-document phone rendering, grounding, live voice/text/provider calls. PM must deploy a reviewed available build before asking the human for phone checks; exact actions are in the runbook. Unknown committed IDs cannot be rediscovered; deliberate replacement and existing TTL bound recovery, general cleanup remains unimplemented. PM decides 05a acceptance. Keep Step 05 IN_PROGRESS and all original Step 01–14 IDs/dependencies; no later task started.
