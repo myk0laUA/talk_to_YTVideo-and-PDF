@@ -39,7 +39,10 @@
     "db:status": "prisma migrate status",
     "db:probe": "node --conditions=react-server scripts/verify-db-persistence.ts",
     "proof:captions:local": "node scripts/verify-captions-local.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:cleanup": "node --conditions=react-server scripts/cleanup-expired.ts",
+    "test:cleanup": "node --conditions=react-server --test tests/unit/cleanup.test.ts",
+    "test:cleanup:postgres": "node --conditions=react-server scripts/verify-cleanup-postgres.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
