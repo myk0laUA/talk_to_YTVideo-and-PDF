@@ -1,6 +1,6 @@
 # Task 03c — owned YouTube source handoff
 
-Worker implementation, proposed **READY_FOR_REVIEW**. Base `main` / `c82d96ba5be6671fbc784497b3bfddabe743f668`; dirty working tree, no commit/push/deployment. Final local production build `OpZ8Pxv_gLlUxBYDMRUYr`, Node 24.22.0 / npm 11.19.1. This closes only the assigned backend handoff when accepted by PM. Steps 03/05 remain IN_PROGRESS; cache/fallback/context and public YouTube UI are unassigned.
+**PM accepted implementation/local HTTP/actual database scope; hosted direct trial timed out.** Next05b UI; final PDF-only restored deployment passes PDF regression. Original worker submission identity follows: Base `main` / `c82d96ba5be6671fbc784497b3bfddabe743f668`; dirty working tree, no commit/push/deployment. Final local production build `OpZ8Pxv_gLlUxBYDMRUYr`, Node 24.22.0 / npm 11.19.1. This closes only the assigned backend handoff when accepted by PM. Steps 03/05 remain IN_PROGRESS; cache/fallback/context remain unassigned; public YouTube UI is now assigned separately as05b.
 
 ## API and configuration
 
@@ -75,3 +75,9 @@ Final result table and file/hash identity are recorded in `PROJECT_STATE.md` and
 5. After PM deployment, run a forced-direct uncached previously verified public fixture through the real owned endpoint (401→201→GET→replace/delete); record actual hosted adapter outcome. Keep public YouTube UI and conversation gates off. Managed live test is BLOCKED until key/quota and a specific spending allocation exist. No hosted/live/physical-device result from this worker task is claimed.
 
 Return to PM after this handoff. No Step 05b/06/07 implementation, provisioning, purchase, migration execution or deployment belongs to this worker submission.
+
+## PM acceptance addendum — 18 October 2026
+
+Accepted for implementation/local HTTP/actual PostgreSQL scope, application `f88f87a5c0dba84c98feef7f583210b6646a354b`, local build `OpZ8Pxv_gLlUxBYDMRUYr`. All37 hashes match; fresh PM288unit and9HTTPscenarios/59checks pass. Forward migration applied/status0; all preexisting rows preserved. Real cross-kind replacement/rollback, separate-process overlapping empty/PDF/YouTube races (one winner/one conflict), shared unique/CHECK, proof exclusion, expired read/delete, malformed JSON and lock timeout pass. Scoped fixtures cleaned. Full commands/times and operator assertion correction are in PROJECT_STATE and ignored `artifacts/local/03c/pm-db*.json`.
+
+Actual hosted uncached forced-direct request to `dQw4w9WgXcQ` on reviewed backend:401 then **504 timeout after9093ms**. One attempt, no retry/fallback/paid API. Operator exit0 records a completed trial; actual provider result is **PROVIDER_BLOCKED**, not PASS. No source row created. This supersedes worker NOT_RUN for this trial only; successful owned-source live YouTube ingestion, managed captions, source grounding and new physical phone remain unproven. Restoration/final PDF regression evidence is recorded in PROJECT_STATE. Next sole worker task05b, not cache/fallback/context.
