@@ -1,6 +1,6 @@
 # Task 05b — YouTube import and source preview
 
-Implemented local scope; proposed **READY_FOR_REVIEW**. PM decides acceptance. Original Steps 03/05 remain IN_PROGRESS; no Step 06/07 work, service change, migration, deployment, live database/provider call or spend.
+**PM accepted implementation/local UI and observed hosted error recovery.** Fresh99browser checks pass. Actual hosted direct extraction returned502blocked; complete live YouTube preview and physical phone remain unproven. PDF-only configuration restored. Next single worker task06a cache; full03/05 remain IN_PROGRESS. Original worker-only evidence below is preserved; PM addendum records deployment and actual service checks.
 
 ## Identity and changes
 
@@ -89,3 +89,9 @@ npm run test:source-ui
 4. Only after PM supplies an available reviewed deployment: human opens Safari on a physical iPhone, pastes a public captioned URL, submits, checks language/expiry and first/final captions, closes/reopens, switches to a PDF and back, then Remove/Confirm remove. Report model/iOS/browser, build if shown, observable results and exact blocker. If import fails upstream, record that error instead of a preview pass. Do not request this check before deployment. New iPhone YouTube/Android/screen-reader speech/audio/grounding remain NOT_RUN; prior PDF iPhone confirmation is separate.
 
 Known limitations: no source discovery after lost committed ID/reload, no browser persistence, no general TTL cleanup, per-process admission, live provider reliability unproven, physical keyboard/audio behavior untested. These are retained gates, not permission to implement later tasks. Return to PM with this implementation and evidence only.
+
+## PM acceptance — 18 October 2026
+
+05b accepted for implementation/local browser and actual hosted error recovery. Reviewed application `e3908e6f0fcd0bc645f31e6498b064b070773bec`, local build `gAnL8_ZqbnIBxM4j9Hc5l`.12manifest entries match; fresh PM99of99,20:33:37.487–20:34:19.091UTC, exit0. Exactly6 synthetic extraction sequences/3PDFworkers, zero forbidden fetches, server stopped/3109 released. Worker results above retained with their exact build distinctions.
+
+Actual Free Render/PostgreSQL390px journey20:37:09.561–20:37:27.833UTC, exit0: PDF201/all384lines; one direct YouTube UI request502/blocked6739ms; authored recovery, priorPDF preserved/readable, remove and scoped cleanup404; nooverflow/pageJSerrors, diagnostic/credential gates503. UI handling PASS, live provider BLOCKED. Complete live hosted captions/preview/phone remain NOT_RUN. Evidence and restoration details are in PROJECT_STATE and ignored `artifacts/local/05b/pm-*.json/png`. No phone retest requested until successful retrieval is available. Next single worker task06a cache; no fallback/context implementation authorized by this handoff.
