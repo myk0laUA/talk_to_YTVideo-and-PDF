@@ -1,7 +1,7 @@
 import "server-only";
 import { captionCacheKey, type CaptionCache } from "../captions/cache.ts";
 import type { YoutubeSourceConfig } from "./config.ts";
-import type { CaptionConfig } from "../captions/config.ts";
+import type { CaptionSelectionConfig } from "../captions/config.ts";
 import type { CaptionProvider } from "../captions/provider.ts";
 import { normalizeVideo, validLanguage } from "../captions/input.ts";
 import { readBounded } from "../captions/bounded-body.ts";
@@ -11,6 +11,7 @@ import { CaptionCoordinator, captionJobKey } from "../captions/coordinator.ts";
 import { validatedTranscript } from "../captions/validated.ts";
 import { captionBounds } from "../captions/provider.ts";
 import { supadataBounds } from "../captions/supadata.ts";
+import { automaticBounds } from "../captions/automatic.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import type { SourceFailureCode, SourceResult } from "../../shared/source.ts";
 import { captionRecord, requireLive, requireOwned, SourceError, sourceDto, type SourceRepository } from "./service.ts";
@@ -40,7 +41,7 @@ const reply = (status: number, value: SourceResult, cookie?: string) => Response
 const fail = (code: SourceFailureCode, cookie?: string) => reply(errors[code][0], { ok: false, error: { code, message: errors[code][1] } }, cookie);
 
 export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceConfig | null; repository: SourceRepository; cache: CaptionCache;
-  provider: (input: Parameters<CaptionProvider>[0], config: CaptionConfig) => ReturnType<CaptionProvider>;
+  provider: (input: Parameters<CaptionProvider>[0], config: CaptionSelectionConfig) => ReturnType<CaptionProvider>;
   admission?: Admission; coordinator?: CaptionCoordinator; now?: () => number }) {
   const admission = deps.admission ?? new CaptionAdmission(captionLimits);
   const coordinator = deps.coordinator ?? new CaptionCoordinator();
@@ -94,7 +95,7 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
           transcript = validatedTranscript(transcript);
           if (transcript.canonicalUrl !== video.canonicalUrl
             || (key.languagePreference && transcript.language.toLowerCase() !== key.languagePreference)
-            || (!hit && transcript.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) throw new Error();
+            || (!hit && config.provider !== "auto" && transcript.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) throw new Error();
         } catch { throw new SourceError("malformed"); }
         live();
         if (!hit && !config.cacheBypass) await deps.cache.put(key, transcript, new Date(now()));
@@ -105,8 +106,12 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
         return Object.freeze(transcript);
       };
       // Operator bypass is structurally uncoalesced, just like the proof handler.
-      const transcript = config.cacheBypass ? await work(request.signal) : await coordinator.run(jobKey, request.signal,
-        config.provider === "direct" ? captionBounds.deadlineMs : supadataBounds.deadlineMs, work);
+      const budget = config.provider === "direct" ? captionBounds.deadlineMs : supadataBounds.deadlineMs;
+      const transcript = config.cacheBypass
+        ? config.provider === "auto"
+          ? await new CaptionCoordinator().run(jobKey, request.signal, automaticBounds.deadlineMs, work)
+          : await work(request.signal)
+        : await coordinator.run(jobKey, request.signal, budget, work);
       guard();
       const candidate = captionRecord(transcript, visitor);
       const saved = await deps.repository.replace(candidate, guard);

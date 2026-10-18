@@ -21,6 +21,7 @@ process.on("message", message => {
     process.env.YOUTUBE_CAPTION_CACHE_BYPASS = message.bypass ? "true" : "false";
     if (message.provider) process.env.YOUTUBE_INGESTION_PROVIDER = message.provider;
     if (message.key !== undefined) process.env.SUPADATA_API_KEY = message.key;
+    if (message.directFirst !== undefined) process.env.YOUTUBE_AUTO_DIRECT_FIRST = String(message.directFirst);
   }
   else if (command === "delay-create") database.delayCreateMs = message.ms;
   else if (command === "delay-read") database.delayReadMs = message.ms;

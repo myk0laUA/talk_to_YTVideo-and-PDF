@@ -1,6 +1,10 @@
 import { parseVisitorConfig, type VisitorConfig } from "../proof/config.ts";
 
 export type CaptionConfig = VisitorConfig & { provider: "direct" | "supadata"; supadataApiKey?: string };
+// Automatic selection is ingestion-only. Proof configuration deliberately excludes it.
+export type CaptionSelectionConfig = Omit<CaptionConfig, "provider"> & {
+  provider: CaptionConfig["provider"] | "auto"; directFirst?: boolean;
+};
 export const validSupadataKey = (key: string | undefined): key is string => !!key && /^[\x21-\x7e]{1,4096}$/.test(key);
 
 export function parseCaptionConfig(env: Record<string, string | undefined>): CaptionConfig | null {

@@ -30,7 +30,7 @@ for (const scenario of ["disabled", "invalid-provider", "missing-key", "direct",
       NEXT_PUBLIC_VISITOR_COOKIE_SECRET: "", NEXT_PUBLIC_DATABASE_URL: "", NEXT_PUBLIC_OPENAI_API_KEY: "", NEXT_PUBLIC_SUPADATA_API_KEY: "", NEXT_PUBLIC_SCRAPECREATORS_API_KEY: "",
       YOUTUBE_INGESTION_ENABLED: ["disabled", "pdf-only"].includes(scenario) ? "false" : "true", YOUTUBE_INGESTION_LOCAL_HTTP: "true",
       YOUTUBE_CAPTION_CACHE_BYPASS: "true", // Existing forced-provider regression remains explicitly uncached.
-      YOUTUBE_INGESTION_PROVIDER: scenario === "invalid-provider" ? "auto" : ["supadata", "missing-key"].includes(scenario) ? "supadata" : "direct",
+      YOUTUBE_INGESTION_PROVIDER: scenario === "invalid-provider" ? "unknown-provider" : ["supadata", "missing-key"].includes(scenario) ? "supadata" : "direct",
       PDF_INGESTION_ENABLED: ["direct", "supadata", "pdf-only", "shared-admission"].includes(scenario) ? "true" : "false", PDF_INGESTION_LOCAL_HTTP: "true", PDF_PROOF_ENABLED: "false", PDF_HTTP_SCENARIO: "real",
       CAPTION_PROOF_ENABLED: scenario === "shared-admission" ? "true" : "false", CAPTION_PROOF_LOCAL_HTTP: "true", CAPTION_PROOF_PROVIDER: "direct",
       PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", OPENAI_API_KEY: "", SCRAPECREATORS_API_KEY: "",

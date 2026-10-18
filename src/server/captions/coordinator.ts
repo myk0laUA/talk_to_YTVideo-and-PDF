@@ -2,12 +2,12 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { CaptionTranscript } from "../../shared/captions.ts";
 import type { CaptionCacheKey } from "./cache.ts";
-import type { CaptionConfig } from "./config.ts";
+import type { CaptionSelectionConfig } from "./config.ts";
 import { SourceError } from "../sources/service.ts";
 
-export function captionJobKey(key: CaptionCacheKey, config: CaptionConfig): string {
+export function captionJobKey(key: CaptionCacheKey, config: CaptionSelectionConfig): string {
   // Never keep a permanent adapter key in the registry identity. A key rotation is a new policy.
-  const policy = createHash("sha256").update(JSON.stringify([config.provider, config.supadataApiKey ?? ""])).digest("hex");
+  const policy = createHash("sha256").update(JSON.stringify([config.provider, config.directFirst === true, config.supadataApiKey ?? ""])).digest("hex");
   return JSON.stringify([key.videoId, key.languagePreference, key.mode, policy]);
 }
 type Job = { controller: AbortController; waiters: number; promise: Promise<CaptionTranscript> };
