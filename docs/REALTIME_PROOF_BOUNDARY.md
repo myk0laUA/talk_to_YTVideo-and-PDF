@@ -1,8 +1,8 @@
 # Task 02a server boundary
 
-**02b local worker addition:** the server-gated voice page is `/proof/voice`; it reuses these endpoints and cookie. The mint session now explicitly configures audio output, `marin`, `gpt-4o-mini-transcribe` input transcription and server VAD. Configured Realtime model/source/TTL/admission remain unchanged. See [02b handoff](VOICE_PROOF_02B.md) for cancellation, 60-second client limit, mocked evidence and NOT_RUN live checks. This addition is proposed READY_FOR_REVIEW; Step 02 remains IN_PROGRESS.
+**02b local worker addition:** the server-gated voice page is `/proof/voice`; it reuses these endpoints and cookie. The mint session now explicitly configures audio output, `marin`, `gpt-4o-mini-transcribe` input transcription and server VAD. Configured Realtime model/source/TTL/admission remain unchanged. See [02b handoff](VOICE_PROOF_02B.md) for cancellation, 60-second client limit, mocked evidence and NOT_RUN live checks. PM accepted this addition for its local/mock scope; Step 02 remains IN_PROGRESS.
 
-PM accepted the local implementation/mocked verification on 18 October 2026 at commit `eae9444e520707a427602b88b535feb2b2135686`: 55 tests and four production smoke checks pass. Real database ownership/provider/deployed checks remain NOT_RUN. Step 02 still requires the separate WebRTC client and live spoken-answer/Stop proof. No live database or OpenAI request is authorized for the worker by this task. The public shell remains disabled. Next single brief: `WORKER_TASK_02B.md`.
+PM accepted 02a at `eae9444e520707a427602b88b535feb2b2135686` and 02b at `716e120aff0823952fd0255f2a86a9877e5c6db6` for local/mocked verification: 93 unit tests, six disabled smoke checks and ten voice browser checks pass. The gated WebRTC client exists; live spoken-answer/Stop, real database authorization and deployed proof checks remain NOT_RUN. No live database or OpenAI request is authorized for the worker by this task. The public shell remains disabled. Next single brief: `WORKER_TASK_02C.md`, microphone-free text transport; its proposed mode extension is not implemented yet.
 
 ## Configuration
 
