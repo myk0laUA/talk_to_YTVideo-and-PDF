@@ -1,6 +1,6 @@
 # Talk to a Document
 
-A mobile web workspace for exploring one PDF or YouTube video through voice and text. **Current implementation: shell, gated voice/text/caption proofs, and accepted deployed PDF extraction plus visitor-owned storage/read/delete/replacement.** Application e065b35 is deployed on Free Render; ingestion/proof gates are disabled after verification. Actual HTTPS exact 25 MB and full multi-page storage passed. Public import UI, YouTube Source storage, grounded conversation and TTL cleanup remain unfinished. Next: `docs/WORKER_TASK_05A.md`, mobile PDF import/preview. Live API keys/funding/quota and phone workflow remain pending.
+A mobile web workspace for exploring one PDF or YouTube video through voice and text. **PDF import, complete preview, replacement and removal are now available** on Free Render application `1cfbfeb`. Fresh PM browser checks passed 75/75; actual HTTPS/Free PostgreSQL displayed all 384 fixture lines and passed replacement/removal. Backend exact 25 MB evidence remains recorded separately. Physical phone workflow, YouTube Source storage, grounded conversation and TTL cleanup remain unfinished. Next: `docs/WORKER_TASK_03C.md`, visitor-owned YouTube source handoff. Live API keys/funding/quota remain pending; diagnostic/credential gates stay disabled.
 
 **03a accepted:** the separate default-disabled `POST /api/proof-captions` retrieved two uncached local fixtures with independent source-caption comparison. The actual Free Render trial returned one matching transcript and one player sign-in block; broad hosted reliability is unproven. The explicit local command is `npm run proof:captions:local -- --allow-public-youtube` after build; it starts/stops an isolated loopback server on port 3103. See [the caption proof handoff](docs/CAPTION_PROOF_03A.md) for configuration, contracts, limits and evidence. Managed captions and source-grounded conversation remain untested; normal import controls remain unavailable.
 
@@ -32,7 +32,7 @@ On macOS/Linux: `cp .env.example .env`. Keep the blank secret values until you h
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Use Ctrl+C to stop. The import buttons are deliberately disabled; the page explains the unavailable functionality.
+Open [localhost:3000](http://localhost:3000). Use Ctrl+C to stop. Without explicit valid PDF ingestion/visitor configuration the PDF chooser stays disabled. See `docs/PDF_UI_05A.md` and `.env.example`; never point routine browser tests at the real database. YouTube and conversation controls remain unavailable.
 
 During this bootstrap, a checksum-verified Windows runtime was downloaded into ignored `.tools/node-v24.22.0-win-x64`. On this checkout only, PowerShell can select it for the current session with:
 
@@ -96,6 +96,6 @@ The operator-only persistence probe is available with `npm run db:probe -- --hel
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md): requirements and original Step 01–14 acceptance checks.
 - [Bootstrap decisions](docs/BOOTSTRAP.md): verified compatibility sources, tool versions and local evidence.
 
-Steps 01 and 04 backend gates are complete. Next worker brief: `docs/WORKER_TASK_05A.md`. PM 265 unit tests pass; worker smoke 14, voice/text 10 each, source HTTP six scenarios/51 checks and PDF HTTP nine scenarios/41 checks pass. Build first; `npm run test:sources:http` uses port 3106 with a synthetic repository, `npm run test:pdf:http` uses 3105 with real synthetic PDF parsing. Real Free PostgreSQL migration/constraints/ownership/concurrency/rollback/restart and actual Render HTTPS storage/boundary checks passed separately. See `docs/SOURCE_STORAGE_04B.md` and `docs/PROJECT_STATE.md`. Hosting remains Free; no live API spend. Earlier hosted parser stress/stall/resource limitations remain documented.
+Steps 01 and 04 backend gates are complete; 05a PDF UI is accepted in local/hosted environments, physical phone pending. Next worker brief: `docs/WORKER_TASK_03C.md`. Build first; `npm run test:source-ui` uses port 3107 (75 checks), `npm run test:sources:http` uses 3106 with a synthetic repository, `npm run test:pdf:http` uses 3105 with actual synthetic PDF parsing. Real Free PostgreSQL and actual Render HTTPS checks passed separately. Exact build/command/limitation evidence is in `docs/PDF_UI_05A.md`, `docs/SOURCE_STORAGE_04B.md` and `docs/PROJECT_STATE.md`. Hosting remains Free; no live API spend. Earlier hosted parser stress/stall/resource limitations remain documented.
 
-AI assistance was used for scaffolding, configuration, deployment, documentation and verification. The recorded shell/database checks do not establish ingestion or conversation capability.
+AI assistance was used for scaffolding, implementation, configuration, deployment, documentation and verification. Recorded PDF ingestion checks do not establish working grounded conversation. The current hosted PDF test configuration generates its visitor signing secret per process; restarts can invalidate visitor access. Reload clears the selected view. Durable signing configuration and TTL cleanup remain release work.
