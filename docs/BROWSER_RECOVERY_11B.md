@@ -1,5 +1,7 @@
 # Task 11B — browser departure and connection recovery
 
+**Current PM11B review:** local/scripted browser recovery accepted in2a94ee8; build ZAsT5o0AxsLyxMe7MRgwc, all18 hashes match, fresh248recovery/919unit PASS. Actual persisted BFCache remains NOT_RUN. Next single task `docs/WORKER_TASK_11C.md`: anonymous source/credential boundary verification. No deployment/keys/spend; full live gates remain open.
+
 Worker implementation handoff for parent Step 11. PM owns acceptance and sequencing. This is local/scripted work; the public 03eb7d8 PDF-only deployment, full live 07–10 gates and 11A real SQL/scheduling gaps remain unchanged. No credentials, provider adapter, database work, dependencies, storage persistence, deployment or spend.
 
 ## Behavior and ownership

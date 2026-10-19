@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM11B review:** local/scripted browser recovery accepted in2a94ee8; build ZAsT5o0AxsLyxMe7MRgwc, all18 hashes match, fresh248recovery/919unit PASS. Actual persisted BFCache remains NOT_RUN. Next single task `docs/WORKER_TASK_11C.md`: anonymous source/credential boundary verification. No deployment/keys/spend; full live gates remain open.
+
 ## Worker 11B — local browser departure and recovery
 
 Task 11B adds **`npm run test:recovery`**, after `npm run build`, with pinned Node24.22.0/npm11.19.1 and free3123/3124. It uses the actual composed voice/text owners and existing coordinators with isolated scripted transport/media/ACKs; a separate production process stays default-disabled with empty keys, unusable synthetic DB and blocked providers. All pending phases, persisted/non-persisted pagehide/pageshow, offline/online, authoritative adapter closure while online, partial text/unconfirmed draft, explicit fresh ACK recovery, late resources, repeated/racing events, StrictMode and source/mode/unmount cleanup are covered. Browser signals do not prove server reachability or degraded WebRTC.
