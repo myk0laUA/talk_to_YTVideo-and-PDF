@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSource } from "./use-source";
+import { TranscriptView } from "./transcript-view";
 
 // Helpful URL checks only; the existing server remains authoritative.
 function isYoutubeUrl(value: string) {
@@ -96,12 +97,8 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailab
       </section>
       <section className="conversation-panel" aria-labelledby="conversation-heading">
         <h2 id="conversation-heading" tabIndex={-1}>Conversation</h2>
-        <div className="conversation-empty">
-          <p className="empty-title">Room for your questions.</p>
-          <p>You can inspect your source here. Connecting its text to a conversation is still being built.</p>
-          <p className="note">Voice and text conversations are not connected yet.</p>
-          <div className="source-options"><button type="button" disabled>Start Voice Chat</button><button type="button" disabled>Ask with text</button></div>
-        </div>
+        <TranscriptView snapshot={null} viewKey={known?.id ?? "no-source"} />
+        <div className="source-options"><button type="button" disabled>Start Voice Chat</button><button type="button" disabled>Ask with text</button></div>
       </section>
     </div>
     {expanded && state.content ? <section id="source-text" className="source-reader" aria-labelledby="reader-heading">

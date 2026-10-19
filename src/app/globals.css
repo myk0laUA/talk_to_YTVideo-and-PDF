@@ -53,6 +53,8 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .workspace-nav { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
 .workspace-nav a { display: inline-flex; align-items: center; min-height: 48px; color: var(--accent); text-underline-offset: .25em; }
 .source-workspace { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+/* Clip the rounded workspace without creating a second scroll ancestor. */
+.source-workspace { overflow: clip; }
 .source-workspace button, .source-reader button { color: var(--ink); touch-action: manipulation; -webkit-tap-highlight-color: #cee5d4; }
 .source-workspace button:not(:disabled), .source-reader button { cursor: pointer; }
 .source-workspace button:not(:disabled):hover, .source-reader button:hover { background: #e5ede5; border-color: var(--accent); }
@@ -82,6 +84,22 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .youtube-form input::placeholder { color: var(--muted); opacity: 1; }
 .caption-time { font-variant-numeric: tabular-nums; }
 .caption-segment { content-visibility: auto; contain-intrinsic-size: auto 140px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.transcript { min-width: 0; overflow-anchor: none; }
+.transcript h3 { margin: 0 0 .75rem; font-size: 1rem; }
+.transcript .conversation-empty { padding-top: 1rem; }
+.transcript-navigation { position: sticky; top: 0; z-index: 1; background: var(--surface); display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: 1rem 0; border-block: 1px solid var(--line); }
+.transcript-navigation p { flex: 1 1 15rem; margin: 0; }
+.transcript-navigation button { color: var(--ink); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: #cee5d4; }
+.transcript-navigation button:hover { background: #e5ede5; border-color: var(--accent); }
+.transcript-turns { list-style: none; padding: 0; margin: 0; }
+.transcript-turn { padding: 1.5rem 0; border-bottom: 1px solid var(--line); }
+.transcript-turn h4 { margin: 0 0 .5rem; font-size: 1rem; }
+.transcript-part + .transcript-part { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.transcript-text { color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }
+.transcript-notice { color: #713b26; margin-top: .75rem; }
+.transcript-latest { margin-top: 1rem; }
+.transcript-end { height: 1px; margin: 0; }
 #source-heading, #conversation-heading { scroll-margin-top: 1.5rem; }
 @media (max-width: 700px) {
   .source-workspace { grid-template-columns: minmax(0, 1fr); }
