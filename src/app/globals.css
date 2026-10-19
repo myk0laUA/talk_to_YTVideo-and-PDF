@@ -20,7 +20,7 @@ button { font: inherit; }
 .wordmark { font-weight: 650; font-size: 1.1rem; }
 .build-label { color: var(--muted); font-size: .875rem; white-space: nowrap; }
 .intro { padding: 3.5rem 0 2.5rem; }
-h1 { margin: 0 0 .75rem; font-family: Georgia, serif; font-weight: 400; font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.15; text-wrap: balance; }
+h1 { margin: 0 0 .75rem; font-family: Georgia, serif; font-weight: 400; font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.15; text-wrap: balance; overflow-wrap: anywhere; }
 h2 { margin: 0 0 2rem; font-size: 1rem; font-weight: 650; }
 p { margin: 0 0 1rem; max-width: 65ch; color: var(--muted); }
 .intro p { font-size: 1.1rem; }
@@ -50,7 +50,7 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 }
 #question { display: block; width: 100%; min-height: 48px; margin: .5rem 0; padding: .65rem; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
 
-.workspace-nav { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+.workspace-nav { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem; }
 .workspace-nav a { display: inline-flex; align-items: center; min-height: 48px; color: var(--accent); text-underline-offset: .25em; }
 .source-workspace { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 /* Clip the rounded workspace without creating a second scroll ancestor. */
@@ -92,6 +92,10 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .transcript-navigation p { flex: 1 1 15rem; margin: 0; }
 .transcript-navigation button { color: var(--ink); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: #cee5d4; }
 .transcript-navigation button:hover { background: #e5ede5; border-color: var(--accent); }
+/* Leave the reading area available when viewport height is constrained. */
+@media (max-height: 600px) {
+  .transcript-navigation { position: static; }
+}
 .transcript-turns { list-style: none; padding: 0; margin: 0; }
 .transcript-turn { padding: 1.5rem 0; border-bottom: 1px solid var(--line); }
 .transcript-turn h4 { margin: 0 0 .5rem; font-size: 1rem; }

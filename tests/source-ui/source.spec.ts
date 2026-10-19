@@ -43,6 +43,12 @@ test("mocked: one 401 retry, Unicode/safe filename, source navigation, keyboard,
   await expect(page.getByText("Up to 25 MB (25,000,000 bytes). Text PDFs only; no OCR.")).toBeVisible();
   await load(page); expect(posts).toBe(2); expect(gets).toBe(1);
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Remove", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "Keep source", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeFocused();
+  expect(await page.getByRole("button", { name: "Remove", exact: true }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
   await page.getByRole("button", { name: "Inspect extracted text" }).focus(); await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Page 2", exact: true })).toBeVisible();
   await expect(page.getByText("<script>alert('untrusted')</script>", { exact: false })).toBeVisible();

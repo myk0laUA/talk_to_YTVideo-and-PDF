@@ -19,3 +19,18 @@ test("shell loads, describes unavailable features, and fits the viewport", async
   expect(errors).toEqual([]);
   await page.screenshot({ path: testInfo.outputPath("shell.png"), fullPage: true });
 });
+
+test("200% root text reflows the heading and source navigation at small widths", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  for (const width of [320, 390, 430]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    for (const name of ["Source", "Conversation"]) {
+      const link = page.getByRole("link", { name, exact: true });
+      await link.focus();
+      await expect(link).toBeFocused();
+      expect(await link.evaluate(el => { const b = el.getBoundingClientRect(); return b.left >= 0 && b.right <= innerWidth; })).toBe(true);
+    }
+  }
+});

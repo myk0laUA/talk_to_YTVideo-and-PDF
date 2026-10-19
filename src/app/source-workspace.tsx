@@ -31,6 +31,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailab
   const input = useRef<HTMLInputElement>(null);
   const videoInput = useRef<HTMLInputElement>(null);
   const inspect = useRef<HTMLButtonElement>(null);
+  const removeButton = useRef<HTMLButtonElement>(null);
   const readerHeading = useRef<HTMLHeadingElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -86,11 +87,11 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailab
           <div className="source-actions">
             {state.content ? <button ref={inspect} type="button" disabled={busy} aria-expanded={expanded} aria-controls="source-text" onClick={() => setExpanded(value => !value)}>{expanded ? "Close extracted text" : "Inspect extracted text"}</button> : null}
             <button type="button" disabled={busy} onClick={() => void retryRead()}>{state.content ? "Check source" : "Retry text"}</button>
-            <button type="button" disabled={busy} onClick={() => setConfirmRemove(true)}>Remove</button>
+            <button ref={removeButton} type="button" disabled={busy} onClick={() => setConfirmRemove(true)}>Remove</button>
           </div>
           {confirmRemove ? <div className="remove-confirm">
             <p>Remove this temporary source? You can import it again later.</p>
-            <div className="source-actions"><button type="button" disabled={busy} onClick={() => { setConfirmRemove(false); setExpanded(false); void remove(); }}>Confirm remove</button><button type="button" disabled={busy} onClick={() => setConfirmRemove(false)}>Keep source</button></div>
+            <div className="source-actions"><button type="button" disabled={busy} onClick={() => { setConfirmRemove(false); setExpanded(false); void remove(); }}>Confirm remove</button><button type="button" disabled={busy} onClick={() => { setConfirmRemove(false); removeButton.current?.focus(); }}>Keep source</button></div>
           </div> : null}
         </div> : null}
         <p className="note reload-policy">Reloading clears this view. To continue after a reload, import your source again; it will replace any previous temporary source. Source text and IDs are not saved in browser storage.</p>

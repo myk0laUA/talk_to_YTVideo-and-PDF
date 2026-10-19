@@ -159,6 +159,23 @@ test("source/new-session reset drops words and unread state without auto focus o
   await expect(page.getByRole("button", { name: "Inspect fixture source" })).toBeEnabled();
 });
 
+test("200% text in a short viewport leaves long transcript text reachable", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 400 });
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  await act(page, "Long answer");
+  const text = turns(page).nth(1).locator(".transcript-text");
+  await text.evaluate(el => scrollTo(0, el.getBoundingClientRect().top + scrollY + 400));
+  const nav = page.locator(".transcript-navigation");
+  expect(await nav.evaluate(el => el.getBoundingClientRect().bottom)).toBeLessThan(0);
+  const before = await text.evaluate(el => el.getBoundingClientRect().top);
+  await act(page, "Append long");
+  expect(await text.evaluate(el => el.getBoundingClientRect().top)).toBeCloseTo(before, 0);
+  const jump = page.getByRole("button", { name: "Jump to latest" });
+  await jump.focus(); await page.keyboard.press("Enter");
+  await expect(page.locator(".transcript-latest")).toBeFocused();
+  await fits(page);
+});
+
 test("reduced motion and 200% text zoom preserve reading, controls and wrapping", async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await act(page, "Begin draft"); await act(page, "Finalize"); await act(page, "Second part");
