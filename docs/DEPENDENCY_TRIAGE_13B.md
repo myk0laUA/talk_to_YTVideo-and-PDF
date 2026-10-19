@@ -1,5 +1,7 @@
 # Task 13B — braces dependency advisory triage
 
+**Current PM13B review:** bounded dependency triage accepted in `96b1c30`; dependency retained, high advisory unresolved, no demonstrated public-input path in inspected code. Fresh PM verification:420 protected files unchanged,179 retained inputs match, all three hashes matched. Next single task `docs/WORKER_TASK_14A.md`: honest walkthrough preparation while live integration/keys remain blocked. No deployment/spending; no release-risk clearance. Older summaries below are historical.
+
 **Implemented; proposed READY_FOR_REVIEW.** Disposition: retain the existing dependency and record an **unresolved high advisory in development/build tooling, with no demonstrated public request path in the inspected application**. No compatible upstream patch is available in the evidence checked 19 October 2026 UTC (19 October Toronto). This is a recommendation for PM review, not release-risk acceptance or a security clearance. Full Step 13 remains IN_PROGRESS.
 
 ## Identity and evidence

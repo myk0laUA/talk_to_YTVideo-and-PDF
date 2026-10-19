@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM13B review:** bounded dependency triage accepted in `96b1c30`; dependency retained, high advisory unresolved, no demonstrated public-input path in inspected code. Fresh PM verification:420 protected files unchanged,179 retained inputs match, all three hashes matched. Next single task `docs/WORKER_TASK_14A.md`: honest walkthrough preparation while live integration/keys remain blocked. No deployment/spending; no release-risk clearance. Older summaries below are historical.
+
 ## Worker 13B — dependency advisory triage, proposed READY_FOR_REVIEW
 
 See [one13B triage report](DEPENDENCY_TRIAGE_13B.md) and PROJECT_STATE for the current worker handoff. Pinned Node24.22.0/npm11.19.1 freshly audited the retained13A exact8af058e installation (unchanged build6Z6iACnge_2zKkfs2q1BI): `npm audit --json` **exit1**, five high affected package entries/one braces advisory; `npm audit --omit=dev --json` **exit0**, zero findings. `npm ls braces micromatch fast-glob @next/eslint-plugin-next eslint-config-next --all`, `npm explain braces` and four registry queries exit0. Exact UTC/exits/logs at `artifacts/local/13b/commands.json` (05:06:46.334Z–05:06:50.928Z,19October2026UTC). Two supplemental stable-latest lint-package queries exit0 at05:11:54.639Z–05:11:55.599Z; both latest16.4.2 retain the affected chain. Audit exit1 is a retained finding, not an infrastructure failure or a fixed result.

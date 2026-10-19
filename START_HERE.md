@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM13B review:** bounded dependency triage accepted in `96b1c30`; dependency retained, high advisory unresolved, no demonstrated public-input path in inspected code. Fresh PM verification:420 protected files unchanged,179 retained inputs match, all three hashes matched. Next single task `docs/WORKER_TASK_14A.md`: honest walkthrough preparation while live integration/keys remain blocked. No deployment/spending; no release-risk clearance. Older summaries below are historical.
+
 **Current PM13A review:** clean-checkout verification and reviewer instructions accepted in `e4c7097`; two isolated copies passed the nine required commands (952 units,16 smoke,186 focused +59 HTTP). Fresh PM identity/link/boundary audit PASS; all four delivery hashes matched. Next single task `docs/WORKER_TASK_13B.md`: triage the reported lint-tool dependency advisory. No deployment/spending; live and physical-device gates remain open. Older summaries below are historical.
 
 **Current PM12A review:** bounded local mobile/accessibility review accepted in `8af058e`; build `R_ixIZMDu1UXwpkBpA8ws`, all eight hashes matched. Fresh PM smoke16/source75/transcript32 PASS. Three reproduced fixes accepted; physical-phone/audio and full live gates remain open. Next single task: `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer instructions without keys. No deployment/spending. Older summaries below are historical.
