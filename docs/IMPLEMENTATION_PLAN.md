@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+**Current PM10B review:** isolated text composer/recovery presentation accepted in5c0b5b7; build us6hIqNcK4LWmfU6CDuvg, all14hashes match, fresh92browser PASS. Production remains unavailable; no deployment/keys/spend. Next single task `docs/WORKER_TASK_08C.md`: voice-control presentation using actual08A/B and isolated fixtures, before later mode switching. Full original/live gates remain open.
+
 **Current PM10A review:** scripted microphone-free text lifecycle accepted in e416874; build VxITBUcDZTwGOLrzLPgZK, all seven hashes match, fresh90focused/919unit PASS. No blocking scoped finding. Next single task `docs/WORKER_TASK_10B.md`: text composer/recovery UI using isolated browser fixtures. No keys/spend/public activation; full live gates and actual07 budgeting remain open. Public03eb7d8 unchanged.
 
 PM19OctoberUTC/18OctoberToronto:09B local transcript presentation accepted ine7c7267 (fresh28browser PASS), not deployed. Next10A scripted microphone-free text lifecycle. Actual provider/grounding, public session integration and full original dependencies remain open.

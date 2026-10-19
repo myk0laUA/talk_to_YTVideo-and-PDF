@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM10B review:** isolated text composer/recovery presentation accepted in5c0b5b7; build us6hIqNcK4LWmfU6CDuvg, all14hashes match, fresh92browser PASS. Production remains unavailable; no deployment/keys/spend. Next single task `docs/WORKER_TASK_08C.md`: voice-control presentation using actual08A/B and isolated fixtures, before later mode switching. Full original/live gates remain open.
+
 ## Task10B worker handoff — proposed READY_FOR_REVIEW
 
 Isolated text composer/recovery UI implemented; PM acceptance pending. Dirty main/baseHEAD ca6cfaf2290f89d9fd49254d34e63e8f9d983dca; local production build **us6hIqNcK4LWmfU6CDuvg**, Node24.22.0/npm11.19.1. [10B ownership/receipt/retry policy, six-criterion acceptance matrix, deterministic fixture and PM runbook](TEXT_SESSION_UI_10B.md). Exact UTC/exits including development failures, changed-file SHA256, separate fixture/prod identities, safe command/ACK/resource counts, screenshots and synthetic traces: ignored **artifacts/local/10b/**.

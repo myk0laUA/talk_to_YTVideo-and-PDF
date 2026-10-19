@@ -1,5 +1,7 @@
 # Task 10B — text composer and recovery presentation
 
+**Current PM10B review:** isolated text composer/recovery presentation accepted in5c0b5b7; build us6hIqNcK4LWmfU6CDuvg, all14hashes match, fresh92browser PASS. Production remains unavailable; no deployment/keys/spend. Next single task `docs/WORKER_TASK_08C.md`: voice-control presentation using actual08A/B and isolated fixtures, before later mode switching. Full original/live gates remain open.
+
 Worker proposes READY_FOR_REVIEW for Task10B only. PM owns acceptance. Full Step10, actual07 accounting, live source-session integration, provider/grounding and physical-device gates remain open. Public03eb7d8 remains PDF-only; nothing was deployed, committed, pushed, provisioned or purchased.
 
 ## Implementation and ownership
