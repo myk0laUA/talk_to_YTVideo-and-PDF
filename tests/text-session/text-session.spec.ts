@@ -218,7 +218,7 @@ test("streaming keeps keyboard focus and reading anchor; Jump, reduced motion an
 test("separate actual production stays unavailable and excludes fixture activation", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3118/?fixture=text&scenario=success");
   await expect(page.locator(".text-session-status")).toContainText("unavailable in this build");
-  for (const name of ["Start Voice Chat", "Ask with text", "Start text session", "Stop text session", "Send question"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
+  for (const name of ["Start text session", "Stop text session", "Send question"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
   await expect(question(page)).toBeDisabled(); await expect(turns(page)).toHaveCount(0);
   for (const path of ["/fixture.js", "/text-fixture", "/tests/text-session/harness"]) expect((await page.request.get(`http://127.0.0.1:3118${path}`)).status()).toBe(404);
   await fits(page); await capture(page, info, "production-unavailable");

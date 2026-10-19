@@ -355,7 +355,7 @@ test("four-width reflow, reduced motion and 200 percent text retain named touch 
 
 test("separate production retains disabled entry and excludes fixture routes and query activation", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3120/?fixture=voice&scenario=success");
-  await expect(page.getByRole("button", { name: "Start Voice Chat", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Voice mode", exact: true })).toBeEnabled();
   await expect(page.getByRole("button", { name: "Start text session", exact: true })).toBeDisabled();
   await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
   await expect(page.locator(".voice-session")).toHaveCount(0); await expect(turns(page)).toHaveCount(0);

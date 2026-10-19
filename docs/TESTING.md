@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+## Task 10C — composed voice/text mode ownership
+
+The focused command is **`npm run test:mode-switch`**, after `npm run build`, using pinned Node24.22.0/npm11.19.1. It refuses occupied3121/3122, compiles a separate loopback fixture outside `src/`, and exercises actual08A/B/10A/07B/09A/B through `ConversationArea`. StrictMode is enabled. The actual production build runs separately with empty keys, unusable synthetic DB, disabled gates and blocked external/provider access; mode selection works but no application controller factory is provided.
+
+The four-width Chromium matrix covers explicit/inert/rapid selection; independent modes; denied/unavailable/ended microphone→complete text exchange→fresh voice Start and full source ACKs; partial/stopped/error sessions; fresh transcript/draft; switching at every preparation/connection/priming/media/playback/interruption/admission/write/receipt/generation boundary; source replacement/removal/unmount; callbacks/resources after a successful new session; default source/turn refusal. Both factories share ordering/resource counters: one owner and at most one transferred connection, separately counted late untransferred acquisitions, fresh objects, once-only cleanup, no sends after close, empty disposed stores, no remaining listeners/timers and native microphone/audio/peer/socket/storage/external counts0. No presentation states are injected.
+
+Keyboard Enter/Space, selected names/descriptions, visible focus, source preview,09B reading anchor/Jump,320/390/768/1440px,200% text/CSS reflow and reduced motion are checked. Production gets separate fixture URL404/query-inert and emitted JS/JSON/route exclusion checks. Existing unavailable-entry assertions now target the selected Start control; ingestion status assertions are scoped to the source panel, keeping them distinct from the new mode announcement.
+
+See [10C ownership, six-criterion acceptance mapping and PM runbook](MODE_SWITCHING_10C.md). Exact results/build/base/dirty/runtime and UTC/exits including development failures are recorded in PROJECT_STATE and ignored `artifacts/local/10c/commands.jsonl`. Screenshots, safe synthetic traces/resource chronology, production exclusion and changed-file SHA256 are under that directory. These checks do not establish physical permission/audio, phone keyboard/IME, screen-reader behavior, browser-toolbar zoom or live grounding. Full07–10 live gates, actual07 accounting and11A SQL/scheduling remain open. Historical PM/worker entries below retain their original context.
+
 **Current PM08C review:** isolated voice controls accepted in dc0ac90; build oWirgcJ5JBDU_vzPCBDGU, all11 hashes match, fresh208 browser checks PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_10C.md`: explicit voice/text switching with one owner and fresh sessions, using isolated fixtures. Full live/provider/physical-device gates remain open.
 
 ## Task 08C — isolated voice controls presentation

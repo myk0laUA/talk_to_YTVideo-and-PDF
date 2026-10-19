@@ -21,7 +21,7 @@ const metadata = (content: SourceContent) => Object.fromEntries(Object.entries(c
 const reply = (route: Route, status: number, body: unknown) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 const fail = (route: Route, status: number, code: string) => reply(route, status, { ok: false, error: { code, message: "PRIVATE upstream SQL details" } });
 const submit = async (page: Page, video = url) => { await page.getByRole("textbox", { name: "YouTube URL" }).fill(video); await page.getByRole("textbox", { name: "YouTube URL" }).press("Enter"); };
-const loaded = (page: Page) => expect(page.getByRole("status")).toContainText("YouTube captions ready");
+const loaded = (page: Page) => expect(page.locator(".source-panel").getByRole("status")).toContainText("YouTube captions ready");
 const open = async (page: Page) => { await page.getByRole("button", { name: "Inspect extracted text" }).click(); await expect(page.getByRole("heading", { name: "YouTube caption text" })).toBeFocused(); };
 const remove = async (page: Page) => { await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove" }).click(); };
 const counts = (info: TestInfo, value: object) => info.attach("request-counts", { body: JSON.stringify(value), contentType: "application/json" });
@@ -71,8 +71,7 @@ test("mocked: native submit, one 401, metadata then full GET, complete ordered c
   await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
   expect(await page.getByRole("button", { name: "Inspect extracted text" }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
   await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-focus-return.png` });
-  await expect(page.getByRole("button", { name: "Start Voice Chat" })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Ask with text" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Start text session" })).toBeDisabled();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length, fits: document.documentElement.scrollWidth <= innerWidth }))).toEqual({ local: 0, session: 0, fits: true });
   expect(errors).toEqual([]);
   await page.reload(); await expect(page.getByRole("button", { name: "Import YouTube video", exact: true })).toBeVisible(); expect(gets).toBe(1);
@@ -112,10 +111,10 @@ for (const [code, status, text, rechecks] of failures) test(`mocked: ${code} rec
     gets++; return reply(route, 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.getByRole("status")).toContainText(text);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText(text);
   await expect(page.getByRole("button", { name: "Replace with YouTube video" })).toBeEnabled();
   expect(posts).toBe(2); expect(gets).toBe(rechecks ? 2 : 1);
-  await expect(page.getByRole("status")).not.toContainText(/PRIVATE|another provider|fallback/i);
+  await expect(page.locator(".source-panel").getByRole("status")).not.toContainText(/PRIVATE|another provider|fallback/i);
   if (code === "blocked") await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-failure.png`, fullPage: true });
   await open(page); await expect(page.locator("#source-segment-64")).toContainText("Caption 64 marker");
   await counts(info, { posts, gets, rechecks });
@@ -128,7 +127,7 @@ test("mocked: second 401 ends handshake, preserves input, rechecks expired prior
     return ++gets === 1 ? reply(route, 200, { ok: true, source: youtube() }) : fail(route, 404, "unavailable");
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.getByRole("status")).toContainText("cookies are unavailable");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("cookies are unavailable");
   await expect(page.getByRole("textbox", { name: "YouTube URL" })).toHaveValue(url);
   await expect(page.locator(".active-source")).toHaveCount(0); expect(posts).toBe(3); expect(gets).toBe(2);
   await counts(info, { posts, gets });
@@ -141,7 +140,7 @@ test("mocked: saved-ID GET retry never repeats POST", async ({ page }, info) => 
     expect(route.request().url()).toContain(idA);
     return ++gets === 1 ? fail(route, 503, "storage_unavailable") : reply(route, 200, { ok: true, source: youtube() });
   });
-  await page.goto("/"); await submit(page); await expect(page.getByRole("status")).toContainText("YouTube stored, but");
+  await page.goto("/"); await submit(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("YouTube stored, but");
   await page.getByRole("button", { name: "Retry text" }).click(); await loaded(page); expect(posts).toBe(1); expect(gets).toBe(2);
   await counts(info, { posts, gets });
 });
@@ -158,7 +157,7 @@ test("mocked: YouTube to PDF to YouTube to YouTube uses one card and no pre-dele
   await page.goto("/"); await submit(page); await loaded(page);
   const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Replace PDF", exact: true }).click();
   await (await chooser).setFiles({ name: "Résumé 日本語.pdf", mimeType: "application/pdf", buffer: Buffer.from("mock") });
-  await expect(page.getByRole("status")).toContainText("PDF text ready");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await submit(page); await loaded(page); await submit(page, "https://youtu.be/abcdefghijk"); await loaded(page);
   expect(await page.locator(".active-source").count()).toBe(1); expect(posts).toBe(4); expect(deletes).toBe(0);
@@ -175,7 +174,7 @@ for (const code of ["network", "replacement_conflict"]) test(`mocked: uncertain 
     gets++; return posts === 2 ? fail(route, 404, "unavailable") : reply(route, 200, { ok: true, source: youtube(posts === 1 ? idA : idC) });
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.getByRole("status")).toContainText("previous source is no longer accessible");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is no longer accessible");
   await expect(page.locator(".active-source")).toHaveCount(0);
   await submit(page); await loaded(page); expect(posts).toBe(3); expect(gets).toBe(3);
   await counts(info, { posts, gets });
@@ -202,7 +201,7 @@ test("mocked: cancel aborts request, excludes parallel mutation and ignores late
   await expect(page.getByRole("button", { name: "Replace PDF", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Cancel import" }).click();
-  await expect(page.getByRole("status")).toContainText("may still replace it");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("may still replace it");
   expect(await page.evaluate(() => (window as unknown as { cancelledSignal: AbortSignal }).cancelledSignal.aborted)).toBe(true);
   await submit(page); await loaded(page);
   await page.evaluate(() => (window as unknown as { releaseLate: () => void }).releaseLate());
@@ -220,9 +219,9 @@ test("mocked: removal confirmation, keep, repeat and already removed", async ({ 
   });
   await page.goto("/"); await submit(page); await loaded(page);
   await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Keep source" }).click(); expect(deletes).toBe(0);
-  await remove(page); await expect(page.getByRole("status")).toContainText("Source removed or already unavailable");
+  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
   await submit(page); await loaded(page); await remove(page);
-  await expect(page.getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2); expect(posts).toBe(2);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2); expect(posts).toBe(2);
   await counts(info, { posts, deletes });
 });
 
@@ -244,9 +243,9 @@ test("mocked: local deadline aborts extraction and still revalidates known prior
     return reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await page.clock.install(); await submit(page);
-  await expect(page.getByRole("status")).toContainText("Importing YouTube");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Importing YouTube");
   await page.clock.fastForward(55_001);
-  await expect(page.getByRole("status")).toContainText("previous source is readable now");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is readable now");
   expect(await page.evaluate(() => (window as unknown as { deadlineAborted: boolean }).deadlineAborted)).toBe(true);
   expect(gets).toBe(2); expect(posts).toBe(1);
   await counts(info, { routedPosts: posts, clientPosts: 2, gets, clock: "mocked 55-second deadline" });
@@ -260,7 +259,7 @@ for (const network of [true, false]) test(`mocked: failed removal ${network ? "n
     return reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await remove(page);
-  await expect(page.getByRole("status")).toContainText("Removal is not confirmed");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Removal is not confirmed");
   await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeEnabled(); expect(deletes).toBe(1); expect(gets).toBe(2);
   await counts(info, { gets, deletes });
 });
@@ -272,7 +271,7 @@ test("mocked: expiry clears inaccessible source on Check source", async ({ page 
     return ++gets === 1 ? reply(route, 200, { ok: true, source: youtube() }) : fail(route, 404, "unavailable");
   });
   await page.goto("/"); await submit(page); await loaded(page); await page.getByRole("button", { name: "Check source" }).click();
-  await expect(page.getByRole("status")).toContainText("expired or is no longer available");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("expired or is no longer available");
   await expect(page.locator(".active-source")).toHaveCount(0); expect(posts).toBe(1); expect(gets).toBe(2);
   await counts(info, { posts, gets });
 });
@@ -295,7 +294,7 @@ test("integrated: actual direct adapter/DTO, synthetic upstream/Prisma, YouTube 
   await page.getByRole("button", { name: "Close text and return" }).first().click();
   const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Replace PDF", exact: true }).click();
   await (await chooser).setFiles("artifacts/local/04a/fixtures/multi.pdf");
-  await expect(page.getByRole("status")).toContainText("PDF text ready");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
   expect((await page.request.get(`/api/sources/${ids[0]}`)).status()).toBe(404);
   await page.getByRole("button", { name: "Inspect extracted text" }).click();
   const manifest = JSON.parse(await readFile("artifacts/local/04a/fixtures/manifest.json", "utf8"));
@@ -311,7 +310,7 @@ test("integrated: actual direct adapter/DTO, synthetic upstream/Prisma, YouTube 
   await submit(page); await loaded(page);
   expect((await page.request.get(`/api/sources/${ids[1]}`)).status()).toBe(404);
   await open(page); expect(await page.locator(".page-text").allTextContents()).toEqual([" FIRST synthetic marker ", "MIDDLE synthetic marker", "LAST synthetic marker"]);
-  await remove(page); await expect(page.getByRole("status")).toContainText("Source removed or already unavailable");
+  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
   expect((await page.request.get(`/api/sources/${ids[2]}`)).status()).toBe(404);
   expect(requests.filter(r => r.method === "POST").map(r => r.status)).toEqual([401, 201, 201, 201]);
   expect(requests.filter(r => r.method === "GET")).toHaveLength(3);

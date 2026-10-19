@@ -41,7 +41,7 @@ class OwnedTextSession extends Component<Props, State> {
   private question = createRef<HTMLTextAreaElement>();
   componentDidMount() {
     this.mounted = true;
-    this.controller = this.props.createController?.(status => {
+    if (this.props.source) this.controller = this.props.createController?.(status => {
       if (!this.mounted || !this.controller) return;
       const transcript = this.controller.transcript;
       // 10A only projects a user item after the exact finalized receipt ACK.

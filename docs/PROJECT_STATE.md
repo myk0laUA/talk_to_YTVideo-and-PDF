@@ -1,5 +1,56 @@
 # Project state — Talk to a Document
 
+## Task 10C worker handoff — proposed READY_FOR_REVIEW (19 October2026 UTC / 18 October Toronto)
+
+**Implemented for the assigned local/scripted scope; PM acceptance pending.** Parent Step10 and all original Step01–14 IDs are preserved. Dirty **main**, base/HEAD **af739424c0ae895ee78afe25184c7fb79775356f**, including PM-accepted08C application dc0ac90. Local production build **-Dv7-LHxYaciWPP4Dupmi**, pinned **Node24.22.0/npm11.19.1**. No commit/push, deployment, keys, spend or shared DB action. Public03eb7d8 remains PDF-only. [10C ownership, changed-file groups, six-criterion acceptance mapping and PM reproduction runbook](MODE_SWITCHING_10C.md).
+
+The workspace now renders a reusable ConversationArea with explicit Voice/Text buttons, selected state, visible pre-switch history/draft policy and polite selection announcement. Only the selected accepted08C/10B session owner is mounted; outgoing synchronous disposal precedes the incoming factory. Text remains the initial presentation. Switching starts empty on the same source and waits for deliberate Start/complete source ACKs; repeat selection is inert. Existing Stop partial-text retention remains. Source keys discard old state immediately; a missing source creates neither controller. No coordinator/transcript/model/server/schema/dependency/lockfile/proof policy changed. Production supplies neither application factory, so both modes remain truthful unavailable presentations with disabled Start.
+
+**Final focused command: npm run test:mode-switch —156/156 PASS**,39 scenarios ×320/390/768/1440px Chromium, actual08A/B/10A/07B/09A/B components/controllers under StrictMode; test-only positive admission/transport/tracks/playback/time and authored synthetic answers. Denied, timed-out/unavailable and ended microphone each recover through an explicitly selected complete text exchange, then fresh voice Start and ACKs. Both directions cover partial/stopped/error sessions, unsent draft preservation on repeat selection, fresh history on switching, preparation/connection/priming, voice microphone/playback/interruption cancel/clear/generation, text admission/write/final-receipt/waiting-response/generation, source A→B/removal/unmount and rapid/duplicate actions. Old callbacks/resources are delivered after successful new sessions; new source/status/draft/history remain unchanged. Source/per-turn default accounting still refuses.
+
+**Final cross-factory resource evidence:**156 safe audits (152 fixture +4 separate production);1200 factories/1200 disposals;292 fake connections/292 closes;148 playback releases;116 returned media/116 releases;232 transferred tracks stopped. Maximum live owner1 and active transferred connection1. Maximum adapter-owned untransferred connections2 is recorded separately (an old late acquisition may coexist with the new connection's brief acquisition); all end counts0. Fresh controller/identity objects, no commands after close/retransmission, empty disposed transcript stores, fixture listener/timer cleanup all pass. Native microphone/audio/peer/socket/storage/external access0, browser errors0; server forbidden-provider attempts0. Separate production JS/JSON188-file scan/route manifest excludes fixture markers/classes/answers; fixture paths404 and queries inert. Full chronology, exact synthetic command/resource counts and traces: ignored artifacts/local/10c/resource-summary.json and per-test browser-results/**/safe-counts.json/trace.zip.
+
+Worker inspected desktop/390px denied→text-complete→voice-return captures, playback/receipt late isolation, actual separate unavailable production,320px200%-text mode controls/focus and320/390px200%-text source preview. The policy is visible before switching; selected controls wrap and retain visible keyboard focus, no automatic input focus/permission/Start occurs. Keyboard Enter/Space,09B reading anchor/Jump, reduced motion and200% text/CSS layout reflow assertions pass. Focused accessibility review found no blocking scoped UI defect; native screen-reader/physical-device/actual browser-toolbar zoom remain unverified. Evidence: screenshots/ and manual-review.json under artifacts/local/10c/.
+
+### Required command evidence
+
+All timestamps below are UTC on19October2026. Expected result is successful command completion and the stated full count; observed results are PASS/exit0. All checks are **local**. Composed/08C/10B/09B browser fixtures use deterministic simulated boundaries and separate disabled production roots. Source/YouTube suites use actual parsers/adapters with synthetic upstream/repository boundaries. Existing proof regressions retain their isolated synthetic gate/credential configuration and fake media/peers/sockets; these do not authorize uploaded sources or establish live behavior. Parent environment has empty keys, unusable loopback DB, disabled gates and external fetch guard; fixture runners explicitly control their own isolated child environment.
+
+| Command | Exact UTC start → end | Observed / exit | Evidence path |
+|---|---|---|---|
+| `npm run lint` | 2026-10-19T03:02:17.6117158Z → 2026-10-19T03:03:29.3781918Z | PASS; exit0 | `artifacts/local/10c/lint-030217617.log` |
+| `npm run typecheck` | 2026-10-19T03:03:30.1643146Z → 2026-10-19T03:04:00.9350806Z | PASS; exit0 | `artifacts/local/10c/typecheck-030330164.log` |
+| `npm run test` | 2026-10-19T03:04:01.6792932Z → 2026-10-19T03:04:05.6113205Z | 919/919 PASS; exit0 | `artifacts/local/10c/test-030401679.log` |
+| `npm run test:lifecycle` | 2026-10-19T02:53:11.3992357Z → 2026-10-19T02:53:12.8699907Z | 63/63 PASS; exit0 | `artifacts/local/10c/test-lifecycle-025311399.log` |
+| `npm run test:interruption` | 2026-10-19T02:53:13.6240255Z → 2026-10-19T02:53:15.1209824Z | 62/62 PASS; exit0 | `artifacts/local/10c/test-interruption-025313624.log` |
+| `npm run test:text-lifecycle` | 2026-10-19T03:04:06.3578242Z → 2026-10-19T03:04:07.9755161Z | 90/90 PASS; exit0 | `artifacts/local/10c/test-text-lifecycle-030406357.log` |
+| `npm run build` | 2026-10-19T02:53:18.2662189Z → 2026-10-19T02:53:30.7733154Z | PASS; exit0 | `artifacts/local/10c/build-025318266.log` |
+| `npm run test:mode-switch` | 2026-10-19T03:04:08.7401606Z → 2026-10-19T03:05:22.3391041Z | 156/156 PASS; exit0 | `artifacts/local/10c/test-mode-switch-030408740.log` |
+| `npm run test:voice-session` | 2026-10-19T02:57:39.8941956Z → 2026-10-19T02:59:08.4839439Z | 208/208 PASS; exit0 | `artifacts/local/10c/test-voice-session-025739894.log` |
+| `npm run test:text-session` | 2026-10-19T02:59:09.2536288Z → 2026-10-19T02:59:50.6750250Z | 92/92 PASS; exit0 | `artifacts/local/10c/test-text-session-025909253.log` |
+| `npm run test:transcript-view` | 2026-10-19T02:59:51.4168920Z → 2026-10-19T03:00:05.5642610Z | 28/28 PASS; exit0 | `artifacts/local/10c/test-transcript-view-025951416.log` |
+| `npm run test:smoke` | 2026-10-19T03:00:06.3245115Z → 2026-10-19T03:00:12.4958310Z | 14/14 PASS; exit0 | `artifacts/local/10c/test-smoke-030006324.log` |
+| `npm run test:source-ui` | 2026-10-19T03:00:13.2450373Z → 2026-10-19T03:01:10.4130311Z | 75/75 PASS; exit0 | `artifacts/local/10c/test-source-ui-030013245.log` |
+| `npm run test:youtube-ui` | 2026-10-19T03:01:11.1624272Z → 2026-10-19T03:01:53.7068116Z | 99/99 PASS; exit0 | `artifacts/local/10c/test-youtube-ui-030111162.log` |
+| `npm run test:voice` | 2026-10-19T03:01:54.4651120Z → 2026-10-19T03:02:02.8203128Z | 10/10 PASS; exit0 | `artifacts/local/10c/test-voice-030154465.log` |
+| `npm run test:text` | 2026-10-19T03:02:03.5482070Z → 2026-10-19T03:02:13.5835918Z | 10/10 PASS; exit0 | `artifacts/local/10c/test-text-030203548.log` |
+
+### Retained development failures
+
+| Command | Exact UTC start → end | Observed exit | Evidence path |
+|---|---|---|---|
+| `npm run typecheck` | 2026-10-19T02:51:30.9246031Z → 2026-10-19T02:51:35.2086087Z | exit2 | `artifacts/local/10c/typecheck-025130924.log` |
+| `npm run test` | 2026-10-19T02:52:25.2962170Z → 2026-10-19T02:52:29.0858236Z | exit1 | `artifacts/local/10c/test-025225296.log` |
+| `npm run test:mode-switch` | 2026-10-19T02:53:49.6793019Z → 2026-10-19T02:55:04.8250752Z | exit1 | `artifacts/local/10c/test-mode-switch-025349684.log` |
+
+Typecheck exit2 was an untyped HTMLDetailsElement screenshot helper; unit exit1 was the old static standalone-TextSession expectation (918/919 passed); the first browser run had144/152 PASS and8 focus-visible setup failures because a pointer action had not been followed by keyboard modality. Corrected helpers/assertions, then all required checks passed. Initial browser report/identity/traces are preserved in artifacts/local/10c/development-failures/, not relabeled as passes. The final focused rerun additionally verifies explicit pending phases, separately counted late acquisitions, empty disposed stores and no sends after close. Exact command history is commands.jsonl.
+
+**Acceptance mapping:** criteria1–6 are supported for the assigned isolated scope by the runbook matrix, final focused report, per-test ownership/ACK/resource chronology, responsive/focus screenshots, separate production exclusion and ingestion/proof regressions. Changed-file SHA256 for all22 files, base/dirty/build/runtime and unchanged dependency/lockfile audit are in artifacts/local/10c/changed-files.sha256.json and build-identity.json. TESTING is updated.
+
+**Remaining / stop:** no real microphone permission, audible playback/interruption, physical phone keyboard/IME, screen-reader announcements, actual browser-toolbar zoom, live socket/provider/source grounding or deployment was run. Actual07 model/token accounting stays BLOCKED; full07–10 live gates and11A real SQL cleanup/scheduling stay open. No cross-mode history transfer or public controller factories are implemented. No human key/phone/purchase action is required for this scripted review. PM should compare hashes, review the six criteria/chronology and rerun the focused command before deciding acceptance and the next assignment. Worker stops at **READY_FOR_REVIEW**; do not advance a later task from this handoff.
+
+---
+
 ## PM08C acceptance — 19 October2026 UTC / 18 October Toronto
 
 **Accepted isolated voice-control presentation scope**, application **dc0ac90c3e518ab7a1d692b66bedbb0a60937b8c**, arrival8c7c8f0, local build **oWirgcJ5JBDU_vzPCBDGU**. All11 worker hashes matched before PM documentation edits. Reviewed keyed owner/StrictMode cleanup, explicit lifecycle method calls, independent microphone/playback state, actual08B interruption barriers, capacity and uncertainty copy, stopped transcript retention and source clearing. No blocking scoped finding or PM application edits. Selected React/Playwright/Impeccable review applied; fresh Web Interface Guidelines fetched. Bootstrap PRODUCT/DESIGN capability claims are historical; this tracker remains authoritative.

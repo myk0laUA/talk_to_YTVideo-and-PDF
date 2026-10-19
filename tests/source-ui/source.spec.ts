@@ -15,7 +15,7 @@ const choose = async (page: Page, name = "Résumé 日本語.pdf", size = 10) =>
   await page.getByRole("button", { name: /^(Upload a PDF|Replace PDF)$/ }).click();
   await (await chooser).setFiles({ name, mimeType: "application/pdf", buffer: Buffer.alloc(size, "x") });
 };
-async function load(page: Page) { await choose(page); await expect(page.getByRole("status")).toContainText("PDF text ready"); }
+async function load(page: Page) { await choose(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); }
 async function remove(page: Page) { await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove", exact: true }).click(); }
 
 test.beforeEach(async ({ page }) => {
@@ -56,7 +56,7 @@ test("mocked: one 401 retry, Unicode/safe filename, source navigation, keyboard,
   await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
   await page.getByRole("link", { name: "Conversation", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Conversation", exact: true })).toBeFocused();
-  await expect(page.getByRole("button", { name: "Start Voice Chat" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Start text session" })).toBeDisabled();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
   await page.reload(); await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeVisible(); expect(gets).toBe(1);
   expect(errors).toEqual([]);
@@ -75,11 +75,11 @@ for (const [code, status, text] of classes) test(`mocked: authored ${code} recov
     ? ++posts === 1 ? reply(route, 201, { ok: true, source: source() }) : fail(route, status, code)
     : reply(route, 200, { ok: true, source: source() }));
   await page.goto("/"); await load(page); await choose(page, "replacement.pdf");
-  await expect(page.getByRole("status")).toContainText(text);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText(text);
   await expect(page.getByRole("button", { name: "Replace PDF" })).toBeEnabled();
   await page.getByRole("button", { name: "Inspect extracted text" }).click();
   await expect(page.getByText("Final marker", { exact: true })).toBeVisible();
-  await expect(page.getByRole("status")).not.toContainText("PRIVATE"); expect(posts).toBe(2);
+  await expect(page.locator(".source-panel").getByRole("status")).not.toContainText("PRIVATE"); expect(posts).toBe(2);
 });
 
 test("mocked: second 401 stops retry and expired prior source is cleared", async ({ page }) => {
@@ -89,16 +89,16 @@ test("mocked: second 401 stops retry and expired prior source is cleared", async
     return posts === 1 ? reply(route, 200, { ok: true, source: source() }) : fail(route, 404, "unavailable");
   });
   await page.goto("/"); await load(page); await choose(page);
-  await expect(page.getByRole("status")).toContainText("cookies are unavailable");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("cookies are unavailable");
   await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeEnabled(); expect(posts).toBe(3);
 });
 
 test("mocked: byte boundary accepts exact limit; larger file and non-PDF do not upload", async ({ page }) => {
   let posts = 0;
   await page.route("**/api/sources/**", route => { if (route.request().method() === "POST") posts++; return route.request().method() === "POST" ? reply(route, 201, { ok: true, source: source() }) : reply(route, 200, { ok: true, source: source() }); });
-  await page.goto("/"); await choose(page, "limit.pdf", 25_000_000); await expect(page.getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(1);
-  await choose(page, "over.pdf", 25_000_001); await expect(page.getByRole("status")).toContainText("too large"); expect(posts).toBe(1);
-  await choose(page, "not.txt"); await expect(page.getByRole("status")).toContainText("Choose a PDF file"); expect(posts).toBe(1);
+  await page.goto("/"); await choose(page, "limit.pdf", 25_000_000); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(1);
+  await choose(page, "over.pdf", 25_000_001); await expect(page.locator(".source-panel").getByRole("status")).toContainText("too large"); expect(posts).toBe(1);
+  await choose(page, "not.txt"); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Choose a PDF file"); expect(posts).toBe(1);
 });
 
 test("mocked: replacement, text-fetch retry without reupload, remove and already removed", async ({ page }) => {
@@ -110,11 +110,11 @@ test("mocked: replacement, text-fetch retry without reupload, remove and already
     gets++; return gets === 2 ? fail(route, 503, "storage_unavailable") : reply(route, 200, { ok: true, source: source(route.request().url().endsWith(idA) ? idA : idB) });
   });
   await page.goto("/"); await load(page); await choose(page, "replacement.pdf");
-  await expect(page.getByRole("status")).toContainText("PDF stored, but"); expect(posts).toBe(2);
-  await page.getByRole("button", { name: "Retry text" }).click(); await expect(page.getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(2);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF stored, but"); expect(posts).toBe(2);
+  await page.getByRole("button", { name: "Retry text" }).click(); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(2);
   await expect(page.getByText("replacement.pdf", { exact: true })).toBeVisible();
-  await remove(page); await expect(page.getByRole("status")).toContainText("Source removed or already unavailable");
-  await load(page); await remove(page); await expect(page.getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2);
+  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
+  await load(page); await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2);
 });
 
 test("mocked: uncertain committed replacement clears prior 404; deliberate retry recovers", async ({ page }) => {
@@ -124,7 +124,7 @@ test("mocked: uncertain committed replacement clears prior 404; deliberate retry
     return posts === 2 ? fail(route, 404, "unavailable") : reply(route, 200, { ok: true, source: source(posts === 1 ? idA : idB) });
   });
   await page.goto("/"); await load(page); await choose(page);
-  await expect(page.getByRole("status")).toContainText("previous source is no longer accessible"); expect(posts).toBe(2);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is no longer accessible"); expect(posts).toBe(2);
   await load(page); expect(posts).toBe(3);
 });
 
@@ -147,9 +147,9 @@ test("mocked: cancellation ignores late success while one mutation is active", a
   await expect(page.getByRole("button", { name: "Replace PDF" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Cancel import" }).click();
-  await expect(page.getByRole("status")).toContainText("may still replace it");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("may still replace it");
   await page.evaluate(() => (window as unknown as { releaseLate: () => void }).releaseLate());
-  await page.getByRole("button", { name: "Check source" }).click(); await expect(page.getByRole("status")).toContainText("PDF text ready");
+  await page.getByRole("button", { name: "Check source" }).click(); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await expect(page.getByText("late.pdf", { exact: true })).toHaveCount(0);
 });
@@ -158,7 +158,7 @@ for (const network of [false, true]) test(`mocked: removal ${network ? "network 
   await page.route("**/api/sources/**", route => route.request().method() === "DELETE" ? network ? route.abort("failed") : fail(route, 503, "storage_unavailable")
     : reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: source() }));
   await page.goto("/"); await load(page); await remove(page);
-  await expect(page.getByRole("status")).toContainText("Removal is not confirmed");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Removal is not confirmed");
   await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeEnabled();
 });
 
@@ -167,7 +167,7 @@ test("mocked: explicit content recheck handles generic expired 404", async ({ pa
   await page.route("**/api/sources/**", route => route.request().method() === "POST" ? reply(route, 201, { ok: true, source: source() })
     : ++gets === 1 ? reply(route, 200, { ok: true, source: source() }) : fail(route, 404, "unavailable"));
   await page.goto("/"); await load(page); await page.getByRole("button", { name: "Check source" }).click();
-  await expect(page.getByRole("status")).toContainText("expired or is no longer available");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("expired or is no longer available");
   await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeEnabled();
 });
 
@@ -183,9 +183,9 @@ test("integrated: actual PDF parser + synthetic repository, full 384-line previe
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: "Upload a PDF" }).click();
   await (await chooser).setFiles("artifacts/local/04a/fixtures/small.pdf");
-  await expect(page.getByRole("status")).toContainText("PDF text ready"); const firstId = lastId;
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); const firstId = lastId;
   await page.locator('input[type="file"]').setInputFiles("artifacts/local/04a/fixtures/multi.pdf");
-  await expect(page.getByRole("status")).toContainText("PDF text ready"); expect(lastId).not.toBe(firstId);
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(lastId).not.toBe(firstId);
   expect((await page.request.get(`/api/sources/${firstId}`)).status()).toBe(404);
   await page.screenshot({ path: `artifacts/local/05a/${info.project.name}-integrated-loaded.png`, fullPage: true });
   await page.getByRole("button", { name: "Inspect extracted text" }).click();
@@ -203,9 +203,9 @@ test("integrated: actual PDF parser + synthetic repository, full 384-line previe
   await page.getByRole("button", { name: "Close text and return" }).last().click();
   await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
   await page.locator('input[type="file"]').setInputFiles("artifacts/local/04a/fixtures/corrupt.pdf");
-  await expect(page.getByRole("status")).toContainText("Export a fresh PDF");
+  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Export a fresh PDF");
   await page.getByRole("button", { name: "Inspect extracted text" }).click(); await expect(page.getByRole("heading", { name: "Page 12", exact: true })).toBeVisible();
-  await remove(page); await expect(page.getByRole("status")).toContainText("Source removed or already unavailable");
+  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
   expect((await page.request.get(`/api/sources/${lastId}`)).status()).toBe(404);
   expect(posts).toEqual([401, 201, 201, 422]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

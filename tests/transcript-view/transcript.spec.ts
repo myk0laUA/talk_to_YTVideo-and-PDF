@@ -180,7 +180,7 @@ test("production root has only empty transcript and no fixture route, query swit
   await page.goto("http://127.0.0.1:3116/?fixture=transcript&scenario=streaming");
   await expect(page.getByRole("heading", { name: "Transcript", exact: true })).toBeVisible();
   await expect(page.getByText("Voice and text conversations are not connected yet.", { exact: true })).toBeVisible();
-  for (const name of ["Start Voice Chat", "Ask with text", "Upload a PDF", "Add a YouTube video"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
+  for (const name of ["Start text session", "Upload a PDF", "Add a YouTube video"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
   await expect(page.locator(".transcript-turn")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Source", exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
