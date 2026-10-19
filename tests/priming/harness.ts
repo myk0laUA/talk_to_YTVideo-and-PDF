@@ -6,6 +6,7 @@ import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { encodeManifest, bytes, type ItemEvent, type SessionEvent, type Manifest, type Mode } from "../../src/shared/priming-manifest.ts";
 import type { PrimingInput } from "../../src/shared/priming-admission.ts";
 import { PrimingController, type Basis, type PrimingClock, type PrimingTransport, type PrimingStatus } from "../../src/shared/priming-controller.ts";
+import type { InterruptEvent } from "../../src/shared/voice-response.ts";
 
 export const start = Date.UTC(2030, 0, 1);
 export async function fixture(kind: "PDF" | "YOUTUBE" = "PDF", variant: "A" | "B" = "B", runId = "runA", mode: Mode = "voice", limit = 2048) {
@@ -46,7 +47,7 @@ export class FakeClock implements PrimingClock {
   clearTimeout(handle: unknown) { this.timers.delete(handle as number); }
   tick(ms: number) { this.at += ms; for (const [id, timer] of this.timers) if (timer.at <= this.at) { this.timers.delete(id); timer.callback(); } }
 }
-type Outbound = SessionEvent | ItemEvent;
+type Outbound = SessionEvent | ItemEvent | InterruptEvent;
 // Narrow documented subset validator: no socket/fetch/key/media/environment dependency.
 export function validateOutbound(e: Outbound) {
   const keys = (v: object, expected: string[]) => assert.deepEqual(Object.keys(v).sort(), expected.sort());
@@ -58,6 +59,9 @@ export function validateOutbound(e: Outbound) {
     assert.ok(["text", "audio"].includes(e.session.output_modalities[0])); assert.equal(e.session.output_modalities.length, 1);
     const turn = e.session.audio.input.turn_detection;
     if (turn !== null) assert.deepEqual(turn, { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null });
+  } else if (e.type === "response.cancel" || e.type === "output_audio_buffer.clear") {
+    keys(e, ["type", "event_id", ...(e.type === "response.cancel" ? ["response_id"] : [])]);
+    if (e.type === "response.cancel") assert.match(e.response_id, /^[A-Za-z0-9_-]{1,128}$/);
   } else {
     assert.equal(e.type, "conversation.item.create"); keys(e, ["type", "event_id", "item", ...(e.previous_item_id ? ["previous_item_id"] : [])]);
     keys(e.item, ["id", "type", "role", "content"]); assert.equal(e.item.type, "message"); assert.equal(e.item.role, "user");

@@ -1,5 +1,6 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport, type RunIdentity } from "./priming-controller.ts";
 import type { PrimingInput } from "./priming-admission.ts";
+import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 
 export type VoiceIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 export type VoiceStatus = Readonly<{
@@ -7,6 +8,7 @@ export type VoiceStatus = Readonly<{
   identity?: VoiceIdentity; muted: boolean; protocolReady: boolean; productionReady: false;
   microphone: "none" | "pending" | "available";
   playback: "none" | "pending" | "available" | "blocked";
+  response: ResponseState;
   basis?: PrimingStatus["basis"]; failure?: VoiceFailure; message: string;
 }>;
 export type VoiceFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended";
@@ -34,8 +36,8 @@ export interface VoiceAdapters {
   connect(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceConnection>;
   acquireMedia(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceMedia>;
 }
-export type VoiceDeadlines = { preparationMs: number; connectionMs: number; primingMs: number; mediaMs: number };
-const defaults: VoiceDeadlines = { preparationMs: 25_000, connectionMs: 15_000, primingMs: 25_000, mediaMs: 30_000 };
+export type VoiceDeadlines = { preparationMs: number; connectionMs: number; primingMs: number; mediaMs: number; interruptionMs: number };
+const defaults: VoiceDeadlines = { preparationMs: 25_000, connectionMs: 15_000, primingMs: 25_000, mediaMs: 30_000, interruptionMs: 5_000 };
 const safely = (action: () => void) => { try { action(); } catch { /* Continue releasing other resources. */ } };
 const messages: Record<VoiceFailure, string> = {
   budget_unavailable: "Verified source budgets are unavailable. Setup needs review before starting voice.",
@@ -48,6 +50,7 @@ const messages: Record<VoiceFailure, string> = {
 type Attempt = {
   identity: VoiceIdentity; abort: AbortController; priming?: PrimingController;
   connection?: VoiceConnection; media?: VoiceMedia; listeners: (() => void)[];
+  response?: VoiceResponseController;
 };
 
 /** A data-only bridge permits 07B admission BEFORE any connection acquisition.
@@ -55,6 +58,8 @@ type Attempt = {
  * but close is borrowed: the coordinator alone closes the real connection.
  */
 class PrimingBridge implements PrimingTransport {
+  private route: (event: unknown, priming: () => void) => void;
+  constructor(route: (event: unknown, priming: () => void) => void) { this.route = route; }
   private connection?: VoiceConnection;
   private receive?: (e: unknown) => void;
   private closed?: () => void;
@@ -75,7 +80,9 @@ class PrimingBridge implements PrimingTransport {
   bind(connection: VoiceConnection) {
     if (this.stopped) return;
     this.connection = connection;
-    const unsubscribe = connection.transport.subscribe(e => this.receive?.(e), () => this.closed?.());
+    const unsubscribe = connection.transport.subscribe(e => {
+      if (!this.stopped) this.route(e, () => this.receive?.(e));
+    }, () => { if (!this.stopped) this.closed?.(); });
     if (this.stopped) { safely(unsubscribe); return; }
     this.unsubscribe = unsubscribe;
     const pending = this.pending; this.pending = undefined;
@@ -111,13 +118,14 @@ export class VoiceLifecycle {
   private notify: (status: VoiceStatus) => void;
   private deadlines: VoiceDeadlines;
   private status: VoiceStatus = Object.freeze({ phase: "idle", muted: false, protocolReady: false,
-    productionReady: false, microphone: "none", playback: "none", message: "Voice has not started." });
+    productionReady: false, microphone: "none", playback: "none", response: emptyResponse(), message: "Voice has not started." });
   constructor(clock: PrimingClock, adapters: VoiceAdapters, notify: (status: VoiceStatus) => void, deadlines: Partial<VoiceDeadlines> = {}) {
     this.clock = clock; this.adapters = adapters; this.notify = notify; this.deadlines = { ...defaults, ...deadlines };
     if (Object.values(this.deadlines).some(n => !Number.isSafeInteger(n) || n <= 0 || n > 120_000)) throw new Error("Invalid voice deadline.");
   }
   get snapshot() { return this.status; }
-  get canSendQuestions() { return !!this.attempt && this.status.phase === "ready" && this.status.microphone === "available" && !this.status.muted; }
+  get canSendQuestions() { return !!this.attempt && this.status.phase === "ready" && this.status.microphone === "available" && !this.status.muted
+    && this.attempt.response?.canAcceptInput === true; }
   // Tests override ONLY to instantiate 07B's existing test-only subclass. No runtime switch.
   protected createPriming(notify: (s: PrimingStatus) => void, primed: () => void): PrimingController {
     return new PrimingController(this.clock, notify, primed, this.deadlines.primingMs);
@@ -140,6 +148,7 @@ export class VoiceLifecycle {
     this.attempt = undefined;
     this.cleaning = true;
     a.abort.abort();
+    a.response?.stop(); a.response = undefined;
     for (const remove of a.listeners.splice(0)) safely(remove);
     const priming = a.priming, media = a.media, connection = a.connection;
     a.priming = undefined; a.media = undefined; a.connection = undefined;
@@ -148,7 +157,7 @@ export class VoiceLifecycle {
     if (connection) this.releaseConnection(connection);
     this.cleaning = false;
     this.update({ phase: failure ? "failed" : "ended", identity: undefined, basis: undefined, failure,
-      muted: false, protocolReady: false, microphone: "none", playback: "none",
+      muted: false, protocolReady: false, microphone: "none", playback: "none", response: emptyResponse(),
       message: failure ? messages[failure] : "Ended. Microphone and connection released." });
   }
   /** Interruptible and bounded even when an adapter ignores AbortSignal. */
@@ -176,7 +185,7 @@ export class VoiceLifecycle {
       abort: new AbortController(), listeners: [] };
     this.attempt = a;
     this.update({ phase: "connecting", identity: a.identity, muted: false, protocolReady: false, productionReady: false,
-      microphone: "none", playback: "none", basis: undefined, failure: undefined, message: "Preparing voice setup; questions are disabled." });
+      microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, message: "Preparing voice setup; questions are disabled." });
     if (this.current(a)) void this.setup(a);
     return true;
   }
@@ -190,7 +199,18 @@ export class VoiceLifecycle {
         || input.manifest.items.some(item => JSON.parse(item.item.content[0].text).source.id !== a.identity.sourceId)) {
         this.finish(a, "preparation"); return;
       }
-      const bridge = new PrimingBridge();
+      // One real subscription. Before the complete 07B barrier, only priming owns events.
+      // Afterward response errors must not be misclassified as source/transport failures.
+      const bridge = new PrimingBridge((event, priming) => {
+        if (!this.current(a)) return;
+        if (!a.priming?.snapshot.protocolReady) priming();
+        else if (this.status.microphone === "available") a.response?.receive(event);
+      });
+      a.response = new VoiceResponseController(this.clock, bridge, a.identity.runId, response => {
+        if (!this.current(a)) return;
+        this.update({ response });
+        if (this.current(a)) this.applyMute(a);
+      }, () => this.finish(a, "connection"), this.deadlines.interruptionMs);
       a.priming = this.createPriming(s => {
         if (!this.current(a)) return;
         if (s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable"
@@ -235,6 +255,11 @@ export class VoiceLifecycle {
   }
   mute() { const a = this.attempt; if (!a) return; this.update({ muted: true }); if (this.current(a)) this.applyMute(a); }
   unmute() { const a = this.attempt; if (!a) return; this.update({ muted: false }); if (this.current(a)) this.applyMute(a); }
+  interruptCurrentResponse(): boolean {
+    const a = this.attempt;
+    return !!a && this.current(a) && this.status.protocolReady && this.status.microphone === "available"
+      && this.status.phase === "ready" && (a.response?.interrupt() ?? false);
+  }
   async playAudio() {
     const a = this.attempt;
     if (!a?.connection || !this.current(a) || this.status.phase !== "ready" || this.status.playback === "pending") return;

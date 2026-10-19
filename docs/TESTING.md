@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+## Task08B worker handoff — proposed READY_FOR_REVIEW
+
+Scripted08B response/playback/interruption implementation only; PM review pending. Local dirty `main`/base10b5a93, build **CxEEYDJfJk_Tmf2fmj9aL**, pinned **Node24.22.0/npm11.19.1**. [08B official schema mapping, conservative race/error policy, acceptance matrix and PM runbook](VOICE_INTERRUPTION_08B.md). Exact19October2026UTC commands/exits/development failures in PROJECT_STATE and ignored `artifacts/local/08b/commands.jsonl`; build/runtime/audit/SHA256 and sanitized state/count traces in that directory.
+
+`npm run test:interruption` passes **62/62** through actual08A+07B+08B composition, with scripted schema projections/fake media/clock and external-fetch block (**providerCalls0**). Checks distinguish generation done from buffered output, observe VAD without sending commands, assert targeted cancel→untargeted clear order/IDs, clear-only after generation, duplicate actions, independent next response, stale/disordered/malformed input, missing generation/buffer ACK timeout, Stop/dispose/source replacement at pending stages, sanitized response versus transport errors, ID caps, context preservation, no response.create/source retransmission and once-only cleanup. Denied default admission still acquires0connection/0media.
+
+Final lint/typecheck/build exit0; unit **766/766**, lifecycle **63/63**, priming **75/75**, budget **42/42**, smoke **14/14**, voice **10/10**, text **10/10**, all exit0. Build precedes browser runs. The existing isolated proof suites block external calls and use synthetic providers/fake media/peer/socket at desktop/390px Chromium viewports. These regressions do not exercise real08B audio; new shared controller remains unwired to public/proof UI. No lockfile/dependency/key/service/DB/deployment change. Run with ignored08b/run-checks.ps1 directly in PowerShell7 to avoid Windows PowerShell5 native-stderr wrapper behavior.
+
+PM should compare hashes, inspect the single subscription routing/untargeted clear guards and rerun focused checks. Generation completion, server-buffer completion and physical audibility remain distinct. Real model binding is BLOCKED; live transport/grounding/provider retention/truncation, audible interruption and physical phone checks remain NOT_RUN. Full Step08 stays open; no09/10 implementation or public activation.
+
 **Current PM08A review:** simulated voice lifecycle accepted inef903f8; buildpnBXNpZkqS-uTQAmDG8_R, all7 hashes match, fresh63lifecycle/704unit PASS. Next single task `docs/WORKER_TASK_08B.md`: scripted interruption and playback-state handling. No public activation, keys or spend;07 real budgeting/live grounding and full08–10 remain open. Public03eb7d8 remains PDF-only;11A real SQL cleanup/scheduling still NOT_RUN.
 
 ## Task 08A — simulated voice lifecycle (18 October Toronto / 19 October 2026 UTC)
