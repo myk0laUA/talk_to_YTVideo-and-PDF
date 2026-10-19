@@ -18,6 +18,7 @@
     "test:budget": "node --conditions=react-server --test tests/unit/model-budget.test.ts",
     "test:context": "node --conditions=react-server --test tests/unit/context.test.ts",
     "test:priming": "node --conditions=react-server --test tests/unit/priming.test.ts",
+    "test:lifecycle": "node --conditions=react-server --test tests/unit/voice-lifecycle.test.ts",
     "test:smoke": "playwright test",
     "test:text": "playwright test --config playwright.text.config.ts",
     "test:voice": "playwright test --config playwright.voice.config.ts",
