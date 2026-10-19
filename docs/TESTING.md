@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM12A review:** bounded local mobile/accessibility review accepted in `8af058e`; build `R_ixIZMDu1UXwpkBpA8ws`, all eight hashes matched. Fresh PM smoke16/source75/transcript32 PASS. Three reproduced fixes accepted; physical-phone/audio and full live gates remain open. Next single task: `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer instructions without keys. No deployment/spending. Older summaries below are historical.
+
 ## Worker12A — bounded mobile/accessibility review, proposed READY_FOR_REVIEW
 
 [12A report with base/build/runtime, three before/after findings, exact command UTC/exits, width/state matrix and acceptance mapping](MOBILE_REVIEW_12A.md). Dirty `main` at baseaadea36; final build **R_ixIZMDu1UXwpkBpA8ws**, pinned Node24.22.0/npm11.19.1. Full Step12 remains IN_PROGRESS; PM decides acceptance. No deployment, real DB/provider, key use or spending.

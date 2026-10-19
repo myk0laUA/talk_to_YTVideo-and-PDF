@@ -1,5 +1,24 @@
 # Project state — Talk to a Document
 
+## PM12A acceptance — 19 October 2026 UTC / Toronto
+
+**Accepted for bounded local/scripted scope**, application `8af058eac64f80e0748e294dc8f0d044feada571`, arrival `aadea364c77c804e3c27b9c0b5d18edf1078f319`, build `R_ixIZMDu1UXwpkBpA8ws`. All eight worker SHA256 entries matched before PM documentation edits. Reviewed minimal heading/navigation wrapping, short-viewport normal-flow transcript navigation and explicit Keep source focus return, plus regression assertions. No blocking scoped finding or PM application edits. Relevant Impeccable/React/Playwright guidance and fresh Web Interface Guidelines applied; bootstrap design context remains historical.
+
+Fresh PM checks, pinned Node24.22.0/npm11.19.1, all exit0 on 19 October UTC:
+
+| Command | Start–end UTC | Result |
+|---|---|---|
+| `npm run test:smoke` |04:31:07.0307922Z–04:31:11.3462171Z|16/16 PASS|
+| `npm run test:source-ui` |04:31:11.3625654Z–04:31:54.3588951Z|75/75 PASS|
+| `npm run test:transcript-view` |04:31:54.3688343Z–04:32:05.6433684Z|32/32 PASS|
+
+Exact rows `artifacts/local/12a/pm-commands.jsonl`; logs `pm-test-smoke.log`, `pm-test-source-ui.log`, `pm-test-transcript-view.log`. Built local production and isolated synthetic repository/transcript fixtures; not live SQL/provider/physical audio. Reviewed corrected 320px enlarged-text navigation, short transcript viewport and visible Remove focus screenshots. Test assertions establish reflow and focus/reading behavior beyond the viewport captures. `git diff --check` exit0. Worker952-unit and all926 browser final cases retain their original timestamps; the mode fixture-load ERR_NO_BUFFER_SPACE failure and unchanged-command rerun remain disclosed, not erased.
+
+Full Step12 stays IN_PROGRESS: root-font scaling/reduced viewport do not prove actual browser-toolbar zoom, mobile keyboard, screen-reader or physical iOS/Android audio behavior. Source-session integration/model accounting/live grounding, SQL cleanup/scheduling, actual persisted BFCache and previous live gates remain open. Public03eb7d8/PDF-only remains the last verified deployment; no deployment, real database operation or spending performed.
+
+**Next single assignment:**13A, `docs/WORKER_TASK_13A.md`, clean-checkout installation/build/offline verification and concise accurate reviewer entry point. Current README has stale status/next-task/smoke text. This prepares reproducibility while keys are unavailable; it does not waive Step12 or complete Step13/14. No human key/phone action needed for this bounded task.
+
+
 ## Worker12A handoff — 19 October 2026 UTC
 
 **Outcome:** implemented the bounded local mobile/accessibility review; proposed **READY_FOR_REVIEW**, awaiting PM decision. Arrival clean `main` at `aadea364c77c804e3c27b9c0b5d18edf1078f319`; dirty delivery, no commit/push/deployment. Accepted prior application29aea9f/buildRegFAc7qjDORKrhT0rWKn retained. Fresh baseline build `xRpKtvgxLfVGGaEJbGAUR`; final local build **`R_ixIZMDu1UXwpkBpA8ws`**, Node24.22.0/npm11.19.1, Playwright Test1.64.1/Chromium156.0.8078.4. Full Step12 stays **IN_PROGRESS**. [Bounded report, findings, command UTC/exits, reviewed matrix, acceptance mapping and remaining gates](MOBILE_REVIEW_12A.md).
@@ -618,13 +637,13 @@ Default admission rejects synthetic/unavailable budgets; verified-shaped fixture
 
 **Snapshot:** e3908e6 deployed; final PDF-only restoration `dep-dbais8qjnfac73fsqgg0` Live20:38:18UTC. Root200/PDF available; YouTube/proof/credential POSTs503/no-store verified20:38:48UTC. Both API keys unavailable. Free hosting and $50total API ceiling unchanged; no paid API spend.
 
-**Current phase:** PDF and YouTube UI implementation accepted against synthetic success/error tests; actual hosted PDF and YouTube error recovery pass. Direct extraction is unreliable/blocked and managed keys absent, so public YouTube gate restored off. Full successful YouTube workflow/phone/grounding remain open.06A cache and06B coalescing implementation/actual database subchecks accepted;06C fallback/cooldown implementation accepted;07A offline preparation and07B scripted priming accepted;07C fail-closed implementation accepted; real binding remains BLOCKED. 11A cleanup accepted locally;08A simulated lifecycle accepted;08B scripted interruption accepted;09A transcript state accepted;09B local presentation accepted;10A scripted text lifecycle accepted;10B isolated text presentation accepted;08C isolated voice presentation accepted;10C local/scripted mode switching accepted;11B local/scripted browser recovery accepted;11C local synthetic boundary review accepted;12A mobile usability/accessibility review delivered READY_FOR_REVIEW; PM decision pending. Live gates are not waived.
+**Current phase:** PDF and YouTube UI implementation accepted against synthetic success/error tests; actual hosted PDF and YouTube error recovery pass. Direct extraction is unreliable/blocked and managed keys absent, so public YouTube gate restored off. Full successful YouTube workflow/phone/grounding remain open.06A cache and06B coalescing implementation/actual database subchecks accepted;06C fallback/cooldown implementation accepted;07A offline preparation and07B scripted priming accepted;07C fail-closed implementation accepted; real binding remains BLOCKED. 11A cleanup accepted locally;08A simulated lifecycle accepted;08B scripted interruption accepted;09A transcript state accepted;09B local presentation accepted;10A scripted text lifecycle accepted;10B isolated text presentation accepted;08C isolated voice presentation accepted;10C local/scripted mode switching accepted;11B local/scripted browser recovery accepted;11C local synthetic boundary review accepted;12A local mobile/accessibility review accepted;13A clean-checkout verification is next. Live gates are not waived.
 
 **Historical PM update before provisioning (superseded by evidence below):** User has signed into Render and reached the new Web Service form. GitHub remote was confirmed empty with `git ls-remote --heads origin` (exit 0, no refs). PM reviewed all 01a operator code/tests and accepted the local probe portion; fresh `npm test` passed 18/18 (exit 0) and `git diff --check` passed. The free-tier hosted execution correction remains outstanding, so the full live Step 01 gate is not accepted. Preparing the reviewed shell/probe for the first GitHub publication; deployment is not yet verified. No application implementation changed in this PM review.
 
 **Historical first publication result (superseded by evidence below):** Reviewed shell/probe and planning updates committed as `ef3f98bf48745f03d647fabcda678c4ad81718d9` and pushed to `origin/main`; commit and `git push -u origin main` exited 0. `git ls-remote --heads origin main` independently returned that exact SHA; working tree was clean after publication. The repository is no longer empty. User then attached Browser; the in-app Render tab opens at `/login`, so its separate session needs the user's OAuth login before PM can configure the free service. No service creation/deployment or billing change has occurred. This subsequent update is documentation only.
 
-**Single worker assignment:**12A — `docs/WORKER_TASK_12A.md`, bounded mobile usability/accessibility review delivered READY_FOR_REVIEW; PM acceptance pending. No public activation; full dependencies/live gates remain open.
+**Single worker assignment:**13A — `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer entry point. No public activation; full dependencies/live gates remain open.
 
 **Worker 05a submission, reviewed:** PDF-only UI accepted for the scope above and committed/pushed as 1cfbfeb. Worker evidence and PM findings are preserved below and in `docs/PDF_UI_05A.md`. Subsequent user report accepts the requested iPhone PDF workflow only; conversation acceptance is not implied.
 
@@ -670,8 +689,8 @@ The user authorized this bootstrap and tracker update. The manager resumes owner
 | 09 | Live conversation text | IN_PROGRESS | 09A bounded transcript state accepted inc95f88c;63focused/829unit PASS.09B local presentation accepted ine7c7267; fresh28browser PASS; rendering verified only against synthetic fixtures. Rendering/live transcription and full08 dependency remain open. |
 | 10 | Text fallback | IN_PROGRESS | 10A scripted text lifecycle accepted in e416874; fresh90focused/919unit PASS.10B isolated composer/recovery presentation accepted in5c0b5b7; fresh92browser PASS.10C local/scripted switching accepted in efa9edd; fresh156browser PASS. Public composer/mode switching, real answers and original live dependencies remain open. |
 | 11 | Recovery and backend hardening | IN_PROGRESS | 11A local cleanup accepted in3961af4;52focused/641unit PASS. Real SQL cleanup/deployment/scheduling NOT_RUN.11B browser recovery accepted in2a94ee8; fresh248recovery/919unit PASS.11C local synthetic boundaries accepted in29aea9f; fresh186units/59HTTP PASS, no-store framework response fix. RealSQL/proxy/live-provider proof remains open. Full network/conversation dependencies and gates remain open. |
-| 12 | Mobile polish | IN_PROGRESS | 12A local review delivered READY_FOR_REVIEW with three fixes and scripted320/390/430/1440px evidence; PM decision pending. Actual phone/other-browser and full live dependencies remain open. |
-| 13 | Reviewer script and tests | PENDING | Evidence for exact submission build and rubric |
+| 12 | Mobile polish | IN_PROGRESS | 12A local review accepted in8af058e; three fixes, fresh smoke16/source75/transcript32 PASS. Actual phone/other-browser and full live dependencies remain open. |
+| 13 | Reviewer script and tests | IN_PROGRESS | 13A clean-checkout/offline reviewer preparation assigned. Final deployed submission build, full live rubric and Step12 physical-phone gates remain open. |
 | 14 | README and walkthrough | PENDING | Public app/repo, reproducible README, 10–15 minute video |
 
 Allowed task statuses: PENDING, IN_PROGRESS, READY_FOR_REVIEW, DONE, BLOCKED. Evidence checks use PASS, FAIL, NOT_RUN or BLOCKED. A completed experiment with a negative result does not establish a working capability.

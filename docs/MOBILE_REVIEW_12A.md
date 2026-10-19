@@ -1,5 +1,7 @@
 # Task 12A — local mobile usability and accessibility review
 
+**Current PM12A review:** bounded local mobile/accessibility review accepted in `8af058e`; build `R_ixIZMDu1UXwpkBpA8ws`, all eight hashes matched. Fresh PM smoke16/source75/transcript32 PASS. Three reproduced fixes accepted; physical-phone/audio and full live gates remain open. Next single task: `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer instructions without keys. No deployment/spending. Older summaries below are historical.
+
 Proposed **READY_FOR_REVIEW** for the bounded local task only. PM owns acceptance. Full Step 12 remains **IN_PROGRESS**; enabled, grounded physical-phone workflows are still required. No deployment, provisioning, shared database, paid call or live credential use occurred.
 
 ## Identity and boundaries
