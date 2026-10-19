@@ -1,5 +1,7 @@
 # Task 08C — isolated voice controls presentation
 
+**Current PM08C review:** isolated voice controls accepted in dc0ac90; build oWirgcJ5JBDU_vzPCBDGU, all11 hashes match, fresh208 browser checks PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_10C.md`: explicit voice/text switching with one owner and fresh sessions, using isolated fixtures. Full live/provider/physical-device gates remain open.
+
 This implements the bounded presentation check under original Step 08. PM acceptance is pending. Full Step 08 live acceptance, 07 accounting/grounding, full 10 switching/live answers, and 11A real SQL cleanup/scheduling remain open. No keys, paid requests, deployment, real media adapter, peer connection, credential route or mode switching was added. Public 03eb7d8 remains PDF-only.
 
 ## Ownership and presentation

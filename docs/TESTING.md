@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM08C review:** isolated voice controls accepted in dc0ac90; build oWirgcJ5JBDU_vzPCBDGU, all11 hashes match, fresh208 browser checks PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_10C.md`: explicit voice/text switching with one owner and fresh sessions, using isolated fixtures. Full live/provider/physical-device gates remain open.
+
 ## Task 08C — isolated voice controls presentation
 
 `npm run test:voice-session` is the focused browser command; run `npm run build` first with pinned Node24.22.0/npm11.19.1. It refuses occupied loopback3119/3120, bundles only a test entry outside `src/`, and runs actual08A/08B/09A/09B with simulated tracks/playback/transport/time and test-only positive source admission. The default admission refusal is tested separately before connection/media acquisition. The actual production server is separate, with empty keys, unusable synthetic DB, disabled public/proof gates and blocked provider access. No public voice controls, credential routes or mode switching are enabled.
