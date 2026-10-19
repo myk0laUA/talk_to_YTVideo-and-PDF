@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM08A review:** simulated voice lifecycle accepted inef903f8; buildpnBXNpZkqS-uTQAmDG8_R, all7 hashes match, fresh63lifecycle/704unit PASS. Next single task `docs/WORKER_TASK_08B.md`: scripted interruption and playback-state handling. No public activation, keys or spend;07 real budgeting/live grounding and full08–10 remain open. Public03eb7d8 remains PDF-only;11A real SQL cleanup/scheduling still NOT_RUN.
+
 ## Task 08A — simulated voice lifecycle (18 October Toronto / 19 October 2026 UTC)
 
 `npm run test:lifecycle` runs the actual new coordinator plus existing 07B controller with deterministic fake clock/transport/media, **63/63 PASS**. `npm test` now passes **704/704**. This adds no public UI or provider/media implementation. [08A ownership contract, acceptance/resource matrix and PM runbook](VOICE_LIFECYCLE_08A.md). Final local dirty build **pnBXNpZkqS-uTQAmDG8_R**, base `f92e0e77161f9811d516d98bc659a6c96d8285f8`, pinned Node24.22.0/npm11.19.1. Exact UTC command history/exits/logs and changed-file hashes are under ignored `artifacts/local/08a/`.

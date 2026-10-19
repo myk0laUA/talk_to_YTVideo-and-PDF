@@ -1,5 +1,7 @@
 # Task 08A — simulated voice lifecycle runbook
 
+**Current PM08A review:** simulated voice lifecycle accepted inef903f8; buildpnBXNpZkqS-uTQAmDG8_R, all7 hashes match, fresh63lifecycle/704unit PASS. Next single task `docs/WORKER_TASK_08B.md`: scripted interruption and playback-state handling. No public activation, keys or spend;07 real budgeting/live grounding and full08–10 remain open. Public03eb7d8 remains PDF-only;11A real SQL cleanup/scheduling still NOT_RUN.
+
 Worker outcome: **READY_FOR_REVIEW**, for the assigned preparatory controller only. PM decides acceptance. Original Step 08 and its Step 07 dependencies remain open. No source-session credentials, public UI, provider transport, interruption/truncation, transcript or text switching is implemented here.
 
 ## Contract and readiness
