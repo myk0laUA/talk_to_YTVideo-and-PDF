@@ -48,7 +48,8 @@
     "postinstall": "prisma generate",
     "db:cleanup": "node --conditions=react-server scripts/cleanup-expired.ts",
     "test:cleanup": "node --conditions=react-server --test tests/unit/cleanup.test.ts",
-    "test:cleanup:postgres": "node --conditions=react-server scripts/verify-cleanup-postgres.ts"
+    "test:cleanup:postgres": "node --conditions=react-server scripts/verify-cleanup-postgres.ts",
+    "test:voice-session": "node scripts/verify-voice-session.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

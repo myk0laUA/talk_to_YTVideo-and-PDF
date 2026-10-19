@@ -111,8 +111,18 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .text-composer textarea:read-only { background: var(--paper); }
 .text-validation { min-height: 2.5em; margin-top: .5rem; }
 .text-composer button { min-width: min(100%, 8rem); }
+.voice-session { min-width: 0; overflow-wrap: anywhere; }
+.voice-session-status { color: var(--ink); }
+.voice-session-actions { margin-block: 1rem; }
+.voice-session-actions > button { max-width: 100%; padding-inline: min(1rem, 16px); white-space: normal; overflow-wrap: anywhere; }
+.voice-device-status { margin-block: 1.5rem; }
+.voice-device-status dt { color: var(--ink); font-weight: 600; margin-top: 1rem; }
+.voice-device-status dd { margin: .25rem 0 0; }
+.voice-session-actions button[aria-pressed="true"] { background: #e5ede5; color: var(--ink); border-color: var(--accent); }
+.voice-media-announcement { color: var(--ink); }
 @media (max-width: 400px) {
   .conversation-panel:has(.text-session) { padding-inline: min(1.5rem, 24px); }
+  .conversation-panel:has(.voice-session) { padding-inline: min(1rem, 16px); }
 }
 @media (max-width: 700px) {
   .source-workspace { grid-template-columns: minmax(0, 1fr); }
