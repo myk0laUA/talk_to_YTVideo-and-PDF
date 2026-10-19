@@ -1,5 +1,7 @@
 # Task 10A — scripted microphone-free text lifecycle
 
+**Current PM10A review:** scripted microphone-free text lifecycle accepted in e416874; build VxITBUcDZTwGOLrzLPgZK, all seven hashes match, fresh90focused/919unit PASS. No blocking scoped finding. Next single task `docs/WORKER_TASK_10B.md`: text composer/recovery UI using isolated browser fixtures. No keys/spend/public activation; full live gates and actual07 budgeting remain open. Public03eb7d8 unchanged.
+
 Worker outcome: **implemented; proposed READY_FOR_REVIEW**, PM acceptance pending. Parent Step 10 remains open. Local only; no public composer, socket implementation, credential endpoint, model selection, paid call, service, deployment or mode-switch work.
 
 Arrival: clean `main`, HEAD/base `ac9a5250f1a8b07d7d3fd4d5115a93b0c1b85e0a`, including PM-accepted 09B. Delivery: dirty/uncommitted on that same branch/HEAD. Final local production build **VxITBUcDZTwGOLrzLPgZK**; **Node 24.22.0/npm 11.19.1** from `.tools/node-v24.22.0-win-x64`. Machine defaults 26.5.0/12.0.1 were inspected only. Commands ran 19 October 2026 UTC / 18 October Toronto.

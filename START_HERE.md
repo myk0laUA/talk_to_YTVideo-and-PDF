@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM10A review:** scripted microphone-free text lifecycle accepted in e416874; build VxITBUcDZTwGOLrzLPgZK, all seven hashes match, fresh90focused/919unit PASS. No blocking scoped finding. Next single task `docs/WORKER_TASK_10B.md`: text composer/recovery UI using isolated browser fixtures. No keys/spend/public activation; full live gates and actual07 budgeting remain open. Public03eb7d8 unchanged.
+
 **Current PM09B review:** local transcript presentation accepted ine7c7267; buildT3tKcoJbowWTW-uI0jbnW, all13 hashes match, fresh28browser checks PASS. Desktop/mobile renders reviewed; production fixtures absent, provider calls0. Next single task `docs/WORKER_TASK_10A.md`: scripted microphone-free text lifecycle. No keys/spend/live activation;07 budgeting and full live gates remain open. Public03eb7d8 unchanged.
 
 **Current PM09A review:** bounded transcript state accepted inc95f88c; buildmr0N_NQANXh4eRxD1_ZIZ, all7 hashes match, fresh63transcript/829unit PASS. Next single task `docs/WORKER_TASK_09B.md`: transcript presentation/scrolling/accessibility with isolated browser fixtures. No live activation/keys/spend.07 actual budgeting and full08–10 live gates remain open; public03eb7d8 stays PDF-only.

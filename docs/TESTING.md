@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM10A review:** scripted microphone-free text lifecycle accepted in e416874; build VxITBUcDZTwGOLrzLPgZK, all seven hashes match, fresh90focused/919unit PASS. No blocking scoped finding. Next single task `docs/WORKER_TASK_10B.md`: text composer/recovery UI using isolated browser fixtures. No keys/spend/public activation; full live gates and actual07 budgeting remain open. Public03eb7d8 unchanged.
+
 ## Task10A worker handoff — proposed READY_FOR_REVIEW
 
 Scripted microphone-free text coordinator implemented; PM acceptance pending. Dirty `main`/HEAD `ac9a5250f1a8b07d7d3fd4d5115a93b0c1b85e0a`, local build **VxITBUcDZTwGOLrzLPgZK**, Node24.22.0/npm11.19.1. [10A official schemas, source/per-turn gates, exact ACK/correlation policy, bounds/ownership, acceptance matrix and PM runbook](TEXT_LIFECYCLE_10A.md). Exact UTC/exits/failures, seven-file SHA256, synthetic text/state/count traces and identity/dependency/production-gate audits are under ignored `artifacts/local/10a/`.
