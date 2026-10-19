@@ -1,50 +1,38 @@
 # Talk to a Document
 
-A mobile web workspace for exploring one PDF or YouTube video through voice and text. **PDF import, complete preview, replacement and removal are now available** on Free Render application `03eb7d8`. Fresh PM YouTube UI checks passed 99/99 with synthetic providers; earlier PDF suite passed75/75; actual HTTPS/Free PostgreSQL displayed all 384 fixture lines and passed replacement/removal. Backend exact 25 MB evidence remains recorded separately. The requested iPhone PDF workflow passed by user report. YouTube owned-source backend is accepted locally/on the real DB; YouTube UI implementation is accepted against isolated success tests and real hosted error recovery. Live retrieval currently returns blocked, so public YouTube import remains disabled. Grounded conversation remains unfinished; bounded TTL cleanup is implemented locally but SQL validation and scheduling remain open. Validated public caption cache passed local and actual PostgreSQL checks. Cancellation-safe sharing passed local and actual PostgreSQL checks in application675c12e (not deployed). Bounded fallback/cooldown is accepted in39c785c (not deployed). Offline source-context preparation accepted in7095457 (not deployed). Acknowledged context priming accepted in227b359 (not deployed), fresh75priming/547unit PASS. Fail-closed model-budget diagnostics accepted in522ef69; actual model binding remains blocked. Cleanup accepted locally in3961af4; fresh52focused/641unit PASS. Simulated voice lifecycle accepted inef903f8; fresh63focused/704unit PASS. Scripted interruption accepted infabc387; fresh62focused/766unit PASS. Bounded transcript state accepted inc95f88c; fresh63focused/829unit PASS. Read-only transcript presentation accepted ine7c7267; fresh28browser checks PASS, not deployed. Scripted text lifecycle accepted in e416874; fresh90focused/919unit PASS, not deployed. Isolated text presentation accepted in5c0b5b7; fresh92browser PASS, not deployed. Isolated voice controls accepted in dc0ac90; fresh208browser PASS, not deployed. Local/scripted mode switching accepted in efa9edd; fresh156browser PASS, not deployed. Local/scripted browser recovery accepted in2a94ee8; fresh248recovery/919unit PASS, not deployed. Next: `docs/WORKER_TASK_11C.md`, anonymous source/credential boundary verification. No production cleanup schedule is configured. Live API keys/funding/quota remain pending; diagnostic/credential gates stay disabled.
+A mobile web workspace for one temporary PDF or YouTube source and one conversation, with anonymous visitor sessions, PostgreSQL, server-side extraction and planned OpenAI Realtime voice over WebRTC with a microphone-free text fallback. No accounts, embeddings or vector database.
 
-**03a accepted:** the separate default-disabled `POST /api/proof-captions` retrieved two uncached local fixtures with independent source-caption comparison. The actual Free Render trial returned one matching transcript and one player sign-in block; broad hosted reliability is unproven. The explicit local command is `npm run proof:captions:local -- --allow-public-youtube` after build; it starts/stops an isolated loopback server on port 3103. See [the caption proof handoff](docs/CAPTION_PROOF_03A.md) for configuration, contracts, limits and evidence. Managed captions and source-grounded conversation remain untested; normal import controls remain unavailable.
+[PROJECT_STATE](docs/PROJECT_STATE.md) is the authoritative status tracker. Task 13A prepares reproducibility; it does not complete Step 13/14.
 
-**Public shell:** [talk-to-document-4pre.onrender.com](https://talk-to-document-4pre.onrender.com/), deployed on Render Free in Ohio. Free PostgreSQL is provisioned and migrated; the live local operator probe and physical iPhone shell-access check pass. Exact source persistence passed across two actual hosted restarts; test data/configuration were removed and normal startup restored. Free hosting sleeps when idle; the database dashboard lists expiry on November 16, 2026. See `docs/PROJECT_STATE.md` for exact deployment identities and limitations.
+| Capability | Verified scope / current limit |
+|---|---|
+| Public PDF import | Last verified [Free Render deployment](https://talk-to-document-4pre.onrender.com/), application `03eb7d8`: complete preview, replacement and removal through real PostgreSQL. Requested iPhone PDF flow passed by user report; device/browser versions unspecified. Not freshly retested by 13A. |
+| YouTube | Owned-source storage, cache, coalescing and fallback have local/synthetic and separately recorded PostgreSQL evidence. Historical local direct extraction passed; latest hosted direct attempt returned blocked, so public YouTube import stays disabled. Managed live retrieval and complete live local fallback remain unproven. |
+| Conversation UI | Local scripted lifecycle, priming, interruption, transcript, mode switching, recovery and mobile reflow have scoped evidence. Production supplies no uploaded-source conversation controller factories. Genuine grounded conversation is unfinished. |
+| Release blockers | Exact supported-model tokenizer and Realtime framing accounting remain unavailable/fail closed. Keys alone cannot enable conversation. Source-session integration, grounding/audio, physical-device checks and real SQL cleanup/race verification plus scheduling remain open. |
 
-## Local setup
+Hosting remains Free, sleeps when idle and has resource limits. Last recorded Free PostgreSQL expiry: **16 November 2026**, not a fresh dashboard check. No paid-account access, provider quota or spending allowance is assumed. Conversation turns/audio are not stored; source access enforces visitor ownership and expiry. Bounded cleanup exists locally but has no verified SQL execution or production schedule. See [storage](docs/SOURCE_STORAGE_04B.md), [cleanup](docs/CLEANUP_11A.md) and the tracker for signing/restart and hosting limits.
 
-Install **Node 24.22.0**, which bundles **npm 11.19.1**, and select it in your shell. Both versions are enforced by `.npmrc`; another major Node version will fail installation. `.nvmrc` and `.node-version` contain the same exact pin.
+## Clean local setup without keys
 
-From this repository:
+Install and select **Node 24.22.0 / npm 11.19.1** (`.node-version`, `.nvmrc`, `package.json`, `.npmrc`). Use npm and preserve `package-lock.json`. An ignored `.tools` runtime in another checkout is optional operator convenience, never a required repository input.
+
+Use a new clone/export without another checkout's `.env`, `node_modules`, `.next`, generated files or artifacts. For isolated no-key review, use a fresh PowerShell session and set this environment first. It removes inherited application configuration without printing values; no `.env` is needed.
+
+```powershell
+Get-ChildItem Env: | Where-Object {
+  $_.Name -match '^(NEXT_PUBLIC_|OPENAI_|SUPADATA_|SCRAPECREATORS_|PROOF_|REALTIME_|TEXT_PROOF_|CAPTION_PROOF_|PDF_PROOF_|PDF_INGESTION_|YOUTUBE_|VISITOR_|APP_ORIGIN$|DATABASE_URL$|NODE_OPTIONS$|NODE_ENV$|PRISMA_)'
+} | ForEach-Object { [Environment]::SetEnvironmentVariable($_.Name, $null, 'Process') }
+$env:DATABASE_URL = 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic'
+$env:NEXT_TELEMETRY_DISABLED = '1'
+```
+
+Unset production gates default off. Provider keys stay empty/unset; the loopback database is deliberately unusable. The boundary runner enables its own isolated PDF fixture gate, generates nonreported signing material and uses a synthetic repository with external fetch blocked. Never substitute a real database for routine checks.
 
 ```sh
 node --version
 npm --version
 npm ci
-```
-
-Expected versions: `v24.22.0` and `11.19.1`. `npm ci` generates Prisma Client without contacting a database.
-
-Optionally copy the configuration example (the shell works without it):
-
-```powershell
-Copy-Item .env.example .env
-```
-
-On macOS/Linux: `cp .env.example .env`. Keep the blank secret values until you have real configuration. Do not overwrite an existing `.env`.
-
-```sh
-npm run dev
-```
-
-Open [localhost:3000](http://localhost:3000). Use Ctrl+C to stop. Without explicit valid PDF ingestion/visitor configuration the PDF chooser stays disabled. See `docs/PDF_UI_05A.md` and `.env.example`; never point routine browser tests at the real database. YouTube and conversation controls remain unavailable.
-
-During this bootstrap, a checksum-verified Windows runtime was downloaded into ignored `.tools/node-v24.22.0-win-x64`. On this checkout only, PowerShell can select it for the current session with:
-
-```powershell
-$env:PATH = (Join-Path $PWD '.tools/node-v24.22.0-win-x64') + ';' + $env:PATH
-```
-
-That directory is not committed or required on a fresh checkout. Install the pinned runtime normally on other machines.
-
-## Verification and production mode
-
-```sh
 npm run lint
 npm run typecheck
 npm test
@@ -52,50 +40,31 @@ npm run db:validate
 npm run build
 npm run browser:install
 npm run test:smoke
+npm run test:boundaries
 ```
 
-The focused Node tests check configuration validation, missing database configuration, error redaction, and accidental public secrets. The two Chromium smoke checks run the production server at `127.0.0.1:3100`, check desktop/390 px layout, disabled controls, keyboard navigation and browser errors, and save screenshots in ignored `test-results/`. They require port 3100 to be free. Browser installation downloads Chromium; Linux CI may also need `npx playwright install --with-deps chromium`.
+[Clean-copy results and reviewer checklist](docs/REVIEWER_CHECKLIST_13A.md) record inputs, builds, UTC times, exits and cache reuse. `npm ci` generates Prisma Client; `db:validate` validates the schema. Neither runs migrations or proves a live database. `next build` does not run ESLint.
 
-To run production mode yourself after building:
+Build before HTTP/browser checks. Smoke starts/stops production on free port **3100**, runs **16 Chromium checks** (desktop/390px plus small-width enlarged-text reflow), verifies disabled gates, keyboard behavior, route responses and browser errors, and saves screenshots in ignored `test-results/`. Boundary checks run **186 focused units + 59 built HTTP checks** on free port **3125**, using synthetic visitors/repository/providers. Viewports do not prove phone/audio behavior. `browser:install` installs Chromium or reuses its cache; Linux libraries may additionally require `npx playwright install --with-deps chromium` (not verified by this Windows run).
 
 ```sh
-npm run start
+npm run dev
 ```
 
-This serves [localhost:3000](http://localhost:3000). `next build` does not run ESLint; lint is a separate gate. See [testing](docs/TESTING.md) for later live-provider and physical-device acceptance checks.
+Open [localhost:3000](http://localhost:3000); stop with Ctrl+C. Alternatively, after build, `npm run start` serves production there. The no-key shell disables PDF/YouTube import and says voice/text are not connected. The configured public PDF deployment is a different environment. Optional server configuration is in [.env.example](.env.example); copy only when needed, never overwrite an existing `.env` or publish secrets with `NEXT_PUBLIC_`.
 
-## PostgreSQL and secrets
+## Later service and reviewer gates
 
-Prisma schema, client generation, a server-only lazy client, and the initial SQL migration are implemented. **The migration and local live operator probe passed against the PM-selected Render database.** For another checkout, set `DATABASE_URL` to the intended PostgreSQL connection URL supplied by its owner/provider in `.env` or the server environment. Use the provider's required TLS configuration; do not disable certificate checks as a workaround.
+Provisioning, deployment, keys and intended-database migrations are PM work, outside this no-key procedure. On an explicitly selected configured database, `npm run db:deploy` applies committed migrations and `npm run db:status` checks them. `db:migrate` is for intentional development schema changes; never reset a shared database. See the [database runbook](docs/DB_PERSISTENCE_RUNBOOK.md). Credentials, owner hashes and raw database models stay server-only.
 
-Once the PM has selected and configured the target database:
+The [reviewer checklist](docs/REVIEWER_CHECKLIST_13A.md) separates later near-limit PDF, direct/managed uncached captions, accounting/integration, grounding, voice/text/device/network, SQL cleanup and exact deployed-build gates. Historical local extraction command `npm run proof:captions:local -- --allow-public-youtube` makes real outbound YouTube requests and is **not** part of offline verification; prerequisites and limits are in [03A](docs/CAPTION_PROOF_03A.md). No synthetic proof authorizes uploaded-source conversation.
 
-```sh
-npm run db:deploy
-npm run db:status
-```
+## Code and evidence
 
-`db:deploy` applies committed migrations. For future schema edits on a development database, use `npm run db:migrate -- --name descriptive_name`; Prisma's development migration workflow may require shadow-database privileges. Do not point it at the production database. `npm run db:generate` regenerates types after edits.
+- `src/app`: App Router UI; `src/server`: backend services; `src/shared`: safe contracts/lifecycle state.
+- `prisma`: schema/migrations; generated client is ignored.
+- `tests`, `scripts`: unit, built HTTP and isolated browser checks; scope in [TESTING](docs/TESTING.md).
+- [Plan](docs/IMPLEMENTATION_PLAN.md): original Step 01–14 criteria; [skills](docs/SKILLS.md): selected tools; [AGENTS](AGENTS.md): handoff responsibilities.
+- [Boundaries](docs/BOUNDARIES_11C.md), [mobile](docs/MOBILE_REVIEW_12A.md), [PDF UI](docs/PDF_UI_05A.md), [YouTube UI](docs/YOUTUBE_UI_05B.md), [model blocker](docs/MODEL_BUDGET_07C.md): scoped evidence and manual procedures.
 
-The operator-only persistence probe is available with `npm run db:probe -- --help`. Its three modes are `npm run db:probe -- write --manifest <absolute-private-file>`, `verify --manifest <same-file>`, and `cleanup --manifest <same-file>`. Handles must be outside the checkout, protected as private files, and retained off-host across a service restart. The fixed TTL is two hours; verification never writes or extends it. Follow the [exact local/hosted persistence runbook](docs/DB_PERSISTENCE_RUNBOOK.md), including target confirmation, secure handle transfer, restart evidence and fixture cleanup. Local and hosted restart acceptance passed. The runbook uses a retained private Secret File and explicit temporary startup commands on Free hosting. This command is never invoked automatically and does not implement application cleanup or browser authorization.
-
-`Source` stores temporary source text/sections, owner-session hashes, extraction metadata and explicit expiry. `TranscriptCache` stores only validated public captions under a unique video/language-preference/mode key. TTL enforcement, deletion, visitor sessions, and access checks still need implementation; database indexes alone do not enforce them. Conversation turns and audio are not stored.
-
-`OPENAI_API_KEY`, `SUPADATA_API_KEY`, and `SCRAPECREATORS_API_KEY` are reserved, optional server variables for later integrations. None is needed for this shell and no provider access is verified. Never use `NEXT_PUBLIC_` for these values. The application and Prisma CLI validate configured values without logging secrets; a missing database URL fails when database access is requested.
-
-## Structure and handoff
-
-- `src/app`: App Router layout, page and responsive styles.
-- `src/server`: environment validation and backend-only database client.
-- `src/shared`: browser-safe product metadata; future public contracts belong here.
-- `prisma`: PostgreSQL schema and committed migrations; generated client is ignored.
-- `tests/unit`, `tests/smoke`: proportionate bootstrap checks.
-- `.agents/skills`, `skills-lock.json`: selected project skills and installer lock; activation details in [skill policy](docs/SKILLS.md).
-- [AGENTS.md](AGENTS.md): agent commands and manager/worker responsibilities.
-- [Project state](docs/PROJECT_STATE.md): current evidence and next unfinished gate.
-- [Implementation plan](docs/IMPLEMENTATION_PLAN.md): requirements and original Step 01–14 acceptance checks.
-- [Bootstrap decisions](docs/BOOTSTRAP.md): verified compatibility sources, tool versions and local evidence.
-
-Steps 01 and 04 backend gates are complete; 05a PDF UI is accepted in local/hosted environments, requested iPhone PDF workflow passed by user report. Next worker brief: `docs/WORKER_TASK_06A.md`. Build first; `npm run test:source-ui` uses port 3107 (75 checks), `npm run test:sources:http` uses 3106 with a synthetic repository, `npm run test:pdf:http` uses 3105 with actual synthetic PDF parsing. Real Free PostgreSQL and actual Render HTTPS checks passed separately. Exact build/command/limitation evidence is in `docs/PDF_UI_05A.md`, `docs/SOURCE_STORAGE_04B.md` and `docs/PROJECT_STATE.md`. Hosting remains Free; no live API spend. Earlier hosted parser stress/stall/resource limitations remain documented.
-
-AI assistance was used for scaffolding, implementation, configuration, deployment, documentation and verification. Recorded PDF ingestion checks do not establish working grounded conversation. The current hosted PDF test configuration generates its visitor signing secret per process; restarts can invalidate visitor access. Reload clears the selected view. Durable signing configuration and TTL cleanup remain release work.
+AI assistance was used for implementation, configuration, deployment, documentation and verification. Historical evidence retains its original build identity in PROJECT_STATE; it does not establish final submission readiness.

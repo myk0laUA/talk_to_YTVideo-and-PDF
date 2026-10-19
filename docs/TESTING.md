@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## Worker 13A — clean offline reproduction, proposed READY_FOR_REVIEW
+
+Follow the [README no-key setup](../README.md) and [13A report/reviewer checklist](REVIEWER_CHECKLIST_13A.md). Exact accepted application8af058e was exported without ignored inputs and freshly installed/built with Node24.22.0/npm11.19.1. Build **6Z6iACnge_2zKkfs2q1BI**; ci/lint/typecheck/unit952/schema validation/build/browser availability/smoke16/boundaries186+59 PASS. Fresh arrival-HEAD5befba0 export plus only four documentation changes also PASS all nine commands: build wx1sdHPfrnU6LivCf18cF, same952/16/186+59 counts, unchanged lock. Exact final identities/UTC/exits and reporting-only additions appear in the checklist and PROJECT_STATE. Both builds13client chunks/13production traces pass existing boundary marker checks; source factories absent, default parsers closed, ports rebound,103links/15tracked config paths reviewed, heuristic secret candidates0; see artifacts/local/13a/audit.json. Existing npm/browser caches are disclosed, so browser install is not claimed as a fresh download. No migration, provider, realDB, phone or public-deployment run.
+
+Smoke owns3100; boundary checks own3125 after build and use synthetic Prisma/signing material with external fetch blocked. Default production shell stays unavailable. Initial PowerShell warning-capture failure and npm ci's5high-severity package findings are retained; no dependency upgrade/product fix. Full Step12/13/14 and live prerequisites stay open. Earlier sections below retain original evidence timestamps/builds and historical descriptions; current command counts are in README and the13A checklist. PROJECT_STATE owns status decisions.
+
+
 **Current PM12A review:** bounded local mobile/accessibility review accepted in `8af058e`; build `R_ixIZMDu1UXwpkBpA8ws`, all eight hashes matched. Fresh PM smoke16/source75/transcript32 PASS. Three reproduced fixes accepted; physical-phone/audio and full live gates remain open. Next single task: `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer instructions without keys. No deployment/spending. Older summaries below are historical.
 
 ## Worker12A — bounded mobile/accessibility review, proposed READY_FOR_REVIEW
