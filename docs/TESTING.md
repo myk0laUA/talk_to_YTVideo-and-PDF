@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## Worker 14A — walkthrough preparation, proposed READY_FOR_REVIEW
+
+[One walkthrough plan/report](WALKTHROUGH_14A.md): conditional13:00 final script and honest5:30 progress alternative, both estimated after desk review, no timed speech/recording. Claims map to canonical scoped evidence; hosted PDF, disabled local build and synthetic tests have separate build/date/environment labels. Recording, live/provider/physical-device actions and final link-access checks remain NOT_RUN/BLOCKED.13A remains the reviewer procedure; PROJECT_STATE owns status.
+
+Documentation-only check: `& ./.tools/node-v24.22.0-win-x64/node.exe artifacts/local/14a/verify.mjs`, pinned Node24.22.0/npm11.19.1. Baseline424tracked files at clean maine88f14e,19October2026UTC05:23:31.585Z–05:23:31.684Z,exit0. Verify protected raw hashes against baseline and clean-filter Git blobs against base, all local Markdown links, referenced npm scripts/literal evidence paths, contiguous780s/330s timing and `git diff --check`. Exact UTC/exits/results: ignored `artifacts/local/14a/verification.json`; four changed-file SHA256: `changed-files.sha256.json`. No application/dependency/configuration edits or fresh build/browser/unit tests; no new public/live/SQL/phone proof. All original prerequisites and retained13B advisory remain open.
+
 **Current PM13B review:** bounded dependency triage accepted in `96b1c30`; dependency retained, high advisory unresolved, no demonstrated public-input path in inspected code. Fresh PM verification:420 protected files unchanged,179 retained inputs match, all three hashes matched. Next single task `docs/WORKER_TASK_14A.md`: honest walkthrough preparation while live integration/keys remain blocked. No deployment/spending; no release-risk clearance. Older summaries below are historical.
 
 ## Worker 13B — dependency advisory triage, proposed READY_FOR_REVIEW

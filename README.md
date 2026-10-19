@@ -4,6 +4,8 @@ A mobile web workspace for one temporary PDF or YouTube source and one conversat
 
 [PROJECT_STATE](docs/PROJECT_STATE.md) is the authoritative status tracker. Task 13A prepares reproducibility; it does not complete Step 13/14.
 
+[Walkthrough preparation (14A)](docs/WALKTHROUGH_14A.md) provides a conditional 13-minute final script and a clearly labeled 5½-minute progress alternative. Recording, live integration and final reviewer access remain unverified.
+
 | Capability | Verified scope / current limit |
 |---|---|
 | Public PDF import | Last verified [Free Render deployment](https://talk-to-document-4pre.onrender.com/), application `03eb7d8`: complete preview, replacement and removal through real PostgreSQL. Requested iPhone PDF flow passed by user report; device/browser versions unspecified. Not freshly retested by 13A. |
