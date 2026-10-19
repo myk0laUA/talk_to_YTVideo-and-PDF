@@ -1,5 +1,14 @@
 # Testing and evidence — Talk to a Document
 
+## Task10B worker handoff — proposed READY_FOR_REVIEW
+
+Isolated text composer/recovery UI implemented; PM acceptance pending. Dirty main/baseHEAD ca6cfaf2290f89d9fd49254d34e63e8f9d983dca; local production build **us6hIqNcK4LWmfU6CDuvg**, Node24.22.0/npm11.19.1. [10B ownership/receipt/retry policy, six-criterion acceptance matrix, deterministic fixture and PM runbook](TEXT_SESSION_UI_10B.md). Exact UTC/exits including development failures, changed-file SHA256, separate fixture/prod identities, safe command/ACK/resource counts, screenshots and synthetic traces: ignored **artifacts/local/10b/**.
+
+Build first, then **npm run test:text-session** (free3117/3118 required). **92/92 PASS**,23 scenarios at320/390/768/1440px Chromium with actual10A/07B/09A/09B and test-only admission/transport/clock. Covers no eager Start; exact multiline Unicode/1000-unit validation; Enter/Shift+Enter/IME composition sentinel; duplicates; withheld priming ACKs; default source/turn budget refusals; user added/final ACK+write barrier; partial Stop/error/timeout; no automatic retransmission; explicit fresh retry/history clear; seven pending Stop phases; StrictMode/source replacement/removal/unmount/late resources/events; keyboard focus/Jump/anchor; reduced motion/CSS200% reflow and no overflow. Per-test counters media/audio/peer/socket/storage/external0, all acquired connections close once/listeners removed/timers0. Production separately unavailable, all conversation actions disabled, fixture paths404/query inert,188-file marker scan clean, provider0.
+
+Fresh lint/typecheck/full unit919/text-lifecycle90/build/transcript-view28/smoke14/sourceUI75/YouTubeUI99/voice10/text10 PASS (exact current-build timings in PROJECT_STATE). Existing ingestion/proof suites are synthetic boundaries, not new live provider evidence. Worker inspected desktop/390px partial/retained/preview/unavailable and320/390px200% captures. Real phone keyboard, actual IME/screen reader/audio, real socket/grounding/provider, browser-toolbar zoom and deployment stay NOT_RUN; actual07 accounting BLOCKED. No dependency/lockfile/server/coordinator/proof-gate change or public activation; public03eb7d8/PDF-only unchanged. PM owns acceptance and next task.
+
+
 **Current PM10A review:** scripted microphone-free text lifecycle accepted in e416874; build VxITBUcDZTwGOLrzLPgZK, all seven hashes match, fresh90focused/919unit PASS. No blocking scoped finding. Next single task `docs/WORKER_TASK_10B.md`: text composer/recovery UI using isolated browser fixtures. No keys/spend/public activation; full live gates and actual07 budgeting remain open. Public03eb7d8 unchanged.
 
 ## Task10A worker handoff — proposed READY_FOR_REVIEW

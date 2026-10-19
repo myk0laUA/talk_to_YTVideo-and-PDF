@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSource } from "./use-source";
-import { TranscriptView } from "./transcript-view";
+import { TextSession } from "./text-session";
 
 // Helpful URL checks only; the existing server remains authoritative.
 function isYoutubeUrl(value: string) {
@@ -97,7 +97,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailab
       </section>
       <section className="conversation-panel" aria-labelledby="conversation-heading">
         <h2 id="conversation-heading" tabIndex={-1}>Conversation</h2>
-        <TranscriptView snapshot={null} viewKey={known?.id ?? "no-source"} />
+        <TextSession source={known ? { id: known.id, title: known.title } : null} />
         <div className="source-options"><button type="button" disabled>Start Voice Chat</button><button type="button" disabled>Ask with text</button></div>
       </section>
     </div>

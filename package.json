@@ -21,6 +21,7 @@
     "test:lifecycle": "node --conditions=react-server --test tests/unit/voice-lifecycle.test.ts",
     "test:interruption": "node --conditions=react-server --test tests/unit/voice-interruption.test.ts",
     "test:transcript": "node --conditions=react-server --test tests/unit/transcript.test.ts",
+    "test:text-session": "node scripts/verify-text-session.mjs",
     "test:transcript-view": "node scripts/verify-transcript-view.mjs",
     "test:smoke": "playwright test",
     "test:text-lifecycle": "node --conditions=react-server --test tests/unit/text-lifecycle.test.ts",

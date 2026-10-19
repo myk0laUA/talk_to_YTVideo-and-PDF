@@ -101,6 +101,19 @@ footer { padding: 2rem 0; color: var(--muted); font-size: .875rem; }
 .transcript-latest { margin-top: 1rem; }
 .transcript-end { height: 1px; margin: 0; }
 #source-heading, #conversation-heading { scroll-margin-top: 1.5rem; }
+.text-session { min-width: 0; }
+.text-session-status, .text-source { color: var(--ink); overflow-wrap: anywhere; }
+.text-session-actions { margin-block: 1rem; }
+.text-composer { margin-block: 1.5rem 2rem; }
+.text-composer label { display: block; font-weight: 600; margin-bottom: .5rem; }
+.text-composer textarea { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 7rem; resize: vertical; padding: .75rem; font: inherit; color: var(--ink); caret-color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow-wrap: anywhere; }
+.text-composer textarea[aria-invalid="true"] { border-color: #713b26; }
+.text-composer textarea:read-only { background: var(--paper); }
+.text-validation { min-height: 2.5em; margin-top: .5rem; }
+.text-composer button { min-width: min(100%, 8rem); }
+@media (max-width: 400px) {
+  .conversation-panel:has(.text-session) { padding-inline: min(1.5rem, 24px); }
+}
 @media (max-width: 700px) {
   .source-workspace { grid-template-columns: minmax(0, 1fr); }
   .source-reader { padding: 1.5rem; }

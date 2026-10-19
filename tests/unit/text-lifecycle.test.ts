@@ -268,7 +268,8 @@ test("10A browser-safe emitted graph has no media/provider/server/test runtime i
   }
   await visit("src/shared/text-lifecycle.ts"); assert.equal(visited.size, 5);
   const workspace = await readFile("src/app/source-workspace.tsx", "utf8");
-  assert.ok(!workspace.includes("text-lifecycle")); assert.match(workspace, /<TranscriptView snapshot=\{null\}/);
+  assert.ok(!workspace.includes("text-lifecycle")); assert.match(workspace, /<TextSession source=/);
+  assert.doesNotMatch(workspace, /createController=/); // Public UI supplies no controller or positive admission.
   traces.push({ scenario: "emitted-runtime-graph", imports });
 });
 
