@@ -33,10 +33,12 @@ class Track implements VoiceTrack {
 class Transport {
   constructor() { acquired(this); }
   open = true; closes = 0; subscriptions = 0; unsubscribes = 0; commands: Command[] = []; trace: string[] = [];
+  closed?: () => void;
   receive?: (e: unknown) => void; stale?: (e: unknown) => void; sequence = 0; response = "answer_A";
   cancelGate = deferred(); clearGate = deferred(); holdCancel = false; holdClear = false;
-  subscribe(receive: (e: unknown) => void) { this.receive = this.stale = receive; this.subscriptions++; transferred(this);
+  subscribe(receive: (e: unknown) => void, closed: () => void) { this.closed = closed; this.receive = this.stale = receive; this.subscriptions++; transferred(this);
     return () => { this.receive = undefined; this.unsubscribes++; }; }
+  disconnect() { this.open = false; this.closed?.(); }
   isOpen() { return this.open; }
   send(raw: string) { const e: Command = JSON.parse(raw); this.commands.push(e); this.trace.push(`send:${e.type}`);
     if (this.holdCancel && e.type === "response.cancel") return this.cancelGate.promise;
@@ -60,6 +62,10 @@ class Transport {
   buffer(kind: string, id = this.response) { this.emit({ type: `output_audio_buffer.${kind}`, response_id: id }); }
   speech(kind: string) { this.emit({ type: `input_audio_buffer.speech_${kind}`, item_id: "speech_10c", [kind === "started" ? "audio_start_ms" : "audio_end_ms"]: kind === "started" ? 100 : 200 }); }
   late() {
+    this.closed?.();
+    const configuration = this.commands.filter(c => c.session).at(-1);
+    if (configuration) this.stale?.({ type: "session.updated", event_id: "late_config", session: { ...configuration.session, object: "realtime.session", id: "late_session", model: "offline-fixture-only" } });
+    for (const c of this.commands.filter(c => c.item)) this.stale?.({ type: "conversation.item.done", event_id: `late_${c.item!.id}`, previous_item_id: c.previous_item_id ?? null, item: { ...c.item, status: "completed" } });
     this.stale?.({ type: "response.created", event_id: "late_10c_created", response: { id: "late_10c", conversation_id: "conv_10c", status: "in_progress" } });
     this.stale?.({ type: "response.output_audio_transcript.delta", event_id: "late_10c_text", ...this.ids, delta: "STALE10C_MUST_NOT_APPEAR" });
     this.stale?.({ type: "output_audio_buffer.cleared", event_id: "late_10c_clear", response_id: this.response });

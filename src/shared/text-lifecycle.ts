@@ -176,7 +176,7 @@ export class TextLifecycle {
         } else this.receive(a, event);
       }, () => this.finish(a, "connection"));
       a.priming = this.createPriming(s => {
-        if (this.current(a) && s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable" : "priming");
+        if (this.current(a) && s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable" : s.failure === "transport" ? "connection" : "priming");
       }, () => { if (this.current(a)) this.update({ phase: "ready", protocolReady: true }); });
       if (!a.priming.start(a.identity, input, a.bridge) || !this.current(a)) return;
       failure = "connection";

@@ -73,7 +73,7 @@ try {
       if (item.isDirectory()) await audit(file);
       else if (/\.(js|json)$/.test(item.name)) {
         const source = await readFile(file, "utf8"); files++;
-        for (const marker of ["FIXTURE10C", "PRIVATE10C_ERROR", "STALE10C_MUST_NOT_APPEAR", "tests/mode-switch", "Isolated voice controls fixture 10C", "Fixture10cPriming", "Fixture10cVoice", "FixtureText", "tests/mode-switch", "Isolated mode switching fixture", "FIXTURE10C", "STALE10C_MUST_NOT_APPEAR", "synthetic-test-only", "FixturePriming", "FIXTURE08C", "FIXTURE10B", "Complete synthetic answer."])
+        for (const marker of ["recoverySynchronousAudit", "FIXTURE10C", "PRIVATE10C_ERROR", "STALE10C_MUST_NOT_APPEAR", "tests/mode-switch", "Isolated voice controls fixture 10C", "Fixture10cPriming", "Fixture10cVoice", "FixtureText", "tests/mode-switch", "Isolated mode switching fixture", "FIXTURE10C", "STALE10C_MUST_NOT_APPEAR", "synthetic-test-only", "FixturePriming", "FIXTURE08C", "FIXTURE10B", "Complete synthetic answer."])
           assert.ok(!source.includes(marker), `Fixture excluded from ${file}`);
       }
     }

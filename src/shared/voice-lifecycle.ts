@@ -181,7 +181,7 @@ export class VoiceLifecycle {
     });
   }
   /** Call only from an explicit user Start action. Active starts are rejected; retry is explicit.
-   * Source replacement MUST call reset(); navigation MUST call dispose().
+   * Source replacement MUST call reset(); page departure calls stop(); unmount calls dispose().
    */
   start(sourceId: string): boolean {
     if (this.disposed || this.disposing || this.cleaning || this.resetting || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;

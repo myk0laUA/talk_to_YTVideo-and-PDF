@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## Worker 11B — local browser departure and recovery
+
+Task 11B adds **`npm run test:recovery`**, after `npm run build`, with pinned Node24.22.0/npm11.19.1 and free3123/3124. It uses the actual composed voice/text owners and existing coordinators with isolated scripted transport/media/ACKs; a separate production process stays default-disabled with empty keys, unusable synthetic DB and blocked providers. All pending phases, persisted/non-persisted pagehide/pageshow, offline/online, authoritative adapter closure while online, partial text/unconfirmed draft, explicit fresh ACK recovery, late resources, repeated/racing events, StrictMode and source/mode/unmount cleanup are covered. Browser signals do not prove server reachability or degraded WebRTC.
+
+The complete matrix is248/248; eight screenshot confirmation cases use the same build. Full matrix artifacts are preserved under ignored `artifacts/local/11b/browser-results-matrix/`, `browser-results-matrix.json`, `identity-audit-matrix.json`; current default result paths hold the confirmation. Actual back/forward navigation passed by reloading; actual persisted BFCache restoration is **NOT_RUN**. Event dispatch covers both persisted flag values independently. Desktop/390px source/text retention and320/390/768/1440px/200%-CSS-text reflow are local Chromium evidence only. No phone/audio/provider/real-network/deployment claim. Exact build, UTC command exits including failures, hashes and remaining gates: PROJECT_STATE and [11B runbook/acceptance matrix](BROWSER_RECOVERY_11B.md). PM decides acceptance; full Step11 and original live gates remain open.
+
+
 **Current PM10C review:** local/scripted mode switching accepted in efa9edd; build -Dv7-LHxYaciWPP4Dupmi, all22 hashes match, fresh156browser PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_11B.md`: browser departure and connection-loss recovery. Production factories remain absent; full live/provider/physical-device gates stay open.
 
 ## Task 10C — composed voice/text mode ownership

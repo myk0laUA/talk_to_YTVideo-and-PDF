@@ -3,12 +3,13 @@
 import { Component } from "react";
 import type { VoiceLifecycle, VoiceStatus } from "../shared/voice-lifecycle";
 import { TranscriptView, type TranscriptViewSnapshot } from "./transcript-view";
+import { BrowserSession, browserSessionMessage, initialBrowserSession, type BrowserSessionState } from "./browser-session";
 
 type Source = { id: string; title: string };
 // An ownership interface only. The coordinator still enforces source admission.
 export type VoiceControllerFactory = (notify: (status: VoiceStatus) => void) => VoiceLifecycle;
 type Props = { source: Source | null; createController?: VoiceControllerFactory };
-type State = { status: VoiceStatus | null; transcript: TranscriptViewSnapshot | null; session: number };
+type State = { browser: BrowserSessionState; status: VoiceStatus | null; transcript: TranscriptViewSnapshot | null; session: number };
 const running = (s: VoiceStatus | null) => s?.phase === "connecting" || s?.phase === "priming" || s?.phase === "ready";
 
 function setup(s: VoiceStatus | null, available: boolean) {
@@ -21,6 +22,7 @@ function setup(s: VoiceStatus | null, available: boolean) {
     if (s.failure === "budget_unavailable") return "This source cannot be used for a conversation in this build. No microphone or connection was opened.";
     if (s.failure === "microphone") return "Microphone access was denied, unavailable, or timed out. Check your browser microphone permission before starting again. Text mode is a separate next step and is not started here.";
     if (s.failure === "track_ended") return "The microphone ended. Check your microphone before starting again. Text mode is a separate next step and is not started here.";
+    if (s.failure === "connection") return "The voice connection failed or closed. This does not establish network loss. Received text stays below. Start a fresh session to retry.";
     return "Voice setup or connection failed. Received text stays below. Start a fresh session to retry; nothing restarts automatically.";
   }
   return s.microphone === "pending" ? "Source setup complete. Waiting for microphone access. You can still stop." : "Voice session ready. Microphone and speaker playback have separate controls.";
@@ -54,8 +56,9 @@ function answer(s: VoiceStatus | null) {
 /** Mount owns one controller. The source key discards old UI before paint; teardown
  * detaches its observer before disposing resources. No Start/play/retry in effects. */
 class OwnedVoiceSession extends Component<Props, State> {
-  state: State = { status: null, transcript: null, session: 0 };
+  state: State = { browser: initialBrowserSession, status: null, transcript: null, session: 0 };
   private controller?: VoiceLifecycle;
+  private browser?: BrowserSession;
   private mounted = false;
   componentDidMount() {
     this.mounted = true;
@@ -63,24 +66,28 @@ class OwnedVoiceSession extends Component<Props, State> {
       if (!this.mounted || !this.controller) return;
       this.setState({ status, transcript: this.controller.transcript });
     });
+    this.browser = new BrowserSession(() => this.controller?.stop(), browser => this.setState({ browser }));
   }
   componentWillUnmount() {
     this.mounted = false;
+    this.browser?.dispose(); this.browser = undefined;
     const controller = this.controller; this.controller = undefined;
     controller?.dispose();
   }
   private start = () => {
-    if (!this.props.source || !this.controller || running(this.controller.snapshot)) return;
-    if (this.controller.start(this.props.source.id)) this.setState(previous => ({ session: previous.session + 1 }));
+    if (!this.browser?.allowsAction() || !this.props.source || !this.controller || running(this.controller.snapshot)) return;
+    if (this.controller.start(this.props.source.id)) { this.browser.started(); this.setState(previous => ({ session: previous.session + 1 })); }
   };
   private mute = () => {
     const c = this.controller;
-    if (!c || !running(c.snapshot) || c.snapshot.microphone !== "available") return;
+    if (!this.browser?.allowsAction() || !c || !running(c.snapshot) || c.snapshot.microphone !== "available") return;
     if (c.snapshot.muted) c.unmute(); else c.mute();
   };
   render() {
     const { source, createController } = this.props;
     const { status, transcript, session } = this.state;
+    const blocked = this.state.browser.offline || this.state.browser.departed;
+    const recovery = browserSessionMessage(this.state.browser);
     const available = !!source && !!createController;
     const active = running(status), ready = status?.phase === "ready";
     const response = status?.response;
@@ -90,13 +97,13 @@ class OwnedVoiceSession extends Component<Props, State> {
       && (response?.generation.state === "generating" || response?.output.state === "streaming");
     return <div className="voice-session">
       {source ? <p className="text-source">Using source: {source.title}</p> : null}
-      <p className="voice-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{setup(status, available)}</p>
-      <div className="source-actions voice-session-actions">
-        <button type="button" disabled={!available || active} onClick={this.start}>{status?.phase === "ended" || status?.phase === "failed" ? "Start a fresh voice session" : "Start voice session"}</button>
-        <button type="button" disabled={!available || !active} onClick={() => this.controller?.stop()}>Stop session</button>
-        <button type="button" disabled={!available || !active || status?.microphone !== "available"} aria-pressed={status?.muted ?? false} onClick={this.mute}>{status?.muted ? "Unmute microphone" : "Mute microphone"}</button>
-        <button type="button" disabled={!available || !canInterrupt} onClick={() => this.controller?.interruptCurrentResponse()}>Interrupt answer</button>
-        <button type="button" disabled={!available || !ready || status?.playback === "pending" || status?.playback === "available"} onClick={() => { void this.controller?.playAudio(); }}>{status?.playback === "blocked" ? "Try speaker playback" : "Enable speaker playback"}</button>
+      <p id="voice-session-guidance" className="voice-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : setup(status, available)}</p>
+      <div className="source-actions voice-session-actions" aria-describedby="voice-session-guidance">
+        <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || active} onClick={this.start}>{status?.phase === "ended" || status?.phase === "failed" ? "Start a fresh voice session" : "Start voice session"}</button>
+        <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !active} onClick={() => this.controller?.stop()}>Stop session</button>
+        <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !active || status?.microphone !== "available"} aria-pressed={status?.muted ?? false} onClick={this.mute}>{status?.muted ? "Unmute microphone" : "Mute microphone"}</button>
+        <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !canInterrupt} onClick={() => { if (this.browser?.allowsAction()) this.controller?.interruptCurrentResponse(); }}>Interrupt answer</button>
+        <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !ready || status?.playback === "pending" || status?.playback === "available"} onClick={() => { if (this.browser?.allowsAction()) void this.controller?.playAudio(); }}>{status?.playback === "blocked" ? "Try speaker playback" : "Enable speaker playback"}</button>
       </div>
       <p className="note">Starting again clears this conversation. Stop keeps received text. Changing or removing the source clears it. Nothing restarts automatically.</p>
       <dl className="voice-device-status">

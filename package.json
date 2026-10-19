@@ -50,6 +50,7 @@
     "test:cleanup": "node --conditions=react-server --test tests/unit/cleanup.test.ts",
     "test:cleanup:postgres": "node --conditions=react-server scripts/verify-cleanup-postgres.ts",
     "test:voice-session": "node scripts/verify-voice-session.mjs",
+    "test:recovery": "node scripts/verify-recovery.mjs",
     "test:mode-switch": "node scripts/verify-mode-switch.mjs"
   },
   "dependencies": {

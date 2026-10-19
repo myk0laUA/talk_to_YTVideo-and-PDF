@@ -21,10 +21,12 @@ function deferred() { let resolve!: () => void; const promise = new Promise<void
 class Transport {
   constructor() { acquired(this); }
   open = true; closes = 0; subscriptions = 0; unsubscribes = 0; commands: Command[] = []; trace: string[] = [];
+  closed?: () => void;
   receive?: (e: unknown) => void; stale?: (e: unknown) => void; sequence = 0;
   writeGate = deferred(); holdWrite = false;
-  subscribe(receive: (e: unknown) => void) { this.receive = this.stale = receive; this.subscriptions++; transferred(this);
+  subscribe(receive: (e: unknown) => void, closed: () => void) { this.closed = closed; this.receive = this.stale = receive; this.subscriptions++; transferred(this);
     return () => { this.receive = undefined; this.unsubscribes++; }; }
+  disconnect() { this.open = false; this.closed?.(); }
   isOpen() { return this.open; }
   send(raw: string) { const e: Command = JSON.parse(raw); this.commands.push(e); this.trace.push(`send:${e.type}`);
     if (this.holdWrite && e.item?.id.includes("_question_")) return this.writeGate.promise; }
@@ -48,6 +50,10 @@ class Transport {
     this.emit({ type: "response.done", response: { id: this.ids.response_id, conversation_id: "conversation_fixture", status: "completed",
       output: [{ id: this.ids.item_id, type: "message", role: "assistant", content: [{ type: "output_text", text }] }] } }); }
   late() {
+    this.closed?.();
+    const configuration = this.commands.filter(c => c.session).at(-1);
+    if (configuration) this.stale?.({ type: "session.updated", event_id: "late_config", session: { ...configuration.session, object: "realtime.session", id: "late_session", model: "offline-fixture-only" } });
+    for (const c of this.commands.filter(c => c.item)) this.stale?.({ type: "conversation.item.done", event_id: `late_${c.item!.id}`, previous_item_id: c.previous_item_id ?? null, item: { ...c.item, status: "completed" } });
     const q = this.questions.at(-1), response = this.responses.at(-1);
     const stale = (event: object) => this.stale?.({ event_id: `late_${++this.sequence}`, ...event });
     if (q) stale({ type: "conversation.item.done", previous_item_id: q.previous_item_id ?? null, item: { ...q.item, status: "completed" } });

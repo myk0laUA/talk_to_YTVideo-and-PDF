@@ -8,6 +8,10 @@ import { ownership } from "./ownership";
 
 const fixtures = JSON.parse(document.getElementById("inputs")!.textContent!) as { id: string; variant: { source: { sections: { text: string }[] } } }[];
 const flush = voice.flush;
+// Read actual ownership synchronously inside a dispatched pagehide, before React paints.
+Reflect.set(window, "recoverySynchronousAudit", () => ({ ownership: ownership(),
+  voice: voice.records.map(r => ({ phase: r.controller?.snapshot.phase, timers: r.clock.timers.size, resources: r.resources.map(x => ({ ...x.counts, stops: x.tracks.map(t => t.stops) })) })),
+  text: text.records.map(r => ({ phase: r.controller?.snapshot.phase, timers: r.clock.timers.size, closes: r.transports.map(t => t.closes) })) }));
 function Harness() {
   const [source, setSource] = useState(0), [mounted, setMounted] = useState(true), [revision, setRevision] = useState(0);
   const [preview, setPreview] = useState(false);
@@ -44,6 +48,7 @@ function Harness() {
         ["Text long", () => t()?.partial("Long synthetic line 日本語. ".repeat(180))],
         ["Voice long", () => v()?.transport.partial("Long synthetic voice line 日本語. ".repeat(180))],
         ["End microphone", () => v()?.tracks[0].end()],
+        ["Close voice transport", () => v()?.transport.disconnect()], ["Close text transport", () => t()?.disconnect()],
         ["Fail text", () => t()?.emit({ type: "error", error: { message: "PRIVATE10C_ERROR" } })],
         ["Expire timers", () => { voice.records.forEach(r => r.clock.tick()); text.records.forEach(r => r.clock.tick()); }],
         ["Release all", () => {
