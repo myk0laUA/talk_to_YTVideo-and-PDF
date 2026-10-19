@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM14A review:** walkthrough preparation accepted in `6b28ea9`; estimated13:00 final/5:30 progress scripts, no recording or live-success claim. Four hashes matched; fresh PM verification passed with421 protected files unchanged. No active worker assignment: next is prerequisite resolution for model/accounting and live integration; disposable-PostgreSQL cleanup validation is an independent no-key path once PM selects a target. Full live/device/release gates remain open. Older summaries below are historical.
+
 ## Worker 14A — walkthrough preparation, proposed READY_FOR_REVIEW
 
 [One walkthrough plan/report](WALKTHROUGH_14A.md): conditional13:00 final script and honest5:30 progress alternative, both estimated after desk review, no timed speech/recording. Claims map to canonical scoped evidence; hosted PDF, disabled local build and synthetic tests have separate build/date/environment labels. Recording, live/provider/physical-device actions and final link-access checks remain NOT_RUN/BLOCKED.13A remains the reviewer procedure; PROJECT_STATE owns status.

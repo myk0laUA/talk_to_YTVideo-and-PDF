@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+**Current PM14A review:** walkthrough preparation accepted in `6b28ea9`; estimated13:00 final/5:30 progress scripts, no recording or live-success claim. Four hashes matched; fresh PM verification passed with421 protected files unchanged. No active worker assignment: next is prerequisite resolution for model/accounting and live integration; disposable-PostgreSQL cleanup validation is an independent no-key path once PM selects a target. Full live/device/release gates remain open. Older summaries below are historical.
+
 **Current PM13B review:** bounded dependency triage accepted in `96b1c30`; dependency retained, high advisory unresolved, no demonstrated public-input path in inspected code. Fresh PM verification:420 protected files unchanged,179 retained inputs match, all three hashes matched. Next single task `docs/WORKER_TASK_14A.md`: honest walkthrough preparation while live integration/keys remain blocked. No deployment/spending; no release-risk clearance. Older summaries below are historical.
 
 **Current PM13A review:** clean-checkout verification and reviewer instructions accepted in `e4c7097`; two isolated copies passed the nine required commands (952 units,16 smoke,186 focused +59 HTTP). Fresh PM identity/link/boundary audit PASS; all four delivery hashes matched. Next single task `docs/WORKER_TASK_13B.md`: triage the reported lint-tool dependency advisory. No deployment/spending; live and physical-device gates remain open. Older summaries below are historical.

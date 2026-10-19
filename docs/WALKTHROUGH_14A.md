@@ -1,5 +1,7 @@
 # Task 14A — walkthrough plan and worker evidence
 
+**Current PM14A review:** walkthrough preparation accepted in `6b28ea9`; estimated13:00 final/5:30 progress scripts, no recording or live-success claim. Four hashes matched; fresh PM verification passed with421 protected files unchanged. No active worker assignment: next is prerequisite resolution for model/accounting and live integration; disposable-PostgreSQL cleanup validation is an independent no-key path once PM selects a target. Full live/device/release gates remain open. Older summaries below are historical.
+
 **READY_FOR_REVIEW for preparation only; PM decides acceptance.** Prepared 19 October 2026, Toronto/UTC, from PM13B acceptance. This is an estimated script and desk review, not a recording or a completed assessment. [PROJECT_STATE](PROJECT_STATE.md) owns status; use the [README](../README.md) and [13A reviewer checklist](REVIEWER_CHECKLIST_13A.md) for setup and gate procedures. Original Steps 01–14 remain unchanged.
 
 Arrival: clean `main`, HEAD `e88f14e8a2fe70cb226c8efa1d02e4ec1a3822a6`. Delivery: dirty documentation only; no new application build, commit, push, deployment, provider/DB call or spend. Accepted application remains `8af058eac64f80e0748e294dc8f0d044feada571`. Historical 13A builds: accepted export `6Z6iACnge_2zKkfs2q1BI`, documentation snapshot `wx1sdHPfrnU6LivCf18cF`. They are not 14A builds. No private configuration inspected.
