@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+## Task09A worker handoff — proposed READY_FOR_REVIEW
+
+Bounded memory-only transcript reconciliation; PM acceptance pending. Dirty `main`/HEAD `53b5fd0cb0cd6091467ad735d074cef109405cc5`, including accepted08Bfabc387. Final local build **mr0N_NQANXh4eRxD1_ZIZ**, pinned **Node24.22.0/npm11.19.1**. [09A official schemas, final authority, ordering/privacy/bounds/reset semantics, acceptance and PM runbook](TRANSCRIPT_09A.md). Exact19October2026UTC commands/exits, development failures, identity/audit and seven-file SHA256 manifest are under ignored `artifacts/local/09a/`.
+
+`npm run test:transcript` passes **63/63**, actual07B/08A/08B composed with fake clock/transport/media and blocked external fetch (**providerCalls0**). Fixture-only `transcript-matrix.json` records late ASR filling original turn order, exact Unicode/plain text, final/delta reversal/dedup/aggregate authority, distinct content parts/output indexes, interrupted full generated text with unconfirmed playback, seven named limits/incomplete/counts, source-priming exclusion, sourceA→B/reset/Stop/dispose cleanup and stale events. No new response/provider commands or media changes; manual interrupt uses existing cancel1→clear1. Default admission remains connect0/media0. Snapshot mutation cannot corrupt the store; limit state freezes ingestion until a new session.
+
+All final checks PASS/exit0, **00:38:27.1160987–00:39:01.7197612UTC19October2026**: lint/typecheck, full unit829, lifecycle63, interruption62, priming75, budget42, build, smoke14, voice10 and text10. Build precedes browser checks. Existing isolated browser suites use the production build, fake providers/media/peer/socket and blocked external requests at desktop/390px Chromium viewports; they do not render09A or establish real device/audio/grounding behavior. Proof/public UI/routes, source preview, server/model/credential policy, lockfile, schema and migrations remain unchanged.
+
+PM: compare the seven hashes, review field projection/order/authority/caps/privacy and rerun transcript/full unit checks. Source replacement must call lifecycle.reset() to stop and immediately clear transcript; ordinary Stop preserves display text; Dispose clears it permanently. Public UI rendering/scrolling/accessibility, real ASR/answers, live transport/provider and physical phone/audio remain **NOT_RUN**;07 actual model binding remains **BLOCKED**. No key/phone/purchase action is needed for scripted review, no deployment or later task advancement. Full Step09 remains open.
+
 **Current PM08B review:** scripted interruption/playback accepted infabc387; buildCxEEYDJfJk_Tmf2fmj9aL, all8 hashes match, fresh62interruption/766unit PASS. Next single task `docs/WORKER_TASK_09A.md`: bounded transcript state/event reconciliation. No keys/spend/public activation;07 real budgeting and full08–10 live gates remain open. Public03eb7d8 stays PDF-only;11A SQL cleanup/scheduling NOT_RUN.
 
 ## Task08B worker handoff — proposed READY_FOR_REVIEW

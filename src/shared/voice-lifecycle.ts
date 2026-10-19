@@ -1,6 +1,7 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport, type RunIdentity } from "./priming-controller.ts";
 import type { PrimingInput } from "./priming-admission.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
+import { TranscriptStore } from "./transcript.ts";
 
 export type VoiceIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 export type VoiceStatus = Readonly<{
@@ -112,7 +113,9 @@ export class VoiceLifecycle {
   private disposed = false;
   private disposing = false;
   private cleaning = false;
+  private resetting = false;
   private sequence = 0;
+  private transcriptStore = new TranscriptStore();
   private clock: PrimingClock;
   private adapters: VoiceAdapters;
   private notify: (status: VoiceStatus) => void;
@@ -124,6 +127,7 @@ export class VoiceLifecycle {
     if (Object.values(this.deadlines).some(n => !Number.isSafeInteger(n) || n <= 0 || n > 120_000)) throw new Error("Invalid voice deadline.");
   }
   get snapshot() { return this.status; }
+  get transcript() { return this.transcriptStore.snapshot; }
   get canSendQuestions() { return !!this.attempt && this.status.phase === "ready" && this.status.microphone === "available" && !this.status.muted
     && this.attempt.response?.canAcceptInput === true; }
   // Tests override ONLY to instantiate 07B's existing test-only subclass. No runtime switch.
@@ -146,6 +150,7 @@ export class VoiceLifecycle {
     if (!this.current(a)) return;
     // Invalidate first: abort/close/track callbacks and observers cannot revive this run.
     this.attempt = undefined;
+    this.transcriptStore.stop();
     this.cleaning = true;
     a.abort.abort();
     a.response?.stop(); a.response = undefined;
@@ -176,14 +181,15 @@ export class VoiceLifecycle {
     });
   }
   /** Call only from an explicit user Start action. Active starts are rejected; retry is explicit.
-   * Source replacement/navigation MUST call stop()/dispose() before another Start.
+   * Source replacement MUST call reset(); navigation MUST call dispose().
    */
   start(sourceId: string): boolean {
-    if (this.disposed || this.disposing || this.cleaning || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;
+    if (this.disposed || this.disposing || this.cleaning || this.resetting || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;
     const n = ++this.sequence;
     const a: Attempt = { identity: Object.freeze({ sourceId, runId: `voice_${n}`, connectionId: `connection_${n}` }),
       abort: new AbortController(), listeners: [] };
     this.attempt = a;
+    this.transcriptStore.reset();
     this.update({ phase: "connecting", identity: a.identity, muted: false, protocolReady: false, productionReady: false,
       microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, message: "Preparing voice setup; questions are disabled." });
     if (this.current(a)) void this.setup(a);
@@ -201,13 +207,20 @@ export class VoiceLifecycle {
       }
       // One real subscription. Before the complete 07B barrier, only priming owns events.
       // Afterward response errors must not be misclassified as source/transport failures.
+      this.transcriptStore.start(a.identity, input.manifest.items.map(item => item.item.id));
       const bridge = new PrimingBridge((event, priming) => {
         if (!this.current(a)) return;
         if (!a.priming?.snapshot.protocolReady) priming();
-        else if (this.status.microphone === "available") a.response?.receive(event);
+        else if (this.status.microphone === "available") {
+          this.transcriptStore.receive(a.identity, event);
+          a.response?.receive(event);
+          // The same lifecycle observer can read transcript after input-only events too.
+          if (this.current(a)) this.update({});
+        }
       });
       a.response = new VoiceResponseController(this.clock, bridge, a.identity.runId, response => {
         if (!this.current(a)) return;
+        this.transcriptStore.observe(a.identity, response);
         this.update({ response });
         if (this.current(a)) this.applyMute(a);
       }, () => this.finish(a, "connection"), this.deadlines.interruptionMs);
@@ -270,5 +283,11 @@ export class VoiceLifecycle {
     catch { if (this.current(a)) this.update({ playback: "blocked" }); }
   }
   stop() { if (this.attempt) this.finish(this.attempt); }
-  dispose() { this.disposing = true; this.stop(); this.disposed = true; this.notify = () => {}; }
+  /** Source replacement: existing Stop cleanup plus immediate release of old transcript text. */
+  reset() {
+    if (this.resetting) return;
+    this.resetting = true;
+    try { this.stop(); this.transcriptStore.reset(); } finally { this.resetting = false; }
+  }
+  dispose() { this.disposing = true; this.stop(); this.transcriptStore.dispose(); this.disposed = true; this.notify = () => {}; }
 }

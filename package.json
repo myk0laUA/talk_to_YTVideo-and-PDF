@@ -20,6 +20,7 @@
     "test:priming": "node --conditions=react-server --test tests/unit/priming.test.ts",
     "test:lifecycle": "node --conditions=react-server --test tests/unit/voice-lifecycle.test.ts",
     "test:interruption": "node --conditions=react-server --test tests/unit/voice-interruption.test.ts",
+    "test:transcript": "node --conditions=react-server --test tests/unit/transcript.test.ts",
     "test:smoke": "playwright test",
     "test:text": "playwright test --config playwright.text.config.ts",
     "test:voice": "playwright test --config playwright.voice.config.ts",
