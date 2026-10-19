@@ -1,5 +1,7 @@
 # Task 09A — bounded transcript reconciliation
 
+**Current PM09A review:** bounded transcript state accepted inc95f88c; buildmr0N_NQANXh4eRxD1_ZIZ, all7 hashes match, fresh63transcript/829unit PASS. Next single task `docs/WORKER_TASK_09B.md`: transcript presentation/scrolling/accessibility with isolated browser fixtures. No live activation/keys/spend.07 actual budgeting and full08–10 live gates remain open; public03eb7d8 stays PDF-only.
+
 Worker proposes **READY_FOR_REVIEW** for memory-only scripted state. PM owns acceptance. Arrival: clean `main`, HEAD `53b5fd0cb0cd6091467ad735d074cef109405cc5`, including accepted08B `fabc387c47d12bb52a82fc97bcc6b004f418a02f`. Delivery is dirty; no commit, push or deployment. Local build **mr0N_NQANXh4eRxD1_ZIZ**, Node **24.22.0**, npm **11.19.1**. Full Step09, actual model budgeting, live grounding and original08–10 gates remain open. Public03eb7d8 remains PDF-only.
 
 ## Official schema mapping

@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM09A review:** bounded transcript state accepted inc95f88c; buildmr0N_NQANXh4eRxD1_ZIZ, all7 hashes match, fresh63transcript/829unit PASS. Next single task `docs/WORKER_TASK_09B.md`: transcript presentation/scrolling/accessibility with isolated browser fixtures. No live activation/keys/spend.07 actual budgeting and full08–10 live gates remain open; public03eb7d8 stays PDF-only.
+
 ## Task09A worker handoff — proposed READY_FOR_REVIEW
 
 Bounded memory-only transcript reconciliation; PM acceptance pending. Dirty `main`/HEAD `53b5fd0cb0cd6091467ad735d074cef109405cc5`, including accepted08Bfabc387. Final local build **mr0N_NQANXh4eRxD1_ZIZ**, pinned **Node24.22.0/npm11.19.1**. [09A official schemas, final authority, ordering/privacy/bounds/reset semantics, acceptance and PM runbook](TRANSCRIPT_09A.md). Exact19October2026UTC commands/exits, development failures, identity/audit and seven-file SHA256 manifest are under ignored `artifacts/local/09a/`.

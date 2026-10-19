@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+PM19OctoberUTC/18OctoberToronto:09A bounded transcript state accepted inc95f88c (63focused/829unit PASS). Next09B read-only transcript presentation and scrolling/accessibility with isolated fixtures. No public live activation or waiver of original full-step gates.
+
 PM19OctoberUTC/18OctoberToronto:08B scripted interruption/playback accepted infabc387 (62focused/766unit PASS). Next09A bounded transcript state and event reconciliation; public rendering and real transcription/audio remain unverified. Full original dependencies/live gates remain open.
 
 PM19OctoberUTC/18OctoberToronto:08A simulated lifecycle accepted inef903f8 (63focused/704unit PASS). Next08B scripted response/playback/interruption behavior; no public activation or live audio claim.07 actual budget/provider and full08–10 dependencies remain open.
