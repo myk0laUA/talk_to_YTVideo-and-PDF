@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+**Current PM10C review:** local/scripted mode switching accepted in efa9edd; build -Dv7-LHxYaciWPP4Dupmi, all22 hashes match, fresh156browser PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_11B.md`: browser departure and connection-loss recovery. Production factories remain absent; full live/provider/physical-device gates stay open.
+
 **Current PM08C review:** isolated voice controls accepted in dc0ac90; build oWirgcJ5JBDU_vzPCBDGU, all11 hashes match, fresh208 browser checks PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_10C.md`: explicit voice/text switching with one owner and fresh sessions, using isolated fixtures. Full live/provider/physical-device gates remain open.
 
 **Current PM10B review:** isolated text composer/recovery presentation accepted in5c0b5b7; build us6hIqNcK4LWmfU6CDuvg, all14hashes match, fresh92browser PASS. Production remains unavailable; no deployment/keys/spend. Next single task `docs/WORKER_TASK_08C.md`: voice-control presentation using actual08A/B and isolated fixtures, before later mode switching. Full original/live gates remain open.

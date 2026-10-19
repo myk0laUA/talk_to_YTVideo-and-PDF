@@ -1,5 +1,7 @@
 # Task 10C — explicit modes and one conversation owner
 
+**Current PM10C review:** local/scripted mode switching accepted in efa9edd; build -Dv7-LHxYaciWPP4Dupmi, all22 hashes match, fresh156browser PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_11B.md`: browser departure and connection-loss recovery. Production factories remain absent; full live/provider/physical-device gates stay open.
+
 Worker implementation handoff; PM owns acceptance. Parent Step10 and original Step01–14 IDs are unchanged. This task is local/scripted only. Public03eb7d8 remains PDF-only. No application factories, provider/media/socket adapters, credentials, source-session issuance, budget policy, database, dependencies or deployment are added.
 
 ## Ownership and visitor behavior

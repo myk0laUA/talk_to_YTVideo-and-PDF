@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM10C review:** local/scripted mode switching accepted in efa9edd; build -Dv7-LHxYaciWPP4Dupmi, all22 hashes match, fresh156browser PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_11B.md`: browser departure and connection-loss recovery. Production factories remain absent; full live/provider/physical-device gates stay open.
+
 ## Task 10C — composed voice/text mode ownership
 
 The focused command is **`npm run test:mode-switch`**, after `npm run build`, using pinned Node24.22.0/npm11.19.1. It refuses occupied3121/3122, compiles a separate loopback fixture outside `src/`, and exercises actual08A/B/10A/07B/09A/B through `ConversationArea`. StrictMode is enabled. The actual production build runs separately with empty keys, unusable synthetic DB, disabled gates and blocked external/provider access; mode selection works but no application controller factory is provided.
