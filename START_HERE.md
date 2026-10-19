@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08B review:** scripted interruption/playback accepted infabc387; buildCxEEYDJfJk_Tmf2fmj9aL, all8 hashes match, fresh62interruption/766unit PASS. Next single task `docs/WORKER_TASK_09A.md`: bounded transcript state/event reconciliation. No keys/spend/public activation;07 real budgeting and full08–10 live gates remain open. Public03eb7d8 stays PDF-only;11A SQL cleanup/scheduling NOT_RUN.
+
 **Current PM08A review:** simulated voice lifecycle accepted inef903f8; buildpnBXNpZkqS-uTQAmDG8_R, all7 hashes match, fresh63lifecycle/704unit PASS. Next single task `docs/WORKER_TASK_08B.md`: scripted interruption and playback-state handling. No public activation, keys or spend;07 real budgeting/live grounding and full08–10 remain open. Public03eb7d8 remains PDF-only;11A real SQL cleanup/scheduling still NOT_RUN.
 
 **Current PM11A review:** local cleanup implementation accepted in3961af4; build0rWK8RA2kP8W59_6R1mUe, all11 hashes match, fresh52cleanup/641unit PASS. Real PostgreSQL cleanup/race validation remains NOT_RUN, no deployment/scheduling. Next single task `docs/WORKER_TASK_08A.md`: simulated voice lifecycle/controls using07B priming. Full08–10 remain unfinished;07 model binding/live gates remain blocked. Public03eb7d8 stays PDF-only.

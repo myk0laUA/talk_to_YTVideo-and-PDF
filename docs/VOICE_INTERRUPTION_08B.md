@@ -1,5 +1,7 @@
 # Task 08B — scripted response, playback and interruption
 
+**Current PM08B review:** scripted interruption/playback accepted infabc387; buildCxEEYDJfJk_Tmf2fmj9aL, all8 hashes match, fresh62interruption/766unit PASS. Next single task `docs/WORKER_TASK_09A.md`: bounded transcript state/event reconciliation. No keys/spend/public activation;07 real budgeting and full08–10 live gates remain open. Public03eb7d8 stays PDF-only;11A SQL cleanup/scheduling NOT_RUN.
+
 Worker proposes **READY_FOR_REVIEW** for the bounded scripted scope. PM owns acceptance. Base `main` / `10b5a93f0a9b9f5d4d7aafee33e0e4fd8ac82397` includes accepted08A `ef903f81d9351d770d93e486682323ed8758ccaa`. Delivery is dirty, without commit/push/deployment. Build **CxEEYDJfJk_Tmf2fmj9aL**, pinned **Node24.22.0/npm11.19.1**. Full Step08 remains open; actual model budgeting and live integration gates are unchanged.
 
 ## Official protocol mapping

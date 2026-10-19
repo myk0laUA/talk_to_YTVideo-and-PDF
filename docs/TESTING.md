@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM08B review:** scripted interruption/playback accepted infabc387; buildCxEEYDJfJk_Tmf2fmj9aL, all8 hashes match, fresh62interruption/766unit PASS. Next single task `docs/WORKER_TASK_09A.md`: bounded transcript state/event reconciliation. No keys/spend/public activation;07 real budgeting and full08–10 live gates remain open. Public03eb7d8 stays PDF-only;11A SQL cleanup/scheduling NOT_RUN.
+
 ## Task08B worker handoff — proposed READY_FOR_REVIEW
 
 Scripted08B response/playback/interruption implementation only; PM review pending. Local dirty `main`/base10b5a93, build **CxEEYDJfJk_Tmf2fmj9aL**, pinned **Node24.22.0/npm11.19.1**. [08B official schema mapping, conservative race/error policy, acceptance matrix and PM runbook](VOICE_INTERRUPTION_08B.md). Exact19October2026UTC commands/exits/development failures in PROJECT_STATE and ignored `artifacts/local/08b/commands.jsonl`; build/runtime/audit/SHA256 and sanitized state/count traces in that directory.
