@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM09B review:** local transcript presentation accepted ine7c7267; buildT3tKcoJbowWTW-uI0jbnW, all13 hashes match, fresh28browser checks PASS. Desktop/mobile renders reviewed; production fixtures absent, provider calls0. Next single task `docs/WORKER_TASK_10A.md`: scripted microphone-free text lifecycle. No keys/spend/live activation;07 budgeting and full live gates remain open. Public03eb7d8 unchanged.
+
 ## Task09B worker handoff — proposed READY_FOR_REVIEW
 
 Read-only transcript presentation implemented; PM acceptance pending. Dirty `main`/HEAD `44033f54a82c6b6d2010ca8ade432cd1ff158983`, including accepted09A. Final local production build **T3tKcoJbowWTW-uI0jbnW**, pinned **Node24.22.0/npm11.19.1**. [09B safe props, page-scroll/focus policy, acceptance matrix, isolated harness, production exclusion and PM runbook](TRANSCRIPT_VIEW_09B.md). Exact UTC command/exits/development failures and final table are in PROJECT_STATE and ignored `artifacts/local/09b/commands.jsonl`;13-file SHA256 manifest and client-boundary audit are in that evidence directory.

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM09B review:** local transcript presentation accepted ine7c7267; buildT3tKcoJbowWTW-uI0jbnW, all13 hashes match, fresh28browser checks PASS. Desktop/mobile renders reviewed; production fixtures absent, provider calls0. Next single task `docs/WORKER_TASK_10A.md`: scripted microphone-free text lifecycle. No keys/spend/live activation;07 budgeting and full live gates remain open. Public03eb7d8 unchanged.
+
 **Current PM09A review:** bounded transcript state accepted inc95f88c; buildmr0N_NQANXh4eRxD1_ZIZ, all7 hashes match, fresh63transcript/829unit PASS. Next single task `docs/WORKER_TASK_09B.md`: transcript presentation/scrolling/accessibility with isolated browser fixtures. No live activation/keys/spend.07 actual budgeting and full08–10 live gates remain open; public03eb7d8 stays PDF-only.
 
 **Current PM08B review:** scripted interruption/playback accepted infabc387; buildCxEEYDJfJk_Tmf2fmj9aL, all8 hashes match, fresh62interruption/766unit PASS. Next single task `docs/WORKER_TASK_09A.md`: bounded transcript state/event reconciliation. No keys/spend/public activation;07 real budgeting and full08–10 live gates remain open. Public03eb7d8 stays PDF-only;11A SQL cleanup/scheduling NOT_RUN.

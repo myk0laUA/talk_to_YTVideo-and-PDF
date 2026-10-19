@@ -1,5 +1,7 @@
 # Task 09B — read-only transcript presentation and PM runbook
 
+**Current PM09B review:** local transcript presentation accepted ine7c7267; buildT3tKcoJbowWTW-uI0jbnW, all13 hashes match, fresh28browser checks PASS. Desktop/mobile renders reviewed; production fixtures absent, provider calls0. Next single task `docs/WORKER_TASK_10A.md`: scripted microphone-free text lifecycle. No keys/spend/live activation;07 budgeting and full live gates remain open. Public03eb7d8 unchanged.
+
 Proposed **READY_FOR_REVIEW** for presentation only. PM owns acceptance. Parent Step 09 and live Steps 07–10 remain open. No public conversation activation, provider calls, deployment, DB work or spend.
 
 ## Delivery and boundaries
