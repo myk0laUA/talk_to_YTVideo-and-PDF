@@ -1,5 +1,7 @@
 # Talk to a Document and YouTube Project Plan
 
+**Current PM13A review:** clean-checkout verification and reviewer instructions accepted in `e4c7097`; two isolated copies passed the nine required commands (952 units,16 smoke,186 focused +59 HTTP). Fresh PM identity/link/boundary audit PASS; all four delivery hashes matched. Next single task `docs/WORKER_TASK_13B.md`: triage the reported lint-tool dependency advisory. No deployment/spending; live and physical-device gates remain open. Older summaries below are historical.
+
 **Current PM12A review:** bounded local mobile/accessibility review accepted in `8af058e`; build `R_ixIZMDu1UXwpkBpA8ws`, all eight hashes matched. Fresh PM smoke16/source75/transcript32 PASS. Three reproduced fixes accepted; physical-phone/audio and full live gates remain open. Next single task: `docs/WORKER_TASK_13A.md`, clean-checkout verification and accurate reviewer instructions without keys. No deployment/spending. Older summaries below are historical.
 
 **Current PM11C review:** local synthetic authorization boundary review accepted in `29aea9f`; build `RegFAc7qjDORKrhT0rWKn`, all seven hashes matched, fresh 186 focused units + 59 built HTTP checks PASS. One reproduced no-store coverage defect fixed; no authorization behavior change. Next single task `docs/WORKER_TASK_12A.md`: bounded mobile usability/accessibility review of existing UI without keys. No deployment or spending; live dependencies and physical-device gates remain open. Older summaries below retain historical sequencing.

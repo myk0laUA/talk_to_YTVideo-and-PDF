@@ -1,5 +1,7 @@
 # Task 13A — clean verification and reviewer checklist
 
+**Current PM13A review:** clean-checkout verification and reviewer instructions accepted in `e4c7097`; two isolated copies passed the nine required commands (952 units,16 smoke,186 focused +59 HTTP). Fresh PM identity/link/boundary audit PASS; all four delivery hashes matched. Next single task `docs/WORKER_TASK_13B.md`: triage the reported lint-tool dependency advisory. No deployment/spending; live and physical-device gates remain open. Older summaries below are historical.
+
 **Worker handoff: READY_FOR_REVIEW for bounded 13A only; PM decides acceptance.** PROJECT_STATE remains authoritative. Full Step 12 prerequisites and final Step 13/14 gates remain open. No keys, provider spending, deployment or real database operation is part of this task.
 
 ## No-key reviewer procedure
