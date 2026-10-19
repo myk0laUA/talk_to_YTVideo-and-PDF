@@ -1,5 +1,35 @@
 # Project state — Talk to a Document
 
+## Worker10A handoff — 19 October 2026 UTC / 18 October Toronto
+
+**Task/outcome:** 10A implemented for scripted microphone-free text lifecycle only; proposed **READY_FOR_REVIEW**, PM acceptance pending. Arrival clean `main`/HEAD **ac9a5250f1a8b07d7d3fd4d5115a93b0c1b85e0a**, including accepted09B. Delivery dirty/uncommitted on that same HEAD; no commit/push/deployment. Final local production build **VxITBUcDZTwGOLrzLPgZK**, pinned **Node24.22.0/npm11.19.1**. Machine defaults26.5.0/12.0.1 inspected only. Full Step10 and original dependencies remain open; public03eb7d8/PDF-only unchanged.
+
+**Changes:** new `src/shared/text-lifecycle.ts` composes actual07B priming in text mode and09A transcript with injected preparation/connection adapters, one event subscription, exact item→final ACK→response request correlation, frozen data snapshots and bounded cancellation. Default source admission acquires0connections for unavailable/synthetic input. Default protected per-turn admission remains unavailable and sends0questions even after test-only source priming; no caller estimate/verified flag exists. Exact draft/history/source/run/policy/reserve binding is rechecked after admission. Test-only positive subclasses remain under tests. No UI/composer/socket/provider/credential/model implementation or07C bypass.
+
+New focused command `npm run test:text-lifecycle` and two test modules cover **90/90** scripted checks, denied-media getters0accesses, complete ACK/write barrier, exact Unicode/whitespace, duplicates/no queue, stale/invalid budgets, foreign/malformed events, response completion/partial/error honesty, missing ACK/write/response timeouts, Stop/reset/dispose/sourceA→B at six pending phases, late resources/events, once-only closes/listeners/timers and caps. Full unit **919/919**, priming75/budget42/transcript63/lifecycle63/interruption62; lint/typecheck/build/smoke14/voice10/text10 all PASS/exit0. Final command rows below are local/synthetic and use the same final code/build. Build precedes browser checks; actual provider/grounding/physical-device behavior is not inferred.
+
+**Evidence:** ignored `artifacts/local/10a/commands.jsonl` records exact UTC/exits and logs, including the initial unsupported TypeScript parameter-property failure (01:36:24.1560419–01:36:24.8468002UTC, exit1) corrected to ordinary fields. Earlier passing runs are retained, including the full run before a final foreign-session identity guard was added; the final complete run below supersedes it. `lifecycle-matrix.json` stores authored synthetic text/state/count traces (providerCalls0); `identity-audit.json` records runtime/build/unchanged gates/production exclusion; `official-references.json` records full official client/server reference fetches, consumed-schema runbook links and hashes. Seven-file SHA256 manifest: `changed-files.sha256.json`. [10A official schema fields, trusted admission boundary, ownership/bounds, acceptance and PM reproduction](TEXT_LIFECYCLE_10A.md). PROJECT_STATE/TESTING and this one runbook updated; no lockfile/dependency/server/proof/UI/schema/migration changes.
+
+| Command | Start–end UTC, 19 October 2026 | Observed/exit | Log under artifacts/local/10a/ |
+|---|---|---|---|
+| `npm run test:text-lifecycle` | 01:40:41.8014986Z–01:40:43.0738746Z | 90/90, exit0 | test-text-lifecycle-014041808.log |
+| `npm run lint` | 01:40:43.1162023Z–01:40:48.1064746Z | PASS, exit0 | lint-014043116.log |
+| `npm run typecheck` | 01:40:48.1111544Z–01:40:51.6939335Z | PASS, exit0 | typecheck-014048111.log |
+| `npm run test` | 01:40:51.7030566Z–01:40:55.0590762Z | 919/919, exit0 | test-014051703.log |
+| `npm run test:priming` | 01:40:55.0702401Z–01:40:56.3108727Z | 75/75, exit0 | test-priming-014055070.log |
+| `npm run test:budget` | 01:40:56.3217873Z–01:40:57.0213852Z | 42/42, exit0 | test-budget-014056321.log |
+| `npm run test:transcript` | 01:40:57.0324154Z–01:40:57.9638069Z | 63/63, exit0 | test-transcript-014057032.log |
+| `npm run test:lifecycle` | 01:40:57.9753364Z–01:40:58.9822698Z | 63/63, exit0 | test-lifecycle-014057975.log |
+| `npm run test:interruption` | 01:40:58.9924714Z–01:41:00.0303142Z | 62/62, exit0 | test-interruption-014058992.log |
+| `npm run build` | 01:41:00.0446742Z–01:41:05.8053762Z | VxITBUcDZTwGOLrzLPgZK, exit0 | build-014100044.log |
+| `npm run test:smoke` | 01:41:05.8152011Z–01:41:10.1239231Z | 14/14, exit0 | test-smoke-014105815.log |
+| `npm run test:voice` | 01:41:10.1340841Z–01:41:17.5613585Z | 10/10, exit0 | test-voice-014110134.log |
+| `npm run test:text` | 01:41:17.5717634Z–01:41:26.4076453Z | 10/10, exit0 | test-text-014117571.log |
+
+Final audit: 188 production JS/JSON files contain no new coordinator/test markers; zero-media/provider counts and unchanged server/proof/UI/lockfile paths PASS. Initial final `git diff --check` exited2 for package.json EOF whitespace; corrected and rerun (exact UTC/exits in commands.jsonl). Only docs/evidence and package EOF whitespace changed after the final build; executable scripts/runtime/tests are the tested versions.
+
+**Browser context:** existing production smoke on3100 has disabled public/proof gates; existing voice/text proofs on3101/3102 use explicitly synthetic providers/credentials/media/peer/socket and unusable DB, external-fetch guards and blocked browser external requests. Desktop1440/390px Chromium viewport regression checks do not render the new coordinator. No real socket/answer, source grounding, live token accounting, physical browser/phone/audio or deployment check was run. All are **NOT_RUN**;07C actual model/tokenizer/framing remains **BLOCKED**. No human key/phone/purchase action needed. PM reviews correlation/admission/ownership, compares hashes and reruns focused tests; PM owns acceptance. No10B/later task started;11A SQL cleanup/scheduling and full07–10 gates remain open.
+
 ## PM09B acceptance — 19 October2026 UTC / 18 October Toronto
 
 **Accepted local read-only presentation scope**, application **e7c726783304c525660d4e6ce38b2f973169c3b2**, base44033f5, build **T3tKcoJbowWTW-uI0jbnW**. All13 worker hashes match before PM documentation edits. Reviewed narrow safe props, plain React text, stable turns/parts, page-only scroll anchoring, passive-listener cleanup, keyed reset, concise live announcements and literal-null production integration. No blocking scoped finding or PM application edits. Existing selected Playwright/UI/React guidance applied; fresh Web Interface Guidelines fetched, Impeccable context run. Its bootstrap PRODUCT/DESIGN historical capability claims are superseded by this tracker; no redesign or broad unrelated audit initiated.

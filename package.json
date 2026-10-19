@@ -23,6 +23,7 @@
     "test:transcript": "node --conditions=react-server --test tests/unit/transcript.test.ts",
     "test:transcript-view": "node scripts/verify-transcript-view.mjs",
     "test:smoke": "playwright test",
+    "test:text-lifecycle": "node --conditions=react-server --test tests/unit/text-lifecycle.test.ts",
     "test:text": "playwright test --config playwright.text.config.ts",
     "test:voice": "playwright test --config playwright.voice.config.ts",
     "test:captions:mocked": "node scripts/verify-captions-mocked.mjs",

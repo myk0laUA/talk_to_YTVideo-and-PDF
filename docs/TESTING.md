@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+## Task10A worker handoff — proposed READY_FOR_REVIEW
+
+Scripted microphone-free text coordinator implemented; PM acceptance pending. Dirty `main`/HEAD `ac9a5250f1a8b07d7d3fd4d5115a93b0c1b85e0a`, local build **VxITBUcDZTwGOLrzLPgZK**, Node24.22.0/npm11.19.1. [10A official schemas, source/per-turn gates, exact ACK/correlation policy, bounds/ownership, acceptance matrix and PM runbook](TEXT_LIFECYCLE_10A.md). Exact UTC/exits/failures, seven-file SHA256, synthetic text/state/count traces and identity/dependency/production-gate audits are under ignored `artifacts/local/10a/`.
+
+Run **`npm run test:text-lifecycle`** for **90/90** checks through actual07B+09A with authored synthetic fixtures/fake transport/clock and external fetch blocked (providerCalls0). Covers default source unavailable→0connections, default turn unavailable→0question sends, media/DOM/peer/socket sentinel0accesses, exact user item→final ACK+settled write→one text response request, draft/history/run/policy binding, malformed/foreign/stale events, duplicate/final reconciliation, incomplete/cancelled/failed text, missing ACK/write/response timeouts, once-only cleanup at six pending phases, late A→B events and bounded session/transcript state. Runtime positive subclasses are absent; no estimate/verified flag can authorize default turns.
+
+Final lint/typecheck/build PASS; full unit919, priming75, budget42, transcript63, lifecycle63, interruption62, smoke14, voice10, text10 PASS/exit0. Build precedes browser regressions. Existing default-disabled production shell and separately synthetic proof flows were checked at desktop/390px Chromium; these browser checks do not wire or render10A and do not prove physical microphone/audio/device behavior. Official full client/server references were fetched19OctoberUTC; URLs/consumed fields/date and conservative ordering constraints are in the runbook. Initial Node strip-only parameter-property test startup failure is retained with exit1 and subsequent correction in the tracker/log.
+
+No source/proof/public controls/routes/model/credential/server/DB/lockfile/dependency change or deployment. Default source and per-turn accounting still fail closed. Actual token accounting, real socket/provider answers/grounding, public composer/mode switching, physical device and full Step10 acceptance remain NOT_RUN/BLOCKED as appropriate. PM compares hashes, reviews correlation/trust/ownership and reruns focused checks; no key/phone/purchase action required. No10B/later work.
+
 **Current PM09B review:** local transcript presentation accepted ine7c7267; buildT3tKcoJbowWTW-uI0jbnW, all13 hashes match, fresh28browser checks PASS. Desktop/mobile renders reviewed; production fixtures absent, provider calls0. Next single task `docs/WORKER_TASK_10A.md`: scripted microphone-free text lifecycle. No keys/spend/live activation;07 budgeting and full live gates remain open. Public03eb7d8 unchanged.
 
 ## Task09B worker handoff — proposed READY_FOR_REVIEW
