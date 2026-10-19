@@ -1,5 +1,7 @@
 # Task 11C — anonymous source and diagnostic credential boundaries
 
+**Current PM11C review:** local synthetic authorization boundary review accepted in `29aea9f`; build `RegFAc7qjDORKrhT0rWKn`, all seven hashes matched, fresh 186 focused units + 59 built HTTP checks PASS. One reproduced no-store coverage defect fixed; no authorization behavior change. Next single task `docs/WORKER_TASK_12A.md`: bounded mobile usability/accessibility review of existing UI without keys. No deployment or spending; live dependencies and physical-device gates remain open. Older summaries below retain historical sequencing.
+
 Worker proposal: **READY_FOR_REVIEW**, limited to local synthetic verification of existing routes. PM owns acceptance. Full Step 11 and original Step 01–14 gates remain open as recorded in PROJECT_STATE. No public activation, deployment, database operation, provider spend, schema, dependency, model-accounting or session-issuance change.
 
 ## Identity and reproduction

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM11C review:** local synthetic authorization boundary review accepted in `29aea9f`; build `RegFAc7qjDORKrhT0rWKn`, all seven hashes matched, fresh 186 focused units + 59 built HTTP checks PASS. One reproduced no-store coverage defect fixed; no authorization behavior change. Next single task `docs/WORKER_TASK_12A.md`: bounded mobile usability/accessibility review of existing UI without keys. No deployment or spending; live dependencies and physical-device gates remain open. Older summaries below retain historical sequencing.
+
 **Current PM11B review:** local/scripted browser recovery accepted in2a94ee8; build ZAsT5o0AxsLyxMe7MRgwc, all18 hashes match, fresh248recovery/919unit PASS. Actual persisted BFCache remains NOT_RUN. Next single task `docs/WORKER_TASK_11C.md`: anonymous source/credential boundary verification. No deployment/keys/spend; full live gates remain open.
 
 **Current PM10C review:** local/scripted mode switching accepted in efa9edd; build -Dv7-LHxYaciWPP4Dupmi, all22 hashes match, fresh156browser PASS. No deployment/keys/spend. Next single task `docs/WORKER_TASK_11B.md`: browser departure and connection-loss recovery. Production factories remain absent; full live/provider/physical-device gates stay open.

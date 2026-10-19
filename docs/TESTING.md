@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current PM11C review:** local synthetic authorization boundary review accepted in `29aea9f`; build `RegFAc7qjDORKrhT0rWKn`, all seven hashes matched, fresh 186 focused units + 59 built HTTP checks PASS. One reproduced no-store coverage defect fixed; no authorization behavior change. Next single task `docs/WORKER_TASK_12A.md`: bounded mobile usability/accessibility review of existing UI without keys. No deployment or spending; live dependencies and physical-device gates remain open. Older summaries below retain historical sequencing.
+
 ## Worker 11C — anonymous source and diagnostic credential boundaries
 
 Proposed **READY_FOR_REVIEW** for11C only; PM decides acceptance. [Route/method/config inventory, executable case matrix, before/fixed-after finding, limitations and PM runbook](BOUNDARIES_11C.md). Arrival clean main7856a13 after accepted11B; dirty delivery, final build **RegFAc7qjDORKrhT0rWKn**, Node24.22.0/npm11.19.1. New **`npm run test:boundaries`** after build runs186focused units (33supplemental plus reused proof/source/YouTube/context cases) and59actual built HTTP checks on3125. It uses the existing synthetic Prisma preload, locally generated signing material, injected fake mint/parser/caption responses and an external-fetch blocker; never real SQL/provider/keys. Allowed owner success is checked alongside every denial family. Safe rows/counts and exact UTC/exits including failures are in ignored `artifacts/local/11c/`.
