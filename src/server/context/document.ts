@@ -1,4 +1,6 @@
 import "server-only";
+import { serializeData } from "../../shared/priming-manifest.ts";
+export { serializeData } from "../../shared/priming-manifest.ts";
 import type { CaptionSection } from "../../shared/source.ts";
 import type { PdfSection } from "../../shared/pdf.ts";
 import { checkedSource, SourceError, type UploadedSource } from "../sources/service.ts";
@@ -26,11 +28,6 @@ export type ContextVariant = Readonly<{
     separator: string; fullText?: string; sections?: readonly ContextSection[] }>;
   serializedInstructions: string; serializedSource: string; serialized: string;
 }>;
-
-/** JSON data escaping, not an assertion of model prompt-injection resistance. */
-export function serializeData(value: unknown): string {
-  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/gu, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
-}
 
 export function sourceContext(row: UploadedSource): SourceContext {
   const checked = checkedSource(row);

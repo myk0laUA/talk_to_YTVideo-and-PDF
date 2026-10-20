@@ -1,9 +1,10 @@
 import { bytes, freeze, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES, type Manifest, type SessionEvent, type SourceItem } from "./priming-manifest.ts";
-import { validateAdmission, type PrimingInput } from "./priming-admission.ts";
+import { isProviderInput, validateAdmission, validateProviderAdmission, type AdmissionInput as PrimingInput } from "./priming-admission.ts";
+import { isContextLimit } from "./priming-provider-policy.ts";
 
 export type PrimingState = "idle" | "configuring" | "priming" | "primed" | "stopped" | "failed";
 export type Failure = "budget_unavailable" | "invalid_input" | "timeout" | "transport" | "protocol" | "configuration" | "provider" | "context_limit";
-export type Basis = "verified-budget" | "synthetic-test-only";
+export type Basis = "verified-budget" | "synthetic-test-only" | "provider_enforced";
 export type PrimingStatus = Readonly<{ state: PrimingState; acknowledged: number; expected: number;
   protocolReady: boolean; productionReady: false; basis?: Basis; failure?: Failure; message?: string }>;
 export interface PrimingTransport {
@@ -51,7 +52,9 @@ export class PrimingController {
   get snapshot() { return this.status; }
   get canSendQuestions() { return this.status.state === "primed" && !!this.run && !this.run.closed; }
   // Sole test seam: tests subclass this in tests/priming only. No runtime flag or synthetic factory.
-  protected admission(input: PrimingInput): Basis | undefined { return validateAdmission(input) ? "verified-budget" : undefined; }
+  protected admission(input: PrimingInput): Basis | undefined {
+    return validateProviderAdmission(input) ? "provider_enforced" : validateAdmission(input) ? "verified-budget" : undefined;
+  }
   private current(r: Run) { return this.run === r && !r.closed; }
   private update(r: Run, state: PrimingState, failure?: Failure) {
     this.status = freeze({ state, acknowledged: r.acknowledged.size, expected: r.input?.manifest.items.length ?? 0,
@@ -155,7 +158,7 @@ export class PrimingController {
       const error = record(event.error) ? event.error : undefined;
       // Errors naming another client's event cannot reject this run; uncorrelated session errors can.
       if (typeof error?.event_id === "string" && !error.event_id.startsWith(`${r.identity.runId}_`)) return;
-      this.fail(r, typeof error?.code === "string" && /context.*(limit|length)|token.*limit/.test(error.code) ? "context_limit" : "provider"); return;
+      this.fail(r, isContextLimit(error) ? "context_limit" : "provider"); return;
     }
     if (event.type === "response.created" && !r.readyCalled) { this.fail(r, "protocol"); return; }
     if ((event.type === "conversation.item.deleted" || event.type === "conversation.item.truncated")
@@ -173,7 +176,8 @@ export class PrimingController {
         output_modalities: session.output_modalities, turn_detection: record(effectiveTurn) ? {
           type: effectiveTurn.type, create_response: effectiveTurn.create_response,
           interrupt_response: effectiveTurn.interrupt_response, idle_timeout_ms: effectiveTurn.idle_timeout_ms,
-        } : effectiveTurn });
+        } : effectiveTurn, ...(isProviderInput(r.input) ? { max_output_tokens: session.max_output_tokens,
+          tool_choice: session.tool_choice, reasoning: session.reasoning, transcription: effectiveInput?.transcription } : {}) });
       if (fingerprint === r.lastConfig) return;
       if (r.stage === "items") { this.fail(r, "configuration"); return; }
       const desired = (r.stage === "initial" ? r.input.manifest.configure : r.input.manifest.finalize).session;
@@ -181,8 +185,14 @@ export class PrimingController {
       const turn = audio?.turn_detection, desiredTurn = desired.audio.input.turn_detection;
       const turnMatches = desiredTurn === null ? turn === null : record(turn) && turn.type === desiredTurn.type
         && turn.create_response === true && turn.interrupt_response === true && turn.idle_timeout_ms === null;
-      if (session.type !== "realtime" || session.model !== r.input.wireBudget.model || session.instructions !== desired.instructions || session.truncation !== "disabled"
+      const provider = isProviderInput(r.input);
+      const model = isProviderInput(r.input) ? r.input.policy.model : r.input.wireBudget.model;
+      if (session.type !== "realtime" || session.model !== model || session.instructions !== desired.instructions || session.truncation !== "disabled"
         || JSON.stringify(session.tools) !== "[]" || JSON.stringify(session.output_modalities) !== JSON.stringify(desired.output_modalities) || !turnMatches) {
+        this.fail(r, "configuration"); return;
+      }
+      if (provider && (session.max_output_tokens !== desired.max_output_tokens || session.tool_choice !== "none"
+        || !record(session.reasoning) || session.reasoning.effort !== "minimal" || audio?.transcription !== null)) {
         this.fail(r, "configuration"); return;
       }
       r.sessionId = session.id; r.lastConfig = fingerprint;

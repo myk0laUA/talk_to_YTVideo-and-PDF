@@ -223,3 +223,27 @@ test("separate actual production stays unavailable and excludes fixture activati
   for (const path of ["/fixture.js", "/text-fixture", "/tests/text-session/harness"]) expect((await page.request.get(`http://127.0.0.1:3118${path}`)).status()).toBe(404);
   await fits(page); await capture(page, info, "production-unavailable");
 });
+
+for (const later of [false, true]) for (const failedResponse of [false, true])
+  test(`07E simulated provider capacity rejection ${later ? "later" : "first"}/${failedResponse ? "response.done" : "error"} preserves source and text`, async ({ page }, info) => {
+    await mode(page, "provider-simulated"); await begin(page);
+    await page.getByRole("button", { name: "Inspect source" }).click();
+    const preview = page.locator(".page-text"); const original = await preview.textContent();
+    if (later) { await ask(page, "Earlier question"); await answer(page); await act(page, "Finish answer"); await expect(send(page)).toBeEnabled(); }
+    const earlier = await turns(page).allTextContents();
+    await ask(page, "Capacity question"); await answer(page);
+    await act(page, failedResponse ? "Context failed response" : "Context error");
+    await expect(page.locator(".text-session-status")).toContainText("context limit");
+    await expect(send(page)).toBeDisabled(); await expect(preview).toHaveText(original!);
+    const retained = await turns(page).allTextContents();
+    expect(retained.slice(0, earlier.length)).toEqual(earlier);
+    expect(retained.join(" ")).toContain("partial answer");
+    const before = (await audit(page)).at(-1)!;
+    expect(before.transports[0].responses).toBe(later ? 2 : 1); expect(before.transports[0].closes).toBe(1);
+    await act(page, "Expire timers"); await act(page, "Deliver stale events");
+    expect((await audit(page)).at(-1)!.transports[0].responses).toBe(before.transports[0].responses);
+    await capture(page, info, `07e-overflow-${later}-${failedResponse}`);
+    await page.getByRole("button", { name: "Start a fresh text session", exact: true }).click();
+    await expect(send(page)).toBeDisabled(); await ready(page); await expect(turns(page)).toHaveCount(0);
+    expect((await audit(page)).at(-1)!.transports.at(-1)!.responses).toBe(0);
+  });

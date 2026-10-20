@@ -1,5 +1,5 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport, type RunIdentity } from "./priming-controller.ts";
-import type { PrimingInput } from "./priming-admission.ts";
+import { isProviderInput, type AdmissionInput } from "./priming-admission.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 import { TranscriptStore } from "./transcript.ts";
 
@@ -33,7 +33,7 @@ export interface VoiceMedia {
 }
 export interface VoiceAdapters {
   // Read-only preparation. No media/transport acquisition or retained credentials.
-  prepare(identity: VoiceIdentity, signal: AbortSignal): Promise<PrimingInput | { status: "budget_unavailable" }>;
+  prepare(identity: VoiceIdentity, signal: AbortSignal): Promise<AdmissionInput | { status: "budget_unavailable" }>;
   connect(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceConnection>;
   acquireMedia(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceMedia>;
 }
@@ -201,6 +201,7 @@ export class VoiceLifecycle {
       const input = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal), this.deadlines.preparationMs);
       if (!this.current(a)) return;
       if (!("manifest" in input)) { this.finish(a, "budget_unavailable"); return; }
+      if (isProviderInput(input)) { this.finish(a, "budget_unavailable"); return; }
       if (input.manifest.mode !== "voice" || input.manifest.runId !== a.identity.runId
         || input.manifest.items.some(item => JSON.parse(item.item.content[0].text).source.id !== a.identity.sourceId)) {
         this.finish(a, "preparation"); return;

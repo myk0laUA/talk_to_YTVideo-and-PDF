@@ -1,5 +1,12 @@
 import "server-only";
 import { freeze } from "../../shared/priming-manifest.ts";
+import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
+
+/** Separate from unresolved 07C measured policies. No tokenizer/framing/capacity assertion. */
+export function resolveProviderTextPolicy(model: string, mode: string, revision: string) {
+  return model === PROVIDER_TEXT_POLICY.model && mode === "text" && revision === PROVIDER_TEXT_POLICY.policyVersion
+    ? PROVIDER_TEXT_POLICY : undefined;
+}
 
 export const MODEL_POLICY_VERSION = "realtime-budget-evidence-2026-10-18-v1";
 const evidence = freeze({ checkedOn: "2026-10-18", urls: {

@@ -6,6 +6,7 @@ import { TextLifecycle, type TextStatus, type TurnProposal } from "../../src/sha
 import { PrimingController, type PrimingClock, type PrimingStatus } from "../../src/shared/priming-controller";
 import { encodeManifest, type SessionEvent } from "../../src/shared/priming-manifest";
 import type { PrimingInput } from "../../src/shared/priming-admission";
+import { PROVIDER_TEXT_POLICY } from "../../src/shared/priming-provider-policy";
 
 type Fixture = { variant: Parameters<typeof encodeManifest>[0]; input: PrimingInput; id: string };
 const fixtures: Fixture[] = JSON.parse(document.getElementById("inputs")!.textContent!);
@@ -20,6 +21,7 @@ class Clock implements PrimingClock {
 }
 function deferred() { let resolve!: () => void; const promise = new Promise<void>(yes => { resolve = yes; }); return { resolve, promise }; }
 class Transport {
+  model = "offline-fixture-only";
   open = true; closes = 0; subscriptions = 0; unsubscribes = 0; commands: Command[] = []; trace: string[] = [];
   receive?: (e: unknown) => void; stale?: (e: unknown) => void; sequence = 0;
   writeGate = deferred(); holdWrite = false;
@@ -32,7 +34,7 @@ class Transport {
   emit(e: object) { this.trace.push(`receive:${Reflect.get(e, "type")}`); this.receive?.({ event_id: `fixture_event_${++this.sequence}`, ...e }); }
   get questions() { return this.commands.filter(e => e.item?.id.includes("_question_")); }
   get responses() { return this.commands.filter(e => e.type === "response.create"); }
-  config() { const c = this.commands.filter(c => c.session).at(-1); if (c) this.emit({ type: "session.updated", session: { ...c.session, object: "realtime.session", id: "session_fixture_10B", model: "offline-fixture-only" } }); }
+  config() { const c = this.commands.filter(c => c.session).at(-1); if (c) this.emit({ type: "session.updated", session: { ...c.session, object: "realtime.session", id: "session_fixture_10B", model: this.model } }); }
   ack(c: Command, type = "conversation.item.done") { this.emit({ type, previous_item_id: c.previous_item_id ?? null, item: { ...c.item, status: type.endsWith("done") ? "completed" : "in_progress" } }); }
   items() { for (const c of this.commands.filter(c => c.item && !c.item.id.includes("_question_"))) this.ack(c); }
   question(final: boolean) { const c = this.questions.at(-1); if (c) this.ack(c, final ? "conversation.item.done" : "conversation.item.added"); }
@@ -68,10 +70,10 @@ const factory: TextControllerFactory = notify => {
   }
   class FixtureText extends TextLifecycle {
     protected override createPriming(callback: (s: PrimingStatus) => void, ready: () => void) {
-      return mode === "source-default" ? super.createPriming(callback, ready) : new FixturePriming(r.clock, callback, ready, 1000);
+      return mode === "source-default" || mode === "provider-simulated" ? super.createPriming(callback, ready) : new FixturePriming(r.clock, callback, ready, 1000);
     }
     protected override async admitTurn(proposal: TurnProposal, signal: AbortSignal) {
-      if (mode === "turn-default") return super.admitTurn(proposal, signal);
+      if (mode === "turn-default" || mode === "provider-simulated") return super.admitTurn(proposal, signal);
       if (mode === "hold-admission") await r.admitGate.promise;
       return { proposal, maxOutputTokens: 200 };
     }
@@ -82,10 +84,14 @@ const factory: TextControllerFactory = notify => {
       r.prepare++;
       if (mode === "hold-preparation") await r.prepareGate.promise;
       const f = fixtures.find(f => f.id === identity.sourceId)!;
+      if (mode === "provider-simulated") return { basis: "provider_enforced" as const, policy: PROVIDER_TEXT_POLICY,
+        variant: f.variant, manifest: encodeManifest(f.variant, identity.runId, "text", 2048, true) };
       const manifest = encodeManifest(f.variant, identity.runId, "text", 2048);
       return { ...f.input, manifest, wireBudget: { ...f.input.wireBudget, representation: manifest.representation, measured: manifest.bytes } };
     },
-    connect: async () => { r.connects++; const t = new Transport(); t.holdWrite = mode === "hold-write"; r.transports.push(t);
+    connect: async () => { r.connects++; const t = new Transport();
+      if (mode === "provider-simulated") t.model = PROVIDER_TEXT_POLICY.model;
+      t.holdWrite = mode === "hold-write"; r.transports.push(t);
       if (mode === "hold-connection") await r.connectGate.promise;
       return { transport: t, close: () => t.close() }; },
   }, (s: TextStatus) => { r.states.push(s.phase); notify(s); });
@@ -103,7 +109,7 @@ function Harness() {
   return <main className="app-shell"><h1>Isolated text session fixture 10B</h1>
     <p>Deterministic local test only. These answers are authored fixtures.</p>
     <details><summary>Fixture controls</summary><div className="source-actions">
-      <label>Scenario <select aria-label="Scenario" defaultValue="success" onChange={e => { scenario = e.target.value; setMounted(false); }}>{["success", "source-default", "turn-default", "hold-preparation", "hold-connection", "hold-admission", "hold-write"].map(s => <option key={s}>{s}</option>)}</select></label>
+      <label>Scenario <select aria-label="Scenario" defaultValue="success" onChange={e => { scenario = e.target.value; setMounted(false); }}>{["success", "source-default", "turn-default", "hold-preparation", "hold-connection", "hold-admission", "hold-write", "provider-simulated"].map(s => <option key={s}>{s}</option>)}</select></label>
       <button onClick={() => { setMounted(true); setRevision(n => n + 1); }}>Mount session</button>
       <button onClick={() => { setSource(n => n === 0 ? 1 : 0); setRevision(n => n + 1); }}>Replace source</button>
       <button onClick={() => { setSource(-1); setRevision(n => n + 1); }}>Remove source</button>
@@ -114,6 +120,10 @@ function Harness() {
         ["ACK question added", () => t()?.question(false)], ["ACK question final", () => t()?.question(true)],
         ["Begin answer", () => t()?.answer()], ["Stream partial", () => t()?.partial()], ["Stream long", () => t()?.partial("Long synthetic line 日本語. ".repeat(180))],
         ["Finish answer", () => t()?.finish()], ["Fail answer", () => t()?.emit({ type: "error", error: { message: "PRIVATE10B_ERROR" } })],
+        ["Context error", () => t()?.emit({ type: "error", error: { code: "context_length_exceeded" } })],
+        ["Context failed response", () => { const transport = t(); if (transport) transport.emit({ type: "response.done",
+          response: { id: transport.ids.response_id, conversation_id: "conversation_fixture", status: "failed", output: [],
+            status_details: { type: "failed", error: { code: "context_length_exceeded" } } } }); }],
         ["Expire timers", () => records.at(-1)?.clock.tick()],
         ["Release preparation", () => records.forEach(r => r.prepareGate.resolve())], ["Release connection", () => records.forEach(r => r.connectGate.resolve())],
         ["Release admission", () => records.forEach(r => r.admitGate.resolve())], ["Release question write", () => t()?.writeGate.resolve()],

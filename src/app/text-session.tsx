@@ -18,12 +18,15 @@ function message(status: TextStatus | null, available: boolean) {
     case "connecting": return "Connecting. You can stop while the connection is being prepared.";
     case "priming": return "Loading your source into the conversation. Wait before sending a question.";
     case "ready": return "Ready for your question.";
-    case "admitting": return "Checking whether this question fits the conversation. It has not been sent.";
+    case "admitting": return status.basis === "provider_enforced"
+      ? "Preparing your question. The provider checks conversation capacity when answering."
+      : "Checking whether this question fits the conversation. It has not been sent.";
     case "sending": return "Sending your question. Receipt has not been confirmed.";
     case "awaiting-response": return "Question received. Waiting for an answer.";
     case "responding": return "Answer arriving. You can stop and keep the text received so far.";
     case "ended": return "Session ended. Any received text stays here. A question without confirmed receipt may not have arrived.";
     case "failed":
+      if (status.failure === "context_limit") return "The provider rejected this conversation because it exceeds its context limit. Your full source preview and received text stay here. Start a fresh session explicitly to recover; nothing is shortened or resent automatically.";
       if (status.failure === "budget_unavailable") return "This source cannot be used for a conversation in this build. No question was sent. You can inspect the source.";
       if (status.failure === "turn_budget_unavailable" || status.failure === "stale_admission") return "This question could not be checked for this conversation. It was not sent. Your draft stays below.";
       if (status.failure === "connection") return "The text connection failed or closed. This does not establish network loss. Received text and an unconfirmed draft stay here. Start a fresh session to retry; nothing is resent automatically.";

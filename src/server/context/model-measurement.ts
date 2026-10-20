@@ -7,7 +7,9 @@ import { requireLive, requireOwned, SourceError, type SourceRepository } from ".
 import { guardedAwait } from "./await.ts";
 import { contextVariants, sourceContext, serializeData, type ContextVariant } from "./document.ts";
 import { createContextService } from "./service.ts";
-import { MODEL_POLICY_VERSION, resolveModelPolicy } from "./model-policy.ts";
+import { MODEL_POLICY_VERSION, resolveModelPolicy, resolveProviderTextPolicy } from "./model-policy.ts";
+import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
+import { validateProviderAdmission, type ProviderPrimingInput } from "../../shared/priming-admission.ts";
 
 const hash = (text: string) => createHash("sha256").update(text, "utf16le").digest("hex");
 const size = (text: string) => freeze({ utf16CodeUnits: text.length, utf8Bytes: bytes(text) });
@@ -57,6 +59,56 @@ export function matchesDiagnostic(diagnostic: ReturnType<typeof diagnoseManifest
 
 const preparationOnly = freeze({ conversationReady: false, providerConfirmed: false, productionReady: false,
   issuanceRequiresRevalidation: true } as const);
+
+const providerPreparations = new WeakMap<ProviderPrimingInput, string>();
+/** Server provenance/fidelity check only, never substitutes for a fresh owned-source read at issuance.
+ * Cloned/browser projections cannot satisfy this check. No owner or credential is in the projection.
+ */
+export function matchesProviderPreparation(input: ProviderPrimingInput, expected: {
+  model: string; mode: Mode; policyVersion: string; sourceId: string; runId: string }, at: number): boolean {
+  try {
+    return Number.isFinite(at) && Date.parse(input?.variant?.source.expiresAt) > at
+      && !!resolveProviderTextPolicy(expected.model, expected.mode, expected.policyVersion)
+      && input?.manifest?.runId === expected.runId && input.variant.source.id === expected.sourceId
+      && providerPreparations.get(input) === hash(JSON.stringify(input)) && validateProviderAdmission(input);
+  } catch { return false; }
+}
+
+/** Internal opt-in server preparation. No endpoint/factory/key/provider access. A/B is explicit. */
+export function createProviderTextPreparation(deps: { repository: Pick<SourceRepository, "get">; now?: () => number }) {
+  const now = deps.now ?? Date.now, prepare = createContextService(deps);
+  return async (input: { visitor: Visitor; sourceId: string; signal: AbortSignal; model: string; mode: Mode;
+    policyVersion: string; runId: string; variant: "A" | "B"; maxEventBytes?: number }) => {
+    const { sourceId, signal, model, mode, policyVersion, runId, variant, maxEventBytes } = input;
+    const visitor = { ...input.visitor };
+    const guard = () => {
+      requireLive(visitor, signal, now());
+      if (!Number.isFinite(visitor.expiresAt) || !Number.isFinite(now())) throw new SourceError("unavailable");
+    };
+    try {
+      guard();
+      const policy = resolveProviderTextPolicy(model, mode, policyVersion);
+      if (!policy) return freeze({ ...preparationOnly, status: "unavailable", code: "unsupported_policy" } as const);
+      const prepared = await prepare({ visitor, sourceId, signal });
+      guard();
+      if (prepared.status !== "prepared") return freeze({ ...preparationOnly, status: "unavailable", code: prepared.code } as const);
+      const live = () => { guard(); if (now() >= Date.parse(prepared.context.source.expiresAt)) throw new SourceError("unavailable"); };
+      await guardedAwait(() => setImmediate(undefined, { signal }), signal, live);
+      const projection: ProviderPrimingInput = freeze({ basis: "provider_enforced", policy: PROVIDER_TEXT_POLICY,
+        variant: prepared.variants[variant], manifest: encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes, true) });
+      if (!validateProviderAdmission(projection)) throw new SourceError("unavailable");
+      const current = await guardedAwait(() => deps.repository.get(sourceId, visitor.owner, new Date(now())), signal, live);
+      live(); requireOwned(current, visitor, now());
+      if (current.id !== sourceId || contextVariants(sourceContext(current)).B.serialized !== prepared.variants.B.serialized) throw new SourceError("unavailable");
+      live(); providerPreparations.set(projection, hash(JSON.stringify(projection)));
+      return freeze({ ...preparationOnly, status: "prepared", input: projection } as const);
+    } catch (error) {
+      try { guard(); } catch (guardError) { error = guardError; }
+      return freeze({ ...preparationOnly, status: "unavailable", code: signal.aborted ? "cancelled"
+        : error instanceof SourceError && ["unavailable", "visitor_required"].includes(error.code) ? "unavailable" : "preparation_failed" } as const);
+    }
+  };
+}
 
 /** Offline server coordinator. Never accepts injected capacities, tokenizer mappings or verified flags.
  * No route calls this adapter. Even known model limits cannot produce measured_fit without a binding.

@@ -1,16 +1,26 @@
 import type { BudgetResult } from "../server/context/budget.ts";
 import type { PreparationResult } from "../server/context/service.ts";
-import { encodeManifest, freeze, type Manifest, type Mode } from "./priming-manifest.ts";
+import type { ContextVariant } from "../server/context/document.ts";
+import { matchesProviderTextPolicy, type ProviderTextPolicy } from "./priming-provider-policy.ts";
+import { bytes, encodeManifest, freeze, MAX_WIRE_BYTES, serializeData, type Manifest, type Mode } from "./priming-manifest.ts";
 
 export type WireBudget = Readonly<{ status: "measured_fit" | "offline_fit"; verification: "verified" | "synthetic"; unit: "tokens" | "synthetic-units";
   model: string; tokenizer: string; policyVersion: string; representation: string;
   measured: number; capacity: number; historyAllowance: number; outputReserve: number; framingAllowance: number }>;
-export type PrimingInput = Readonly<{ manifest: Manifest; preparedBudget: BudgetResult; wireBudget: WireBudget }>;
+export type MeasuredPrimingInput = Readonly<{ basis?: "measured"; manifest: Manifest; preparedBudget: BudgetResult; wireBudget: WireBudget }>;
+export type ProviderPrimingInput = Readonly<{ basis: "provider_enforced"; manifest: Manifest;
+  policy: ProviderTextPolicy; variant: ContextVariant }>;
+// Retain the measured input name for existing explicit synthetic/verified adapters.
+export type PrimingInput = MeasuredPrimingInput;
+export type AdmissionInput = MeasuredPrimingInput | ProviderPrimingInput;
+export const isProviderInput = (input: AdmissionInput): input is ProviderPrimingInput => input?.basis === "provider_enforced";
 const count = (n: number) => Number.isSafeInteger(n) && n >= 0;
 
 /** Structural admission only. Trusted server issuance must establish/revalidate ownership separately. */
-export function validateAdmission(input: PrimingInput): boolean {
+export function validateAdmission(input: AdmissionInput): boolean {
   try {
+  if (isProviderInput(input)) return false; // Never report provider readiness as measured fit.
+  if (input?.basis !== undefined && input.basis !== "measured") return false;
   const b = input?.preparedBudget, w = input?.wireBudget, m = input?.manifest;
   if (!m || !b || b.status !== "measured_fit" || !w || w.status !== "measured_fit"
     || w.verification !== "verified" || w.unit !== "tokens" || b.accounting.binding.verification !== "verified"
@@ -32,10 +42,24 @@ export function validateAdmission(input: PrimingInput): boolean {
 
 /** Future server caller supplies measurement of this exact manifest; 07A alone never admits a run. */
 export function preparePrimingInput(prepared: PreparationResult, variant: "A" | "B", runId: string, mode: Mode,
-  wireBudget: WireBudget, maxEventBytes?: number): PrimingInput {
+  wireBudget: WireBudget, maxEventBytes?: number): MeasuredPrimingInput {
   if (prepared.status !== "prepared") throw new Error("Source context unavailable.");
   const input = freeze({ manifest: encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes),
     preparedBudget: structuredClone(prepared.budgets[variant]), wireBudget: structuredClone(wireBudget) });
   if (!validateAdmission(input)) throw new Error("Verified transport budget required.");
   return input;
+}
+
+/** Structural fidelity only. Recompute the complete projection; never grants visitor authority. */
+export function validateProviderAdmission(input: AdmissionInput): input is ProviderPrimingInput {
+  try {
+    if (!isProviderInput(input) || !matchesProviderTextPolicy(input.policy)
+      || Object.keys(input).sort().join() !== "basis,manifest,policy,variant" || input.manifest.mode !== "text") return false;
+    const v = input.variant, m = input.manifest;
+    if ([v.serialized, v.serializedSource, v.serializedInstructions].some(s => typeof s !== "string" || bytes(s) > MAX_WIRE_BYTES)
+      || v.serializedSource !== serializeData(v.source) || v.serializedInstructions !== serializeData(v.instructions)
+      || v.serialized !== serializeData({ contextVersion: v.contextVersion, promptVersion: v.promptVersion,
+        variant: v.id, instructions: v.instructions, source: v.source })) return false;
+    return JSON.stringify(m) === JSON.stringify(encodeManifest(v, m.runId, "text", m.maxEventBytes, true));
+  } catch { return false; }
 }

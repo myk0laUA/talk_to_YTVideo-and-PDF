@@ -1,5 +1,6 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport } from "./priming-controller.ts";
-import type { PrimingInput } from "./priming-admission.ts";
+import { isProviderInput, type AdmissionInput, type WireBudget } from "./priming-admission.ts";
+import { isContextLimit, matchesProviderTextPolicy, type ProviderTextPolicy } from "./priming-provider-policy.ts";
 import { bytes, freeze } from "./priming-manifest.ts";
 import { TranscriptStore, type TranscriptIdentity } from "./transcript.ts";
 
@@ -10,17 +11,17 @@ export type TextStatus = Readonly<{
   identity?: TextIdentity; protocolReady: boolean; productionReady: false;
   revision: number; basis?: PrimingStatus["basis"]; failure?: TextFailure;
 }>;
-export type TextFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "turn_budget_unavailable" | "stale_admission" | "timeout" | "protocol" | "provider" | "limit";
+export type TextFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "turn_budget_unavailable" | "stale_admission" | "timeout" | "protocol" | "provider" | "limit" | "context_limit";
 export interface TextConnection { transport: PrimingTransport; close(): void }
 export interface TextAdapters {
   // Partial acquisitions remain adapter-owned until successful return; rejection MUST release them.
   // Successful return transfers exclusive ownership, including late returns after abort.
-  prepare(identity: TextIdentity, signal: AbortSignal): Promise<PrimingInput | { status: "budget_unavailable" }>;
+  prepare(identity: TextIdentity, signal: AbortSignal): Promise<AdmissionInput | { status: "budget_unavailable" }>;
   connect(identity: TextIdentity, signal: AbortSignal): Promise<TextConnection>;
 }
 export type TurnProposal = Readonly<{
   identity: TextIdentity; revision: number; questionRevision: number; question: string; itemId: string;
-  policy: Readonly<Pick<PrimingInput["wireBudget"], "model" | "tokenizer" | "policyVersion" | "capacity" | "historyAllowance" | "outputReserve" | "framingAllowance">>;
+  policy: ProviderTextPolicy | Readonly<{ basis?: "measured" } & Pick<WireBudget, "model" | "tokenizer" | "policyVersion" | "capacity" | "historyAllowance" | "outputReserve" | "framingAllowance">>;
 }>;
 export type TurnPermit = Readonly<{ proposal: TurnProposal; maxOutputTokens: number }>;
 type Deadlines = { preparationMs: number; connectionMs: number; primingMs: number; turnMs: number };
@@ -109,13 +110,15 @@ export class TextLifecycle {
   protected createPriming(notify: (s: PrimingStatus) => void, primed: () => void) {
     return new PrimingController(this.clock, notify, primed, this.deadlines.primingMs);
   }
-  /** Trusted accounting boundary, deliberately unavailable. No caller flags/estimates can admit.
-   * Future implementation must account exact source + all current history + this exact proposal,
-   * selected policy/framing/output reserves and fresh source authority. 07C has no supported binding.
-   * Positive subclass overrides exist ONLY under tests/; never inject a runtime boolean verifier.
+  /** Measured accounting stays unavailable. The explicit provider policy permits one attempt only.
+   * Future server integration must revalidate source authority and enforce the selected settings.
+   * Positive synthetic subclass overrides exist ONLY under tests/.
    */
   protected async admitTurn(proposal: TurnProposal, signal: AbortSignal): Promise<TurnPermit | undefined> {
-    void proposal; void signal; return undefined;
+    // This is permission to attempt one response, with capacity checked by the provider each time.
+    // It is never a fit estimate. Server source authority remains the subsequent adapter's obligation.
+    return !signal.aborted && matchesProviderTextPolicy(proposal.policy)
+      ? { proposal, maxOutputTokens: proposal.policy.maxOutputTokens } : undefined;
   }
   private current(a: Attempt) { return this.attempt === a && !a.abort.signal.aborted && !this.disposed; }
   private update(patch: Partial<TextStatus>) { this.status = freeze({ ...this.status, ...patch }); safe(() => this.notify(this.status)); }
@@ -163,8 +166,11 @@ export class TextLifecycle {
       const input = freeze(structuredClone(prepared));
       if (input.manifest.mode !== "text" || input.manifest.runId !== a.identity.runId
         || input.manifest.items.some(e => JSON.parse(e.item.content[0].text).source.id !== a.identity.sourceId)) throw new Error("Invalid source");
-      const { model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance } = input.wireBudget;
-      a.policy = freeze({ model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance });
+      if (isProviderInput(input)) a.policy = input.policy;
+      else {
+        const { model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance } = input.wireBudget;
+        a.policy = freeze({ model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance });
+      }
       a.previous = input.manifest.items.at(-1)?.item.id;
       this.store.start(a.identity, input.manifest.items.map(e => e.item.id));
       a.bridge = new TextBridge((event, prime) => {
@@ -176,7 +182,7 @@ export class TextLifecycle {
         } else this.receive(a, event);
       }, () => this.finish(a, "connection"));
       a.priming = this.createPriming(s => {
-        if (this.current(a) && s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable" : s.failure === "transport" ? "connection" : "priming");
+        if (this.current(a) && s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable" : s.failure === "transport" ? "connection" : s.failure === "context_limit" ? "context_limit" : "priming");
       }, () => { if (this.current(a)) this.update({ phase: "ready", protocolReady: true }); });
       if (!a.priming.start(a.identity, input, a.bridge) || !this.current(a)) return;
       failure = "connection";
@@ -214,8 +220,9 @@ export class TextLifecycle {
       if (!this.current(a) || a.pending !== p) return;
       if (a.revision !== p.proposal.revision || this.questionRevision !== p.proposal.questionRevision
         || this.question !== p.proposal.question || !a.priming?.canSendQuestions) { this.finish(a, "stale_admission"); return; }
+      const outputLimit = p.proposal.policy.basis === "provider_enforced" ? p.proposal.policy.maxOutputTokens : p.proposal.policy.outputReserve;
       if (!permit || permit.proposal !== p.proposal || !Number.isSafeInteger(permit.maxOutputTokens)
-        || permit.maxOutputTokens <= 0 || permit.maxOutputTokens > 4096 || permit.maxOutputTokens > p.proposal.policy.outputReserve) {
+        || permit.maxOutputTokens <= 0 || permit.maxOutputTokens > 4096 || permit.maxOutputTokens > outputLimit) {
         this.finish(a, "turn_budget_unavailable"); return;
       }
       p.outputLimit = permit.maxOutputTokens;
@@ -241,6 +248,7 @@ export class TextLifecycle {
       p.responseSent = true;
       this.update({ phase: "awaiting-response" });
       this.write(a, p, { type: "response.create", event_id: `${p.proposal.itemId}_response`, response: {
+        ...(p.proposal.policy.basis === "provider_enforced" ? { tools: [], tool_choice: "none", reasoning: { effort: "minimal" } } : {}),
         output_modalities: ["text"], max_output_tokens: p.outputLimit, metadata: { text_turn: p.proposal.itemId } } }, () => { p.responseWritten = true; this.advance(a, p); });
     }
     if (p.done && p.responseWritten) {
@@ -263,7 +271,7 @@ export class TextLifecycle {
       if (e.type === "error") {
         const error = record(e.error) ? e.error : undefined;
         if (error?.event_id !== undefined && error.event_id !== `${p?.proposal.itemId}_create` && error.event_id !== `${p?.proposal.itemId}_response`) return;
-        this.finish(a, "provider"); return;
+        this.finish(a, isContextLimit(error) ? "context_limit" : "provider"); return;
       }
       // Configuration mutation invalidates source readiness; retry requires a fresh attempt.
       if (e.type === "session.updated") {
@@ -298,13 +306,21 @@ export class TextLifecycle {
       if (e.type === "response.done") {
         const r = e.response;
         if (!p.responseId || !record(r) || r.id !== p.responseId || r.conversation_id !== a.conversationId) return;
+        // The documented response schema makes output optional, including for failed responses.
+        // Retain already-received text and mark generation failed even if no output was produced.
+        if (r.status === "failed" && record(r.status_details) && isContextLimit(r.status_details.error) && r.output === undefined) {
+          this.project(a, { ...e, response: { ...r, output: [] } });
+          this.finish(a, "context_limit"); return;
+        }
         if (!["completed", "cancelled", "failed", "incomplete"].includes(r.status as string) || !Array.isArray(r.output)) { this.finish(a, "protocol"); return; }
         if (r.output.length > 16) { this.finish(a, "limit"); return; }
         if (r.output.some(item => !this.textItem(item))) { this.finish(a, "protocol"); return; }
         this.project(a, e);
         if (!this.current(a)) return;
         p.done = true;
-        if (r.status !== "completed" || !r.output.length || this.store.snapshot.incomplete) { this.finish(a, "provider"); return; }
+        if (r.status !== "completed" || !r.output.length || this.store.snapshot.incomplete) {
+          this.finish(a, r.status === "failed" && record(r.status_details) && isContextLimit(r.status_details.error) ? "context_limit" : "provider"); return;
+        }
         a.previous = r.output.at(-1).id;
         this.advance(a, p); return;
       }

@@ -1,4 +1,5 @@
 import type { ContextVariant } from "../server/context/document.ts";
+import { PROVIDER_TEXT_POLICY } from "./priming-provider-policy.ts";
 
 export const PRIMING_VERSION = "source-priming-v1";
 // Application bounds, not provider capacity claims. Lower these for a negotiated transport.
@@ -13,13 +14,14 @@ export type ItemEvent = Readonly<{ type: "conversation.item.create"; event_id: s
 export type SessionEvent = Readonly<{ type: "session.update"; event_id: string; session: {
   type: "realtime"; instructions: string; truncation: "disabled"; tools: readonly [];
   output_modalities: readonly ["text" | "audio"];
-  audio: { input: { turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null } } };
+  max_output_tokens?: number; tool_choice?: "none"; reasoning?: { effort: "minimal" };
+  audio: { input: { transcription?: null; turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null } } };
 } }>;
 export type Manifest = Readonly<{ version: typeof PRIMING_VERSION; runId: string; mode: Mode;
   variant: "A" | "B"; configure: SessionEvent; items: readonly ItemEvent[]; finalize: SessionEvent;
   representation: string; bytes: number; maxEventBytes: number }>;
 export const bytes = (value: string) => new TextEncoder().encode(value).byteLength;
-const json = (value: unknown) => JSON.stringify(value).replace(/[<>&\u2028\u2029]/gu,
+export const serializeData = (value: unknown) => JSON.stringify(value).replace(/[<>&\u2028\u2029]/gu,
   c => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 export function freeze<T>(value: T): T {
   if (value && typeof value === "object") { Object.values(value).forEach(freeze); Object.freeze(value); }
@@ -28,7 +30,8 @@ export function freeze<T>(value: T): T {
 
 /** Pure safe projection. No source authorization, token measurement or readiness is established here. */
 export function encodeManifest(variant: ContextVariant, runId: string, mode: Mode,
-  maxEventBytes = MAX_EVENT_BYTES): Manifest {
+  maxEventBytes = MAX_EVENT_BYTES, providerText = false): Manifest {
+  if (providerText && mode !== "text") throw new Error("Provider admission requires text mode.");
   if (!/^[A-Za-z0-9_-]{1,48}$/.test(runId) || !["voice", "text"].includes(mode)
     || !Number.isSafeInteger(maxEventBytes) || maxEventBytes < 2048 || maxEventBytes > MAX_EVENT_BYTES
     || !["A", "B"].includes(variant.id) || variant.contextVersion !== "source-context-v1"
@@ -38,8 +41,11 @@ export function encodeManifest(variant: ContextVariant, runId: string, mode: Mod
   const config = (final: boolean): SessionEvent => ({ type: "session.update", event_id: `${runId}_${final ? "final" : "config"}`,
     session: { type: "realtime", instructions: instructions + (final ? "\nContext loading complete." : "\nContext is loading; do not answer questions."), truncation: "disabled", tools: [],
       output_modalities: [final && mode === "voice" ? "audio" : "text"],
+      ...(providerText ? { max_output_tokens: PROVIDER_TEXT_POLICY.maxOutputTokens, tool_choice: "none" as const,
+        reasoning: { effort: PROVIDER_TEXT_POLICY.reasoningEffort } } : {}),
       audio: { input: { turn_detection: final && mode === "voice"
-        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null } } } });
+        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null,
+        ...(providerText ? { transcription: null } : {}) } } } });
   const items: ItemEvent[] = [];
   const { fullText, sections, id, kind, expiresAt, separator } = variant.source;
   const metadata = { id, kind, expiresAt, separator };
@@ -55,7 +61,7 @@ export function encodeManifest(variant: ContextVariant, runId: string, mode: Mod
         const id = `${runId}_source_${items.length}`;
         return { type: "conversation.item.create", event_id: `${runId}_create_${items.length}`,
           ...(items.length ? { previous_item_id: items[items.length - 1].item.id } : {}),
-          item: { id, type: "message", role: "user", content: [{ type: "input_text", text: json({
+          item: { id, type: "message", role: "user", content: [{ type: "input_text", text: serializeData({
             protocol: PRIMING_VERSION, contextVersion: variant.contextVersion, promptVersion: variant.promptVersion,
             variant: variant.id, source: metadata, sectionIndex, sectionCount: sourceSections.length, locator,
             part, offset, last: end === text.length, text: text.slice(offset, end),
