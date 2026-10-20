@@ -1,5 +1,16 @@
 # Testing and evidence — Talk to a Document
 
+**PM07G acceptance:**12hashes matched; fresh isolated94/94focused tests passed, exit0 (artifacts/local/07g/pm-focused.log). Offline scope accepted; no live voice/phone claim. Next02D tests the dedicated owned credential boundary with injected provider/storage; no real services.
+
+## Task07G — isolated explicit voice admission (proposed READY_FOR_REVIEW)
+
+[07G policy, ACK/audio barrier, exact UTC/exits, acceptance and limits](VOICE_ADMISSION_07G.md). Build **qOEyn0vhz9wjTkjYJVKCE**, Node24.22.0/npm11.19.1. New focused command: `node --conditions=react-server --test tests/unit/provider-voice-admission.test.ts` (**94checks**, also in full1293units). Run in a secret-free isolated copy with empty real keys, unusable loopback DB and provider denial; no real .env/service required. Exact voice model/revision/settings and mode separation fail closed; full PDF/YouTube A/B/locators survive, server authority/expiry is rechecked, no microphone before all source/effective final audio ACKs. Provider/context rejection after protocol readiness is terminal, not a measured-fit failure. All replies/media/storage are scripted/synthetic.
+
+Required `npm run test:budget`42, `test:context`79, `test:priming`75, `test:lifecycle`63, `test:interruption`62, `test:text-lifecycle`90, lint/typecheck/full1293/build, then smoke18/voice-session208/owned-text414 all **PASS/0**. Do not infer live success. Ordinary voice remains unavailable: extra actual built390px Voice-mode selection confirms five controls disabled/0native media/0external requests. Initial extra driver launch failure was corrected to the installed `@playwright/test`; both invocations retained. No required check repeated. Existing fake controls verify accepted setup/cancel/Stop behavior; screenshots visually inspected, browser/server/ports released.
+
+Evidence root `artifacts/local/07g/`: `commands.jsonl`, `voice-matrix.json`, `default-voice.{json,png}`, `changed-files.sha256.json`, `audit.json`, `cleanup.json`, official source snapshots. Existing browser suite outputs are nested inside `offline-checkout/artifacts/local/08c` and owned-text under `.../10d`. Copy/build retained for review. No production voice factory/credentials/public activation added. Physical microphone/speaker/interruption/phone, actual WebRTC/provider grounding/context limits, transcription and hosted checks remain **NOT_RUN**; no human action required for this offline task. PM owns acceptance/next assignment.
+
+
 **PM10E decision:** local functional evidence accepted after three delivery hashes and both stopped-session screenshots were reviewed. Driver commands are not PASS; exhaustive capture of three unavailable response bodies remains open for later hosted verification. No additional live run authorized by the consumed10E allowance. Next07G is isolated voice-policy implementation; live WebRTC/phone/public activation remain NOT_RUN.
 
 ## Task10E resumed — actual local live evidence, proposed READY_FOR_REVIEW

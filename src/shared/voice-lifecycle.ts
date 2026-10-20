@@ -1,5 +1,6 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport, type RunIdentity } from "./priming-controller.ts";
 import { isProviderInput, type AdmissionInput } from "./priming-admission.ts";
+import { isContextLimit, matchesProviderVoicePolicy } from "./priming-provider-policy.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 import { TranscriptStore } from "./transcript.ts";
 
@@ -12,7 +13,7 @@ export type VoiceStatus = Readonly<{
   response: ResponseState;
   basis?: PrimingStatus["basis"]; failure?: VoiceFailure; message: string;
 }>;
-export type VoiceFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended";
+export type VoiceFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider";
 export interface VoiceTrack {
   enabled: boolean; readonly readyState: string; stop(): void;
   subscribeEnded(callback: () => void): () => void;
@@ -47,7 +48,10 @@ const messages: Record<VoiceFailure, string> = {
   priming: "Source acknowledgment failed or timed out. Start again to retry.",
   microphone: "Microphone denied, unavailable or timed out. Start again, or select text fallback when available.",
   track_ended: "Microphone ended. Start again, or select text fallback when available.",
+  context_limit: "This source exceeds the provider context limit. The full source preview is unchanged. Start a new session to retry.",
+  provider: "The provider rejected voice. Microphone and connection released. Start a new session to retry.",
 };
+const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 type Attempt = {
   identity: VoiceIdentity; abort: AbortController; priming?: PrimingController;
   connection?: VoiceConnection; media?: VoiceMedia; listeners: (() => void)[];
@@ -201,7 +205,8 @@ export class VoiceLifecycle {
       const input = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal), this.deadlines.preparationMs);
       if (!this.current(a)) return;
       if (!("manifest" in input)) { this.finish(a, "budget_unavailable"); return; }
-      if (isProviderInput(input)) { this.finish(a, "budget_unavailable"); return; }
+      const providerVoice = isProviderInput(input);
+      if (isProviderInput(input) && !matchesProviderVoicePolicy(input.policy)) { this.finish(a, "budget_unavailable"); return; }
       if (input.manifest.mode !== "voice" || input.manifest.runId !== a.identity.runId
         || input.manifest.items.some(item => JSON.parse(item.item.content[0].text).source.id !== a.identity.sourceId)) {
         this.finish(a, "preparation"); return;
@@ -211,6 +216,22 @@ export class VoiceLifecycle {
       this.transcriptStore.start(a.identity, input.manifest.items.map(item => item.item.id));
       const bridge = new PrimingBridge((event, priming) => {
         if (!this.current(a)) return;
+        // Provider admission is a permission to attempt generation, never a capacity guarantee.
+        // Keep terminal session errors observable while microphone acquisition is still pending.
+        if (providerVoice && a.priming?.snapshot.protocolReady && record(event)) {
+          if (event.type === "error" && record(event.error)
+            && (event.error.event_id == null || typeof event.error.event_id === "string" && event.error.event_id.startsWith(`${a.identity.runId}_`))) {
+            this.finish(a, isContextLimit(event.error) ? "context_limit" : "provider"); return;
+          }
+          if (event.type === "response.created" && this.status.microphone !== "available") {
+            this.finish(a, "provider"); return;
+          }
+          if (event.type === "response.done" && record(event.response) && event.response.status === "failed"
+            && typeof event.response.id === "string" && event.response.id === a.response?.snapshot.generation.responseId) {
+            this.transcriptStore.receive(a.identity, event);
+            this.finish(a, record(event.response.status_details) && isContextLimit(event.response.status_details.error) ? "context_limit" : "provider"); return;
+          }
+        }
         if (!a.priming?.snapshot.protocolReady) priming();
         else if (this.status.microphone === "available") {
           this.transcriptStore.receive(a.identity, event);
@@ -228,7 +249,8 @@ export class VoiceLifecycle {
       a.priming = this.createPriming(s => {
         if (!this.current(a)) return;
         if (s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable"
-          : s.failure === "transport" ? "connection" : "priming");
+          : s.failure === "transport" ? "connection" : providerVoice && s.failure === "context_limit" ? "context_limit"
+          : providerVoice && s.failure === "provider" ? "provider" : "priming");
       }, () => { if (this.current(a)) void this.media(a); });
       // Actual 07B validates admission and manifest against an inert bridge first.
       if (!a.priming.start(a.identity, input, bridge) || !this.current(a)) return;

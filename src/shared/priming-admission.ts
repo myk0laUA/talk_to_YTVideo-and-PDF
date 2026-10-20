@@ -1,7 +1,7 @@
 import type { BudgetResult } from "../server/context/budget.ts";
 import type { PreparationResult } from "../server/context/service.ts";
 import type { ContextVariant } from "../server/context/document.ts";
-import { matchesProviderTextPolicy, type ProviderTextPolicy } from "./priming-provider-policy.ts";
+import { matchesProviderTextPolicy, matchesProviderVoicePolicy, type ProviderPolicy } from "./priming-provider-policy.ts";
 import { bytes, encodeManifest, freeze, MAX_WIRE_BYTES, serializeData, type Manifest, type Mode } from "./priming-manifest.ts";
 
 export type WireBudget = Readonly<{ status: "measured_fit" | "offline_fit"; verification: "verified" | "synthetic"; unit: "tokens" | "synthetic-units";
@@ -9,7 +9,7 @@ export type WireBudget = Readonly<{ status: "measured_fit" | "offline_fit"; veri
   measured: number; capacity: number; historyAllowance: number; outputReserve: number; framingAllowance: number }>;
 export type MeasuredPrimingInput = Readonly<{ basis?: "measured"; manifest: Manifest; preparedBudget: BudgetResult; wireBudget: WireBudget }>;
 export type ProviderPrimingInput = Readonly<{ basis: "provider_enforced"; manifest: Manifest;
-  policy: ProviderTextPolicy; variant: ContextVariant }>;
+  policy: ProviderPolicy; variant: ContextVariant }>;
 // Retain the measured input name for existing explicit synthetic/verified adapters.
 export type PrimingInput = MeasuredPrimingInput;
 export type AdmissionInput = MeasuredPrimingInput | ProviderPrimingInput;
@@ -53,13 +53,14 @@ export function preparePrimingInput(prepared: PreparationResult, variant: "A" | 
 /** Structural fidelity only. Recompute the complete projection; never grants visitor authority. */
 export function validateProviderAdmission(input: AdmissionInput): input is ProviderPrimingInput {
   try {
-    if (!isProviderInput(input) || !matchesProviderTextPolicy(input.policy)
-      || Object.keys(input).sort().join() !== "basis,manifest,policy,variant" || input.manifest.mode !== "text") return false;
+    if (!isProviderInput(input) || !(matchesProviderTextPolicy(input.policy) || matchesProviderVoicePolicy(input.policy))
+      || Object.keys(input).sort().join() !== "basis,manifest,policy,variant" || input.manifest.mode !== input.policy.mode) return false;
     const v = input.variant, m = input.manifest;
     if ([v.serialized, v.serializedSource, v.serializedInstructions].some(s => typeof s !== "string" || bytes(s) > MAX_WIRE_BYTES)
       || v.serializedSource !== serializeData(v.source) || v.serializedInstructions !== serializeData(v.instructions)
       || v.serialized !== serializeData({ contextVersion: v.contextVersion, promptVersion: v.promptVersion,
         variant: v.id, instructions: v.instructions, source: v.source })) return false;
-    return JSON.stringify(m) === JSON.stringify(encodeManifest(v, m.runId, "text", m.maxEventBytes, true));
+    return JSON.stringify(m) === JSON.stringify(encodeManifest(v, m.runId, input.policy.mode, m.maxEventBytes,
+      input.policy.mode === "text" ? true : "voice"));
   } catch { return false; }
 }

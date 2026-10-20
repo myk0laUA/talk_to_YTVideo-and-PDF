@@ -177,7 +177,8 @@ export class PrimingController {
           type: effectiveTurn.type, create_response: effectiveTurn.create_response,
           interrupt_response: effectiveTurn.interrupt_response, idle_timeout_ms: effectiveTurn.idle_timeout_ms,
         } : effectiveTurn, ...(isProviderInput(r.input) ? { max_output_tokens: session.max_output_tokens,
-          tool_choice: session.tool_choice, reasoning: session.reasoning, transcription: effectiveInput?.transcription } : {}) });
+          tool_choice: session.tool_choice, reasoning: session.reasoning, transcription: effectiveInput?.transcription,
+          audio_output: record(session.audio) && record(session.audio.output) ? { voice: session.audio.output.voice } : undefined } : {}) });
       if (fingerprint === r.lastConfig) return;
       if (r.stage === "items") { this.fail(r, "configuration"); return; }
       const desired = (r.stage === "initial" ? r.input.manifest.configure : r.input.manifest.finalize).session;
@@ -185,14 +186,16 @@ export class PrimingController {
       const turn = audio?.turn_detection, desiredTurn = desired.audio.input.turn_detection;
       const turnMatches = desiredTurn === null ? turn === null : record(turn) && turn.type === desiredTurn.type
         && turn.create_response === true && turn.interrupt_response === true && turn.idle_timeout_ms === null;
-      const provider = isProviderInput(r.input);
       const model = isProviderInput(r.input) ? r.input.policy.model : r.input.wireBudget.model;
       if (session.type !== "realtime" || session.model !== model || session.instructions !== desired.instructions || session.truncation !== "disabled"
         || JSON.stringify(session.tools) !== "[]" || JSON.stringify(session.output_modalities) !== JSON.stringify(desired.output_modalities) || !turnMatches) {
         this.fail(r, "configuration"); return;
       }
-      if (provider && (session.max_output_tokens !== desired.max_output_tokens || session.tool_choice !== "none"
-        || !record(session.reasoning) || session.reasoning.effort !== "minimal" || audio?.transcription !== null)) {
+      const output = record(session.audio) && record(session.audio.output) ? session.audio.output : undefined;
+      if (isProviderInput(r.input) && (session.max_output_tokens !== desired.max_output_tokens || session.tool_choice !== "none"
+        || audio?.transcription !== null || (r.input.policy.mode === "text"
+          ? !record(session.reasoning) || session.reasoning.effort !== "minimal"
+          : output?.voice !== desired.audio.output?.voice))) {
         this.fail(r, "configuration"); return;
       }
       r.sessionId = session.id; r.lastConfig = fingerprint;

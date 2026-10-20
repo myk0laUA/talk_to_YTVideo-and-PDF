@@ -166,7 +166,10 @@ export class TextLifecycle {
       const input = freeze(structuredClone(prepared));
       if (input.manifest.mode !== "text" || input.manifest.runId !== a.identity.runId
         || input.manifest.items.some(e => JSON.parse(e.item.content[0].text).source.id !== a.identity.sourceId)) throw new Error("Invalid source");
-      if (isProviderInput(input)) a.policy = input.policy;
+      if (isProviderInput(input)) {
+        if (!matchesProviderTextPolicy(input.policy)) throw new Error("Invalid text policy");
+        a.policy = input.policy;
+      }
       else {
         const { model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance } = input.wireBudget;
         a.policy = freeze({ model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance });

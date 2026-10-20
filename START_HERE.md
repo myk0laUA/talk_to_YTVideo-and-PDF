@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM07G review:** offline voice policy accepted;12hashes matched and fresh94focused checks passed. Next sole assignment [Task02D](docs/WORKER_TASK_02D.md): owned-source voice preparation/credential boundary, offline only. Public voice stays unavailable; real WebRTC/transcription/phone/hosted gates remain open. Older summaries below are historical.
+
 **Current PM10E review:** local real PDF-to-text functional gate accepted; four answers/Stop/removal/default-disabled evidence reviewed. Live driver capture failures remain explicit; hosted/phone/voice gates are open. Next sole worker assignment: [Task07G](docs/WORKER_TASK_07G.md), isolated voice admission policy, no live calls or public activation. See the latest PROJECT_STATE entry; older summaries below are historical.
 
 **Current PM14A review:** walkthrough preparation accepted in `6b28ea9`; estimated13:00 final/5:30 progress scripts, no recording or live-success claim. Four hashes matched; fresh PM verification passed with421 protected files unchanged. No active worker assignment: next is prerequisite resolution for model/accounting and live integration; disposable-PostgreSQL cleanup validation is an independent no-key path once PM selects a target. Full live/device/release gates remain open. Older summaries below are historical.

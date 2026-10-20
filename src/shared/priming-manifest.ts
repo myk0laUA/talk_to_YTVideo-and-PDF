@@ -1,5 +1,5 @@
 import type { ContextVariant } from "../server/context/document.ts";
-import { PROVIDER_TEXT_POLICY } from "./priming-provider-policy.ts";
+import { PROVIDER_TEXT_POLICY, PROVIDER_VOICE_POLICY } from "./priming-provider-policy.ts";
 
 export const PRIMING_VERSION = "source-priming-v1";
 // Application bounds, not provider capacity claims. Lower these for a negotiated transport.
@@ -15,7 +15,8 @@ export type SessionEvent = Readonly<{ type: "session.update"; event_id: string; 
   type: "realtime"; instructions: string; truncation: "disabled"; tools: readonly [];
   output_modalities: readonly ["text" | "audio"];
   max_output_tokens?: number; tool_choice?: "none"; reasoning?: { effort: "minimal" };
-  audio: { input: { transcription?: null; turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null } } };
+  audio: { input: { transcription?: null; turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null } };
+    output?: { voice: "marin" } };
 } }>;
 export type Manifest = Readonly<{ version: typeof PRIMING_VERSION; runId: string; mode: Mode;
   variant: "A" | "B"; configure: SessionEvent; items: readonly ItemEvent[]; finalize: SessionEvent;
@@ -30,8 +31,10 @@ export function freeze<T>(value: T): T {
 
 /** Pure safe projection. No source authorization, token measurement or readiness is established here. */
 export function encodeManifest(variant: ContextVariant, runId: string, mode: Mode,
-  maxEventBytes = MAX_EVENT_BYTES, providerText = false): Manifest {
+  maxEventBytes = MAX_EVENT_BYTES, providerPolicy: boolean | "voice" = false): Manifest {
+  const providerText = providerPolicy === true, providerVoice = providerPolicy === "voice";
   if (providerText && mode !== "text") throw new Error("Provider admission requires text mode.");
+  if (providerVoice && mode !== "voice") throw new Error("Provider admission requires voice mode.");
   if (!/^[A-Za-z0-9_-]{1,48}$/.test(runId) || !["voice", "text"].includes(mode)
     || !Number.isSafeInteger(maxEventBytes) || maxEventBytes < 2048 || maxEventBytes > MAX_EVENT_BYTES
     || !["A", "B"].includes(variant.id) || variant.contextVersion !== "source-context-v1"
@@ -43,9 +46,11 @@ export function encodeManifest(variant: ContextVariant, runId: string, mode: Mod
       output_modalities: [final && mode === "voice" ? "audio" : "text"],
       ...(providerText ? { max_output_tokens: PROVIDER_TEXT_POLICY.maxOutputTokens, tool_choice: "none" as const,
         reasoning: { effort: PROVIDER_TEXT_POLICY.reasoningEffort } } : {}),
+      ...(providerVoice ? { max_output_tokens: PROVIDER_VOICE_POLICY.maxOutputTokens, tool_choice: "none" as const } : {}),
       audio: { input: { turn_detection: final && mode === "voice"
         ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null,
-        ...(providerText ? { transcription: null } : {}) } } } });
+        ...(providerText || providerVoice ? { transcription: null } : {}) },
+        ...(providerVoice ? { output: { voice: PROVIDER_VOICE_POLICY.voice } } : {}) } } });
   const items: ItemEvent[] = [];
   const { fullText, sections, id, kind, expiresAt, separator } = variant.source;
   const metadata = { id, kind, expiresAt, separator };

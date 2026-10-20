@@ -7,8 +7,7 @@ import { requireLive, requireOwned, SourceError, type SourceRepository } from ".
 import { guardedAwait } from "./await.ts";
 import { contextVariants, sourceContext, serializeData, type ContextVariant } from "./document.ts";
 import { createContextService } from "./service.ts";
-import { MODEL_POLICY_VERSION, resolveModelPolicy, resolveProviderTextPolicy } from "./model-policy.ts";
-import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
+import { MODEL_POLICY_VERSION, resolveModelPolicy, resolveProviderTextPolicy, resolveProviderVoicePolicy } from "./model-policy.ts";
 import { validateProviderAdmission, type ProviderPrimingInput } from "../../shared/priming-admission.ts";
 
 const hash = (text: string) => createHash("sha256").update(text, "utf16le").digest("hex");
@@ -68,14 +67,21 @@ export function matchesProviderPreparation(input: ProviderPrimingInput, expected
   model: string; mode: Mode; policyVersion: string; sourceId: string; runId: string }, at: number): boolean {
   try {
     return Number.isFinite(at) && Date.parse(input?.variant?.source.expiresAt) > at
-      && !!resolveProviderTextPolicy(expected.model, expected.mode, expected.policyVersion)
+      && !!(input.policy.mode === "text" ? resolveProviderTextPolicy : resolveProviderVoicePolicy)(expected.model, expected.mode, expected.policyVersion)
       && input?.manifest?.runId === expected.runId && input.variant.source.id === expected.sourceId
       && providerPreparations.get(input) === hash(JSON.stringify(input)) && validateProviderAdmission(input);
   } catch { return false; }
 }
 
 /** Internal opt-in server preparation. No endpoint/factory/key/provider access. A/B is explicit. */
-export function createProviderTextPreparation(deps: { repository: Pick<SourceRepository, "get">; now?: () => number }) {
+type ProviderPreparationDependencies = { repository: Pick<SourceRepository, "get">; now?: () => number };
+export function createProviderTextPreparation(deps: ProviderPreparationDependencies) {
+  return createProviderPreparation("text", deps);
+}
+export function createProviderVoicePreparation(deps: ProviderPreparationDependencies) {
+  return createProviderPreparation("voice", deps);
+}
+function createProviderPreparation(preparationMode: Mode, deps: ProviderPreparationDependencies) {
   const now = deps.now ?? Date.now, prepare = createContextService(deps);
   return async (input: { visitor: Visitor; sourceId: string; signal: AbortSignal; model: string; mode: Mode;
     policyVersion: string; runId: string; variant: "A" | "B"; maxEventBytes?: number }) => {
@@ -87,15 +93,16 @@ export function createProviderTextPreparation(deps: { repository: Pick<SourceRep
     };
     try {
       guard();
-      const policy = resolveProviderTextPolicy(model, mode, policyVersion);
+      const policy = (preparationMode === "text" ? resolveProviderTextPolicy : resolveProviderVoicePolicy)(model, mode, policyVersion);
       if (!policy) return freeze({ ...preparationOnly, status: "unavailable", code: "unsupported_policy" } as const);
       const prepared = await prepare({ visitor, sourceId, signal });
       guard();
       if (prepared.status !== "prepared") return freeze({ ...preparationOnly, status: "unavailable", code: prepared.code } as const);
       const live = () => { guard(); if (now() >= Date.parse(prepared.context.source.expiresAt)) throw new SourceError("unavailable"); };
       await guardedAwait(() => setImmediate(undefined, { signal }), signal, live);
-      const projection: ProviderPrimingInput = freeze({ basis: "provider_enforced", policy: PROVIDER_TEXT_POLICY,
-        variant: prepared.variants[variant], manifest: encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes, true) });
+      const projection: ProviderPrimingInput = freeze({ basis: "provider_enforced", policy,
+        variant: prepared.variants[variant], manifest: encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes,
+          preparationMode === "text" ? true : "voice") });
       if (!validateProviderAdmission(projection)) throw new SourceError("unavailable");
       const current = await guardedAwait(() => deps.repository.get(sourceId, visitor.owner, new Date(now())), signal, live);
       live(); requireOwned(current, visitor, now());
