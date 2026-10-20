@@ -11,21 +11,23 @@ import { PROVIDER_TEXT_POLICY as policy } from "../../src/shared/priming-provide
 import { pdfFixture, captionFixture } from "../../tests/context/fixtures.ts";
 import { SyntheticSourceDatabase } from "../../tests/sources/database.ts";
 import { sanitizeUsage, type ProbeUsage } from "./realtime-probe.ts";
+import { evaluateQuantities, type QuantityCheck } from "./full-source-facts.ts";
 
 export const MATRIX = [ ["PDF", "A"], ["PDF", "B"], ["YOUTUBE", "A"], ["YOUTUBE", "B"] ] as const;
 export const LIMITS = Object.freeze({ sessions: 4, responses: 8, questionsPerSession: 2, sessionMs: 45_000, allocationUsd: 1 });
 export const RATES = Object.freeze({ input: 0.60, cachedInput: 0.06, output: 2.40, perTokens: 1_000_000 });
+export const ORIGINAL_ATTEMPT = Object.freeze({ sessions: 1, responses: 2, estimatedTextCostUsd: 0.00100752 });
 export const hash = (s: string) => createHash("sha256").update(s, "utf16le").digest("hex");
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const clock: PrimingClock = { now: Date.now, setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: h => clearTimeout(h as ReturnType<typeof setTimeout>) };
 export const QUESTIONS = {
   PDF: [
     { text: "Using the beginning and final page of this source, give the station opening time, first ferry name and final emergency meeting point. Be concise.", criteria: ["opening-time", "ferry-name", "final-meeting-point"], patterns: [/06:15/, /\biris\b/i, /east cedar gate/i] },
-    { text: "Now use the middle trial sections: compare kWh per crate for Trial A and B, and state the caretaker's name. Be concise.", criteria: ["trial-a-per-crate", "trial-b-per-crate", "caretaker"], patterns: [/0[.,]4\b/, /0[.,]3\b/, /zo[eë]/i] },
+    { text: "Now use the middle trial sections: compare kWh per crate for Trial A and B, and state the caretaker's name. Be concise.", criteria: ["trial-a-per-crate", "trial-b-per-crate", "caretaker"], patterns: [/zo[eë]/i] },
   ],
   YOUTUBE: [
     { text: "Using the beginning and end of the full transcript, name who starts the workshop, its start time, the final shipping label colour and where returns go. Be concise.", criteria: ["workshop-leader", "start-time", "final-label", "returns-location"], patterns: [/\bmira\b/i, /09:20/, /violet/i, /shelf\s+q\b/i] },
-    { text: "Now use the middle method sections: compare minutes per lamp for Method A and B and name who records the results. Be concise.", criteria: ["method-a-per-lamp", "method-b-per-lamp", "recorder"], patterns: [/\b6\b/, /\b4\b/, /ren[eé]/i] },
+    { text: "Now use the middle method sections: compare minutes per lamp for Method A and B and name who records the results. Be concise.", criteria: ["method-a-per-lamp", "method-b-per-lamp", "recorder"], patterns: [/ren[eé]/i] },
   ],
 } as const;
 
@@ -34,28 +36,55 @@ export function usageCost(u: ProbeUsage) {
   return ((u.input_tokens - cached) * RATES.input + cached * RATES.cachedInput + u.output_tokens * RATES.output) / RATES.perTokens;
 }
 
+type TranscriptObservation = { userTurns: number; assistantTurns: number; incomplete: boolean; phase: string };
+export type SyntheticEvidence = { version: "07f-correction-1"; kind: "PDF" | "YOUTUBE"; variant: "A" | "B";
+  startedAt: string; sourceSha256Utf16: string; model: string;
+  beforeStop: { observation: TranscriptObservation; turns: { role: string; generation: string | null; partStates: string[]; text: string }[] } | null;
+  afterStop: SyntheticEvidence["beforeStop"] };
+
 export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B", deps: {
   environment: "offline-scripted" | "live"; open: () => PrimingTransport; signal?: AbortSignal; timeoutMs?: number;
+  retainSyntheticEvidence?: (evidence: SyntheticEvidence) => Promise<void>;
 }) {
   const started = Date.now(), duration = deps.timeoutMs ?? LIMITS.sessionMs;
   if (!Number.isSafeInteger(duration) || duration < 20 || duration > LIMITS.sessionMs) throw new Error("Invalid deadline");
   const report = {
-    version: "07f-v1", environment: deps.environment, model: policy.model, kind, variant,
+    version: "07f-correction-1", environment: deps.environment, model: policy.model, kind, variant,
     transport: deps.environment === "live" ? "07d-server-websocket" : "scripted",
     startedAt: new Date(started).toISOString(), endedAt: "", elapsedMs: 0,
-    outcome: "FAIL" as "PASS" | "FAIL", failure: "", policy, limits: LIMITS,
+    outcome: "FAIL" as "PASS" | "FAIL" | "REVIEW_REQUIRED", failure: "", policy, limits: LIMITS,
     sourceSha256Utf16: "", reconstructedSha256Utf16: "", manifestSha256Utf16: "", variantSha256Utf16: "",
     exactReconstruction: false, provenance: false, sourceCodeUnits: 0, wireBytes: 0,
     counts: { connections: 0, sourceItems: 0, questionItems: 0, responseRequests: 0, responseCreated: 0, responseDone: 0, closes: 0, unsubscribes: 0, inbound: 0 },
     acknowledgments: { effectiveUpdates: 0, sourceItemDone: 0, questionItemDone: 0, protocolReady: false },
     effectivePolicy: [] as { exact: boolean; fields: string[]; audioInputPresent: boolean; transcriptionPresent: boolean; turnDetectionPresent: boolean; checks: Record<string, boolean> }[],
     schema: [] as { event: string; responseFields?: string[]; partType?: string }[],
-    facts: [] as { question: number; criteria: string[]; matches: boolean[]; retained: boolean; characters: number }[],
+    facts: [] as { question: number; criteria: string[]; matches: boolean[]; quantities: QuantityCheck[]; retained: boolean; characters: number }[],
     usage: [] as (ProbeUsage | null)[], estimatedTextCostUsd: 0, usageComplete: true,
-    transcript: { sampled: false, userTurns: 0, assistantTurns: 0, retainedAfterStop: false, incomplete: false },
+    transcript: { sampled: false, beforeStop: null as TranscriptObservation | null, afterStop: null as TranscriptObservation | null,
+      userTurns: null as number | null, assistantTurns: null as number | null,
+      retainedAfterStop: null as boolean | null, incomplete: null as boolean | null },
     productionReady: false, liveOverflow: "NOT_RUN", dashboardReconciliation: "UNAVAILABLE; no authenticated billing session inspected",
   };
   let controller: TextLifecycle | undefined, prepared: ProviderPrimingInput | undefined;
+  let evidence: SyntheticEvidence | undefined;
+  const sampleAndStop = () => {
+    if (!controller || report.transcript.sampled) return;
+    const sample = () => {
+      const transcript = controller!.transcript;
+      return { observation: { userTurns: transcript.turns.filter(t => t.role === "user").length,
+        assistantTurns: transcript.turns.filter(t => t.role === "assistant").length,
+        incomplete: transcript.incomplete, phase: controller!.snapshot.phase },
+        turns: transcript.turns.map(t => ({ role: t.role, generation: t.generation ?? null,
+          partStates: t.parts.map(p => p.state), text: t.parts.map(p => p.text).join("\n") })) };
+    };
+    const beforeStop = sample(); controller.stop(); const afterStop = sample();
+    evidence = { version: "07f-correction-1", kind, variant, startedAt: report.startedAt, model: policy.model,
+      sourceSha256Utf16: report.sourceSha256Utf16, beforeStop, afterStop };
+    report.transcript = { sampled: true, beforeStop: beforeStop.observation, afterStop: afterStop.observation,
+      userTurns: beforeStop.observation.userTurns, assistantTurns: beforeStop.observation.assistantTurns,
+      retainedAfterStop: JSON.stringify(beforeStop.turns.map(t => [t.role, t.text])) === JSON.stringify(afterStop.turns.map(t => [t.role, t.text])), incomplete: beforeStop.observation.incomplete };
+  };
   let aborted = false, expired = false;
   const abort = () => { aborted = true; controller?.stop(); };
   const timer = setTimeout(() => { expired = true; controller?.stop(); }, duration);
@@ -177,33 +206,34 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
       await until(() => controller!.canSubmit);
       const assistants = controller.transcript.turns.filter(t => t.role === "assistant");
       const answer = assistants[index]?.parts.map(p => p.text).join("\n") ?? "";
-      const matches = q.patterns.map(p => p.test(answer.normalize("NFC")));
-      report.facts.push({ question: index + 1, criteria: [...q.criteria], matches, retained: !!answer, characters: answer.length });
-      ensure(matches.every(Boolean) && assistants.length === index + 1, "fact_mismatch");
-      ensure(report.counts.responseRequests === index + 1 && report.counts.responseDone === index + 1 && report.usageComplete, "response_contract");
+      ensure(assistants.length === index + 1 && report.counts.responseRequests === index + 1
+        && report.counts.responseDone === index + 1 && report.usageComplete, "response_contract");
+      const quantities = index === 1 ? evaluateQuantities(kind, answer) : [];
+      const matches = index === 1 ? [...quantities.map(q => q.status === "PASS"), q.patterns[0].test(answer.normalize("NFC"))]
+        : q.patterns.map(p => p.test(answer.normalize("NFC")));
+      report.facts.push({ question: index + 1, criteria: [...q.criteria], matches, quantities, retained: !!answer, characters: answer.length });
+      ensure(!quantities.some(q => q.status === "FAIL"), "fact_mismatch");
+      ensure(!quantities.some(q => q.status === "REVIEW_REQUIRED"), "fact_review_required");
+      ensure(matches.every(Boolean), "fact_mismatch");
     }
-    const before = controller.transcript;
-    controller.stop();
-    report.transcript = { sampled: true, userTurns: before.turns.filter(t => t.role === "user").length,
-      assistantTurns: before.turns.filter(t => t.role === "assistant").length,
-      retainedAfterStop: JSON.stringify(before.turns) === JSON.stringify(controller.transcript.turns), incomplete: before.incomplete };
-    ensure(report.transcript.userTurns === 2 && report.transcript.assistantTurns === 2 && report.transcript.retainedAfterStop && !before.incomplete, "transcript_contract");
+    sampleAndStop();
+    ensure(report.transcript.userTurns === 2 && report.transcript.assistantTurns === 2 && report.transcript.retainedAfterStop && !report.transcript.incomplete, "transcript_contract");
     ensure(report.counts.closes === 1 && report.counts.unsubscribes === 1, "cleanup_contract");
     report.outcome = "PASS";
   } catch (e) {
     // Only our fixed reason vocabulary is allowed out; never provider bodies or arbitrary exceptions.
     const reason = e instanceof Error ? e.message : "";
-    report.failure = /^(cancelled|session_timeout|ended|lifecycle_[a-z_]+|preparation|fidelity|inbound_limit|usage_contract|outbound_contract|question_limit|start|ack_contract|submit|fact_mismatch|response_contract|transcript_contract|cleanup_contract)$/.test(reason) ? reason : "harness_failure";
+    report.failure = /^(cancelled|session_timeout|ended|lifecycle_[a-z_]+|preparation|fidelity|inbound_limit|usage_contract|outbound_contract|question_limit|start|ack_contract|submit|fact_mismatch|fact_review_required|response_contract|transcript_contract|cleanup_contract)$/.test(reason) ? reason : "harness_failure";
+    if (report.failure === "fact_review_required") report.outcome = "REVIEW_REQUIRED";
   } finally {
     clearTimeout(timer); deps.signal?.removeEventListener("abort", abort);
-    if (controller && !report.transcript.sampled) {
-      const before = controller.transcript;
-      controller.stop();
-      report.transcript = { sampled: true, userTurns: before.turns.filter(t => t.role === "user").length,
-        assistantTurns: before.turns.filter(t => t.role === "assistant").length,
-        retainedAfterStop: JSON.stringify(before.turns) === JSON.stringify(controller.transcript.turns), incomplete: before.incomplete };
-    }
+    sampleAndStop();
     controller?.stop(); controller?.dispose();
+    if (deps.retainSyntheticEvidence) {
+      try { await deps.retainSyntheticEvidence(evidence ?? { version: "07f-correction-1", kind, variant,
+        startedAt: report.startedAt, model: policy.model, sourceSha256Utf16: report.sourceSha256Utf16, beforeStop: null, afterStop: null }); }
+      catch { report.outcome = "FAIL"; report.failure = "evidence_write_failed"; }
+    }
     report.usageComplete = report.usage.length === report.counts.responseRequests && report.usage.every(u => u !== null);
     report.endedAt = new Date().toISOString(); report.elapsedMs = Date.now() - started;
   }
