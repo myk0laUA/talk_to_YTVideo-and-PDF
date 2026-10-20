@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+**PM02D acceptance:**14hashes matched; fresh88focused units and366built assertions/4groups PASS/exit0, build3CZnJ4A2b8LMobw-ksQIe. PM logs/results under artifacts/local/02d/pm-*. No live provider/SQL/media. Next08D tests adapter integration offline; public and physical-device gates remain open.
+
+## Task02D — owned-source voice boundary (proposed READY_FOR_REVIEW)
+
+New command **`npm run test:owned-voice`** is added by02D:88focused units followed by366actual built HTTP/browser/bundle assertions across4fresh processes. Build first, use Node24.22.0/npm11.19.1 and free loopback3128. Unit-only: `node --conditions=react-server --test tests/unit/owned-voice.test.ts`. Use the retained `.env`-free isolated copy/environment runner in ignored `artifacts/local/02d/verify.mjs`; it copies tracked/new task files without private `.env` files, reuses dependencies, empties real keys, selects an unusable loopback DB and blocks external networking. The committed harness explicitly injects synthetic Prisma and fake client-secret fetch through a test preload; no production test flag or mock route. No human credentials/phone/live setup is needed.
+
+Final build **`3CZnJ4A2b8LMobw-ksQIe`**: lint/typecheck/full1381units(including94accepted07G)/build/smoke18/boundaries186+59HTTP/owned-text416/newvoice88+366 all PASS/exit0. Exact commands/20OctoberUTC/exits, earlier failed attempts and final file hashes are in PROJECT_STATE, [02D report](OWNED_VOICE_BOUNDARY_02D.md) and ignored02d evidence. New harness checks both-kind complete structuredB/single acquisition, foreign-source denial, prerequisites/origin/body/ticket/replay/override denials, cancellation/content/expiry/actual DELETE during awaits, actual8s provider deadline, malformed/unsafe/error responses, concurrent2/visitor3 issuance, late-body cancellation and no secret/runtime markers in responses/logs/browser bundles. All four terminal groups have entries/timers/pending/held0, external-network attempts0; browser/server/port cleanup verified.
+
+Automated isolated production procedures corresponding to the brief's manual checks: select an owned source/ordinary Voice mode and observe disabled Start (390px screenshot visually inspected, native media0); use dedicated same-origin browser fetches for one owned preparation/credential success and one foreign denial (exactly1new fake acquisition); scan minimal safe responses and static bundles. These checks are fake-provider/browser-emulation evidence. They do not establish actual WebRTC/media/transcription, phone/audio, live provider/database/model capacity, hosted behavior or post-issuance enforcement. The independent voice gate stays defaultfalse; proof/text routes and normal Voice UI are unchanged. PM sequences subsequent adapter/live work.
+
 **PM07G acceptance:**12hashes matched; fresh isolated94/94focused tests passed, exit0 (artifacts/local/07g/pm-focused.log). Offline scope accepted; no live voice/phone claim. Next02D tests the dedicated owned credential boundary with injected provider/storage; no real services.
 
 ## Task07G — isolated explicit voice admission (proposed READY_FOR_REVIEW)

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM02D review:** owned voice preparation/credential boundary accepted offline;14hashes matched, fresh88units/366built checks passed. Next sole assignment [08D](docs/WORKER_TASK_08D.md): application WebRTC adapter, offline verification. Public voice stays disabled; transcription/live/phone/hosted gates remain open. Older summaries below are historical.
+
 **Current PM07G review:** offline voice policy accepted;12hashes matched and fresh94focused checks passed. Next sole assignment [Task02D](docs/WORKER_TASK_02D.md): owned-source voice preparation/credential boundary, offline only. Public voice stays unavailable; real WebRTC/transcription/phone/hosted gates remain open. Older summaries below are historical.
 
 **Current PM10E review:** local real PDF-to-text functional gate accepted; four answers/Stop/removal/default-disabled evidence reviewed. Live driver capture failures remain explicit; hosted/phone/voice gates are open. Next sole worker assignment: [Task07G](docs/WORKER_TASK_07G.md), isolated voice admission policy, no live calls or public activation. See the latest PROJECT_STATE entry; older summaries below are historical.

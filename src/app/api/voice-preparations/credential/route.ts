@@ -1,0 +1,12 @@
+import "server-only";
+import { voiceHandlers } from "@/server/voice/runtime";
+import { voiceMethodNotAllowed } from "@/server/voice/handlers";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const POST = voiceHandlers.credential;
+export const GET = voiceMethodNotAllowed;
+export const HEAD = voiceMethodNotAllowed;
+export const PUT = voiceMethodNotAllowed;
+export const PATCH = voiceMethodNotAllowed;
+export const DELETE = voiceMethodNotAllowed;
+export const OPTIONS = voiceMethodNotAllowed;
