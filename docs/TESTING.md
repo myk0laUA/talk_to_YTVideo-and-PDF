@@ -1,6 +1,16 @@
 # Testing and evidence — Talk to a Document
 
+**PM08D acceptance:**19hashes matched; fresh51adapter units and378built checks/32scenarios PASS/exit0, buildoPnTtxqDDAJ354MEMqPB3, injected/offline only. Logs/results under artifacts/local/08d/pm-*. Next08E is bounded live transport verification, with synthetic audio input explicitly distinguished from physical microphone/speaker/phone proof. User transcription remains unavailable.
+
 **PM02D acceptance:**14hashes matched; fresh88focused units and366built assertions/4groups PASS/exit0, build3CZnJ4A2b8LMobw-ksQIe. PM logs/results under artifacts/local/02d/pm-*. No live provider/SQL/media. Next08D tests adapter integration offline; public and physical-device gates remain open.
+
+## Task08D — application WebRTC adapter (proposed READY_FOR_REVIEW)
+
+New focused command: `npm run test:voice-adapter`. Build first; free loopback port3129. It runs51adapter units, then actual built application controls/owned routes with explicit synthetic Prisma, fake credential/SDP and native media/peer/channel injections. All production fixture controls are excluded. Use pinned Node24.22.0/npm11.19.1 and the `.env`-free, empty-real-key, unusable-loopback-DB, outbound-denied runner retained under ignored `artifacts/local/08d/verify.mjs`; ordinary voice availability remains default false. No real service/device setup is needed.
+
+The harness selects an owned synthetic PDF/YouTube through the application, withholds the final ACK (media0), reconstructs the complete source, then checks one peer/channel/media attachment; mute, interrupt, blocked/retried playback, Stop/restart and explicit switch to actual HTTP text mode. It covers stale setup awaits, denied/late microphone, disconnect, expiry, removal/replacement, scripted departure/offline and safe desktop/390px screenshots/counters. Unit checks add run-ID/credential/SDP/body validation, ordered/backpressured bounded sends, fixed drain deadline, one expiry timer→zero, native failures and lost cancellation TTL fallback. `test:owned-voice` also covers authenticated cancellation while preparation/mint awaits, cross-owner/source/request denials, late Stop versus a newer ticket, no refund and real built route method/no-store denials. Existing control/mode/recovery/text/boundary coverage is retained.
+
+Only assistant speech text is injected; input transcription remains null and the UI discloses user speech transcription unavailable. Fake media, viewport emulation, scripted pagehide/offline and structural ACKs are not physical audio/phone, actual BFCache/network loss, live grounding or provider capacity evidence. See [08D report](VOICE_APPLICATION_08D.md) for exact commands/build/UTC/exits, endpoint/run-ID mapping, acceptance evidence and remaining gates. PM decides acceptance; no original full step is completed here.
 
 ## Task02D — owned-source voice boundary (proposed READY_FOR_REVIEW)
 

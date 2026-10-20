@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08D review:** application voice adapter accepted offline;19hashes matched, fresh51units/378integration checks passed. Next sole assignment [08E](docs/WORKER_TASK_08E.md): bounded real local WebRTC test under standing credit authorization. Public configuration remains unchanged; transcription/physical-phone/hosted gates stay open. Older summaries below are historical.
+
 **Current PM02D review:** owned voice preparation/credential boundary accepted offline;14hashes matched, fresh88units/366built checks passed. Next sole assignment [08D](docs/WORKER_TASK_08D.md): application WebRTC adapter, offline verification. Public voice stays disabled; transcription/live/phone/hosted gates remain open. Older summaries below are historical.
 
 **Current PM07G review:** offline voice policy accepted;12hashes matched and fresh94focused checks passed. Next sole assignment [Task02D](docs/WORKER_TASK_02D.md): owned-source voice preparation/credential boundary, offline only. Public voice stays unavailable; real WebRTC/transcription/phone/hosted gates remain open. Older summaries below are historical.

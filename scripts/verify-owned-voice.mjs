@@ -79,14 +79,16 @@ try {
           await page.addInitScript(() => { window.__media02d = 0; const block = () => { window.__media02d++; throw new Error("Media forbidden"); };
             Object.defineProperty(navigator, "mediaDevices", { value: { getUserMedia: block } }); window.RTCPeerConnection = block; window.WebSocket = block; window.Audio = block; });
           await page.route("**/api/sources/pdf", route => route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, source: sourceDto(f.row) }) }));
+          await ipc("gate", { field: "OWNED_SOURCE_VOICE_ENABLED", value: "false" });
           await page.goto(origin);
           const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Upload a PDF", exact: true }).click();
           await (await chooser).setFiles({ name: "Synthetic02D.pdf", mimeType: "application/pdf", buffer: Buffer.from("seeded-source-only") });
           await page.getByRole("button", { name: "Inspect extracted text", exact: true }).waitFor();
           await page.getByRole("button", { name: "Voice mode", exact: true }).click();
-          const disabled = await page.getByRole("button", { name: /Start/ }).isDisabled(); check("ordinary Voice Start remains unavailable with source and new gate on", disabled);
+          const disabled = await page.getByRole("button", { name: /Start/ }).isDisabled(); check("ordinary Voice Start remains unavailable with source and voice gate off", disabled);
           check("ordinary Voice native media calls", await page.evaluate(() => window.__media02d), 0); check("browser external requests", external, 0);
           await page.screenshot({ path: path.join(directory, "ordinary-voice-disabled.png"), fullPage: true });
+          await ipc("gate", { field: "OWNED_SOURCE_VOICE_ENABLED", value: "true" });
           // Dedicated harness uses same-origin browser fetches; no adapter or browser credential storage is installed.
           const result = await page.evaluate(async ({ sourceId, requestId }) => {
             const send = async (suffix, body) => { const r = await fetch("/api/voice-preparations" + suffix, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -100,7 +102,7 @@ try {
         } finally { await context.close(); }
       }
       if (group === "denials") {
-        for (const route of ["", "/credential"]) for (const method of ["GET", "HEAD", "PUT", "PATCH", "DELETE", "OPTIONS"]) {
+        for (const route of ["", "/credential", "/cancel"]) for (const method of ["GET", "HEAD", "PUT", "PATCH", "DELETE", "OPTIONS"]) {
           const r = await fetch(origin + "/api/voice-preparations" + route, { method });
           check(`${route} ${method} method denial`, r.status, 405); check("method denial no-store", r.headers.get("cache-control"), "no-store"); await r.body?.cancel();
         }
@@ -122,7 +124,7 @@ try {
         }
       }
       if (group === "races") {
-        for (const kind of ["delete", "content", "expiry", "normal-remove", "cancel", "deadline"]) {
+        for (const kind of ["delete", "content", "expiry", "normal-remove", "cancel", "owner-stop", "deadline"]) {
           await ipc("scenario", { scenario: "hold" }); const f = await seed(), p = await prepare(f), before = await ipc("snapshot");
           const abort = new AbortController();
           const pending = fetch(origin + "/api/voice-preparations/credential", { method: "POST", headers: { origin, cookie: f.cookie, "content-type": "application/json" }, signal: abort.signal,
@@ -131,6 +133,7 @@ try {
           if (["delete", "content", "expiry"].includes(kind)) await ipc("change", { id: f.row.id, kind });
           if (kind === "normal-remove") { const r = await fetch(origin + "/api/sources/" + f.row.id, { method: "DELETE", headers: { origin, cookie: f.cookie } }); check("actual DELETE invalidates ticket", r.status, 200); }
           if (kind === "cancel") abort.abort();
+          if (kind === "owner-stop") await post("/cancel", f, { sourceId: f.row.id, requestId: f.requestId }, 200);
           if (kind === "deadline") await wait(async () => (await ipc("snapshot")).aborts > before.aborts, 10_000); // Actual provider's fixed8s deadline.
           await ipc("release"); const r = await pending;
           if (kind === "cancel") check("caller cancellation has no credential response", r, null);

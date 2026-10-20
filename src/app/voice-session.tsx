@@ -106,6 +106,7 @@ class OwnedVoiceSession extends Component<Props, State> {
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !ready || status?.playback === "pending" || status?.playback === "available"} onClick={() => { if (this.browser?.allowsAction()) void this.controller?.playAudio(); }}>{status?.playback === "blocked" ? "Try speaker playback" : "Enable speaker playback"}</button>
       </div>
       <p className="note">Starting again clears this conversation. Stop keeps received text. Changing or removing the source clears it. Nothing restarts automatically.</p>
+      <p className="note">Assistant speech text appears when received. User speech transcription is unavailable in this build.</p>
       <dl className="voice-device-status">
         <dt>Microphone</dt><dd>{microphone(status)}</dd>
         <dt>Speaker playback</dt><dd>{playback(status)}</dd>
@@ -117,7 +118,7 @@ class OwnedVoiceSession extends Component<Props, State> {
   }
 }
 
-/** No default provider, media or positive admission adapter. Changing the factory
+/** Server availability selects the application adapter. Changing the factory
  * requires a new owner mount; keep it stable for the lifetime of a source. */
 export function VoiceSession(props: Props) {
   return <OwnedVoiceSession key={props.source?.id ?? "no-source"} {...props} />;

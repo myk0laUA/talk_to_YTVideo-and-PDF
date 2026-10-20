@@ -39,7 +39,10 @@ export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; re
   const now = deps.now ?? Date.now;
   // Bounds body readers/invalid commands separately from preparation and issuance.
   const commands = new Admission({ visitor: 30, ip: 100, global: 100, lifetime: 500, windowMs: 3600_000, concurrent: 4 });
-  async function handle(request: Request, credential: boolean) {
+  // Stop must be able to cancel a command already holding this owner's command
+  // slot. A separate smaller bounded lane avoids admitting parallel issuance.
+  const cancellations = new Admission({ visitor: 12, ip: 40, global: 40, lifetime: 100, windowMs: 3600_000, concurrent: 4 });
+  async function handle(request: Request, operation: "prepare" | "credential" | "cancel") {
     let release: (() => void) | undefined;
     try {
       const config = deps.config(); if (!config) return reply(503, { error: "Voice preparation unavailable" });
@@ -53,12 +56,16 @@ export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; re
         if (!current || JSON.stringify(current) !== JSON.stringify(config) || request.signal.aborted
           || readVisitor(request.headers.get("cookie"), current, now())?.owner !== visitor.owner) throw new VoiceError();
       };
-      release = commands.acquire(visitor.owner, "unverified-network", now()) ?? undefined;
+      release = (operation === "cancel" ? cancellations : commands).acquire(visitor.owner, "unverified-network", now()) ?? undefined;
       if (!release) throw new VoiceError(429);
       const input = await body(request); freshVisitor();
-      if (Object.keys(input).sort().join(",") !== (credential ? "preparationId,requestId,sourceId" : "requestId,sourceId")
+      if (Object.keys(input).sort().join(",") !== (operation === "credential" ? "preparationId,requestId,sourceId" : "requestId,sourceId")
         || !voiceUuid(input.sourceId) || !voiceUuid(input.requestId)) throw new VoiceError(400);
-      if (!credential) return reply(201, await deps.registry.prepare(visitor, input.sourceId, input.requestId, request.signal, freshVisitor));
+      if (operation === "cancel") {
+        deps.registry.cancel(visitor, input.sourceId, input.requestId, freshVisitor);
+        return reply(200, { cancelled: true }); // Identical for absent/foreign/already consumed work.
+      }
+      if (operation === "prepare") return reply(201, await deps.registry.prepare(visitor, input.sourceId, input.requestId, request.signal, freshVisitor));
       if (typeof input.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(input.preparationId)) throw new VoiceError(400);
       return reply(200, await deps.registry.credential(visitor, input.sourceId, input.requestId, input.preparationId,
         request.signal, freshVisitor, config.apiKey));
@@ -67,5 +74,5 @@ export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; re
       return reply(status, { error: status === 429 ? "Voice preparation limit reached" : "Voice preparation unavailable" });
     } finally { release?.(); }
   }
-  return { prepare: (r: Request) => handle(r, false), credential: (r: Request) => handle(r, true) };
+  return { prepare: (r: Request) => handle(r, "prepare"), credential: (r: Request) => handle(r, "credential"), cancel: (r: Request) => handle(r, "cancel") };
 }

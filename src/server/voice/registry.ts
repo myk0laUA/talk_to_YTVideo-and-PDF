@@ -117,5 +117,11 @@ export class VoiceRegistry {
     } catch (error) { throw error instanceof VoiceError ? error : new VoiceError(); }
     finally { signal.removeEventListener("abort", cancel); release?.(); this.close(e); }
   }
+  /** Cancels only this owner's matching pending work. No refunds or credential revocation. */
+  cancel(visitor: Visitor, sourceId: string, requestId: string, freshVisitor: () => void) {
+    freshVisitor(); requireLive(visitor, new AbortController().signal, this.now());
+    const e = this.owners.get(visitor.owner);
+    if (e?.sourceId === sourceId && e.requestId === requestId) this.close(e);
+  }
   dispose() { for (const e of this.entries.values()) this.close(e); this.unsubscribe(); }
 }

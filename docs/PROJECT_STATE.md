@@ -1,5 +1,43 @@
 # Project state — Talk to a Document
 
+## PM08D acceptance — 20 October2026UTC
+
+Accepted for offline application integration. All19delivery hashes matched. Reviewed stable server-gated factory, server run-ID adoption, immutable source/policy validation, credential/SDP handling, ordered bounded transport, final-ACK-before-media and awaited track attachment, teardown and authenticated cancellation lane. React review kept construction inert and controller ownership stable. Fresh PM51adapter units passed/exit0; fresh built378checks/32scenarios passed23:23:30.606–23:23:48.462UTC, exit0, forbiddenNetwork0. BuildoPnTtxqDDAJ354MEMqPB3, pinned Node24.22.0, retained secret-free offline copy. Evidence artifacts/local/08d/pm-focused.log, pm-focused-result.json, pm-built.log, pm-built-result.json; built report remains in the isolated copy. No real provider/SQL/media call in this review. Worker full1438/regression evidence remains separately recorded below.
+
+No scoped blocker found. Voice factory exists but public configuration/deployment is unchanged. Input transcription remains off and visibly disclosed; physical audio/phone, real WebRTC/grounding and hosted gates are open. Next sole task [08E](WORKER_TASK_08E.md): actual local PDF-to-WebRTC voice verification. Standing user test-credit authorization applies with new US$1 estimated ceiling, at most2credential/session attempts/4response starts/120seconds per session; second attempt only for a concrete failure or evidence gap. Native file-backed synthetic speech input may prove transport, never physical microphone/human audibility. No billing/provisioning/deployment authorization. Existing10E allowance remains consumed. Preserve original Step IDs and all unmet gates.
+
+
+## Worker08D — proposed READY_FOR_REVIEW, 20 October2026UTC
+
+**Task08D implemented offline only; PM acceptance pending.** Clean arrival `main` HEAD **988ec9699124f1589d6ebde43f3b4dfaece45451**; dirty/uncommitted delivery, no commit/push/deployment/private environment change/spend. Final retained build **oPnTtxqDDAJ354MEMqPB3**, Node24.22.0/npm11.19.1. [08D report and acceptance mapping](VOICE_APPLICATION_08D.md). Original Steps02/07/08 and all unmet live gates remain open.
+
+Application VoiceSession now selects a stable native browser WebRTC factory only from a safe server availability boolean under the independent default-false voice gate. Dedicated02D preparation/credential routes authorize owned sources; a typed lifecycle handoff adopts the server manifest run ID while retaining local connection/attempt ownership, without rewriting source/policy/ACKs. Negotiated audio transceiver starts without a microphone; full effective settings/all source ACKs/settled writes precede disabled-track getUserMedia and awaited replaceTrack. Bounded ordered data channel/backpressure/event parsing, transient in-memory SDP credential, expiry/deadline/late-work cleanup, existing interruption/mute/playback/transcript and explicit text switching are retained. Input transcription stays null, with a visible unavailable disclosure.
+
+Minimal authenticated owner/source/request cancellation is added for Stop/restart, with no refunds/revocation. A separate smaller12/visitor,40/shared-network/global-hourly,100lifetime,4active command lane fixes the reproduced inability to cancel a request holding the owner's normal command slot. Existing issuance/preparation quotas and charged late-mint admission are unchanged. Lost/late cancellation retains30sTTL fallback; restart waits for bounded cancellation completion.
+
+All final commands below ran in the retained .env-free isolated copy/dependency junction, empty real keys, unusable loopback DB and outbound denial. Test subprocesses inject only synthetic storage/provider/SDP/native media. 1438 units; smoke18, voice controls208, mode switching156, recovery248; owned voice94+392, owned text417, boundaries186+59, adapter51+378.
+
+| Exact command | UTC start–end (20 October 2026) | Observed | Status / exit | Evidence under artifacts/local/08d |
+| --- | --- | --- | --- | --- |
+| `npm run lint` | 23:15:20.555–23:15:26.859 | No warnings | PASS / 0 | `lint-2026-10-20T23-15-20-555Z.log` |
+| `npm run typecheck` | 23:15:26.861–23:15:31.402 | Prisma/Next/TypeScript PASS | PASS / 0 | `typecheck-2026-10-20T23-15-26-861Z.log` |
+| `npm run test` | 23:15:31.405–23:15:36.001 | 1438 unit tests | PASS / 0 | `test-2026-10-20T23-15-31-405Z.log` |
+| `npm run build` | 23:15:36.003–23:15:42.152 | Production build oPnTtxqDDAJ354MEMqPB3 | PASS / 0 | `build-2026-10-20T23-15-36-003Z.log` |
+| `npm run test:smoke` | 23:15:42.153–23:15:46.737 | 18 browser checks | PASS / 0 | `test-smoke-2026-10-20T23-15-42-153Z.log` |
+| `npm run test:voice-session` | 23:15:46.739–23:17:06.178 | 208 browser checks | PASS / 0 | `test-voice-session-2026-10-20T23-15-46-739Z.log` |
+| `npm run test:mode-switch` | 23:17:06.180–23:18:16.892 | 156 browser checks | PASS / 0 | `test-mode-switch-2026-10-20T23-17-06-180Z.log` |
+| `npm run test:recovery` | 23:18:16.893–23:20:06.000 | 248 browser checks | PASS / 0 | `test-recovery-2026-10-20T23-18-16-893Z.log` |
+| `npm run test:owned-voice` | 23:20:06.002–23:20:23.880 | 94 units + 392 built assertions | PASS / 0 | `test-owned-voice-2026-10-20T23-20-06-002Z.log` |
+| `npm run test:owned-text` | 23:20:23.882–23:20:39.801 | 417 HTTP/browser assertions | PASS / 0 | `test-owned-text-2026-10-20T23-20-23-882Z.log` |
+| `npm run test:boundaries` | 23:20:39.802–23:20:43.595 | 186 units + 59 built HTTP assertions | PASS / 0 | `test-boundaries-2026-10-20T23-20-39-802Z.log` |
+| `npm run test:voice-adapter` | 23:20:43.596–23:21:03.652 | 51 units + 378 built application assertions | PASS / 0 | `test-voice-adapter-2026-10-20T23-20-43-596Z.log` |
+
+Final built application report: **378 assertions**, **26 intercepted SDP exchanges**, **13 client chunks audited**, **0 forbidden outbound requests**. Both source kinds reconstruct fully and show final ACK before media/attachment, with one peer/channel and no eager calls. Every terminal scenario records native listener0, live tracks0, channels/peers/audio released once and no source/media barrier violation. Server group snapshots record entries/timers/pendingMints0. The direct timer regression observes one active source-expiry timer and zero timers after Stop. Full results/counters remain in `built-application.json` and the retained unit/browser logs; they contain no real credentials or microphone audio.
+
+Evidence: ignored `artifacts/local/08d/commands.jsonl`, timestamped logs, reproduction runner/copy, final `built-application.json`, safe server logs, gate-off/ready/denied desktop/390px screenshots, `changed-files.sha256.json` and `audit.json`; nested regressions retain their task directories. All four requested render states were visually inspected. The first recovery run passed247/248 but one loopback page.goto failed with Chromium ERR_NO_BUFFER_SPACE before app loading; retained first-run JSON/logs, then a fresh complete rerun passed. Earlier obsolete factory assertion, missing fixture event IDs, quota-bound harness grouping and the real cancellation-slot defect are recorded in the report; no failed run is relabelled PASS.
+
+No dependency/lockfile/schema/private environment/hosted change. Live provider SDP/schema/grounding, physical microphone/playback/interruption/phone, input transcription policy/model, actual degraded network/BFCache, real SQL and deployed integration remain **NOT_RUN**. Existing02D process-local limits, cookie/final-read races, reusable/mutable provider credentials and lack of revocation/spending guarantee remain. No human setup or further task is started; PM reviews and decides acceptance.
+
 ## PM02D acceptance — 20 October2026UTC
 
 Accepted for offline boundary implementation. All14delivery hashes matched. Reviewed default-independent gate, exact request fields/origin/body bounds, source/visitor revalidation, ticket claiming/provenance/invalidation, admission/deadlines, late-result disposal, safe initial provider configuration and no-store response projection. Fresh PM88focused units passed22:44:29.109–22:44:32.346UTC; fresh built366assertions/4groups passed22:44:48.581–22:45:02.891UTC, both exit0, pinned Node24.22.0 in retained secret-free/network-blocked copy. Build3CZnJ4A2b8LMobw-ksQIe. Logs/results: artifacts/local/02d/pm-focused.log, pm-focused-result.json, pm-built.log, pm-built-result.json. Actual routes used injected storage/provider, not live services; forbiddenNetwork0. No scoped blocker found.

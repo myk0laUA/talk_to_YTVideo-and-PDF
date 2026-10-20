@@ -1,5 +1,5 @@
 import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingTransport, type RunIdentity } from "./priming-controller.ts";
-import { isProviderInput, type AdmissionInput } from "./priming-admission.ts";
+import { isProviderInput, validateProviderAdmission, type AdmissionInput, type ProviderPrimingInput } from "./priming-admission.ts";
 import { isContextLimit, matchesProviderVoicePolicy } from "./priming-provider-policy.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 import { TranscriptStore } from "./transcript.ts";
@@ -27,14 +27,16 @@ export interface VoiceConnection {
 export interface VoiceMedia {
   // Exclusive outgoing microphone audio tracks, initially disabled. Coordinator owns stop().
   tracks: readonly VoiceTrack[];
-  // Synchronous attachment only; must not enable tracks or create more resources.
-  attach(connection: VoiceConnection): void;
+  // Attach to the pre-negotiated sender; never enable tracks or create resources.
+  // Async replaceTrack must settle before microphone input can be enabled.
+  attach(connection: VoiceConnection): void | Promise<void>;
   // Releases non-track bindings/listeners, independently of track.stop().
   release(): void;
 }
 export interface VoiceAdapters {
   // Read-only preparation. No media/transport acquisition or retained credentials.
-  prepare(identity: VoiceIdentity, signal: AbortSignal): Promise<AdmissionInput | { status: "budget_unavailable" }>;
+  prepare(identity: VoiceIdentity, signal: AbortSignal): Promise<AdmissionInput | { status: "budget_unavailable" }
+    | { input: ProviderPrimingInput; serverRunId: string }>;
   connect(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceConnection>;
   acquireMedia(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceMedia>;
 }
@@ -202,8 +204,20 @@ export class VoiceLifecycle {
   private async setup(a: Attempt) {
     let failure: VoiceFailure = "preparation";
     try {
-      const input = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal), this.deadlines.preparationMs);
+      const prepared = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal), this.deadlines.preparationMs);
       if (!this.current(a)) return;
+      // The owned HTTP boundary selects the immutable manifest identity. Keep the local
+      // connection identity for stale-work ownership; never rewrite server source/events.
+      if ("input" in prepared) {
+        if (!validateProviderAdmission(prepared.input) || !matchesProviderVoicePolicy(prepared.input.policy)
+          || prepared.serverRunId !== prepared.input.manifest.runId || !/^[A-Za-z0-9_-]{1,48}$/.test(prepared.serverRunId)) {
+          this.finish(a, "preparation"); return;
+        }
+        a.identity = Object.freeze({ ...a.identity, runId: prepared.serverRunId });
+        this.update({ identity: a.identity });
+        if (!this.current(a)) return;
+      }
+      const input = "input" in prepared ? prepared.input : prepared;
       if (!("manifest" in input)) { this.finish(a, "budget_unavailable"); return; }
       const providerVoice = isProviderInput(input);
       if (isProviderInput(input) && !matchesProviderVoicePolicy(input.policy)) { this.finish(a, "budget_unavailable"); return; }
@@ -279,7 +293,7 @@ export class VoiceLifecycle {
         if (!this.current(a)) { safely(remove); return; }
         a.listeners.push(remove);
       }
-      media.attach(a.connection!);
+      await this.wait(a, Promise.resolve(media.attach(a.connection!)), this.deadlines.mediaMs);
       if (!this.current(a)) return;
       this.update({ microphone: "available", message: "Lifecycle ready. Audio and provider behavior require separate verification." });
       if (this.current(a)) this.applyMute(a);

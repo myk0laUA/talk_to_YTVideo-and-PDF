@@ -3,6 +3,7 @@ import { parseSourceReadConfig } from "../sources/config.ts";
 import type { VisitorConfig } from "../proof/config.ts";
 
 export type VoiceConfig = VisitorConfig & { apiKey: string };
+export const voiceAvailability = (env: Record<string, string | undefined>) => ({ available: parseVoiceConfig(env) !== null });
 /** Independent default-false gate. Neither diagnostic nor text flags grant voice access. */
 export function parseVoiceConfig(env: Record<string, string | undefined>): VoiceConfig | null {
   if (env.OWNED_SOURCE_VOICE_ENABLED !== "true") return null;

@@ -4,6 +4,7 @@ import { PRODUCT_NAME } from "@/shared/product";
 import { parseSourceConfig, parseYoutubeSourceConfig } from "@/server/sources/config";
 import { SourceWorkspace } from "./source-workspace";
 import { textAvailability } from "@/server/text/config";
+import { voiceAvailability } from "@/server/voice/config";
 
 export default async function Home() {
   await connection();
@@ -20,7 +21,7 @@ export default async function Home() {
           <h1>A little more understanding.</h1>
           <p>A place to explore one document or video, one question at a time.</p>
         </div>
-        <SourceWorkspace pdfAvailable={pdfAvailable} youtubeAvailable={youtubeAvailable} textAvailable={textAvailability(process.env).available} />
+        <SourceWorkspace pdfAvailable={pdfAvailable} youtubeAvailable={youtubeAvailable} textAvailable={textAvailability(process.env).available} voiceAvailable={voiceAvailability(process.env).available} />
       </main>
       <footer>One source. Space to understand it.</footer>
     </div>

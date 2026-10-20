@@ -4,6 +4,7 @@ import { createHttpTextController } from "./text-http-controller";
 import { useEffect, useRef, useState } from "react";
 import { useSource } from "./use-source";
 import { ConversationArea } from "./conversation-area";
+import { createBrowserVoiceController } from "./voice-browser-adapters";
 
 // Helpful URL checks only; the existing server remains authoritative.
 function isYoutubeUrl(value: string) {
@@ -27,7 +28,7 @@ function timestamp(seconds: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}${fraction ? `.${fraction}` : ""}`;
 }
 
-export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable = false }: { pdfAvailable: boolean; youtubeAvailable: boolean; textAvailable?: boolean }) {
+export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable = false, voiceAvailable = false }: { pdfAvailable: boolean; youtubeAvailable: boolean; textAvailable?: boolean; voiceAvailable?: boolean }) {
   const { state, importFile, importYoutube, retryRead, remove, cancel, busy } = useSource();
   const input = useRef<HTMLInputElement>(null);
   const videoInput = useRef<HTMLInputElement>(null);
@@ -99,7 +100,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable 
       </section>
       <section className="conversation-panel" aria-labelledby="conversation-heading">
         <h2 id="conversation-heading" tabIndex={-1}>Conversation</h2>
-        <ConversationArea source={known ? { id: known.id, title: known.title } : null} createTextController={textAvailable ? createHttpTextController : undefined} />
+        <ConversationArea source={known ? { id: known.id, title: known.title } : null} createTextController={textAvailable ? createHttpTextController : undefined} createVoiceController={voiceAvailable ? createBrowserVoiceController : undefined} />
       </section>
     </div>
     {expanded && state.content ? <section id="source-text" className="source-reader" aria-labelledby="reader-heading">

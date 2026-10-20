@@ -57,10 +57,46 @@ test("02D only independent voice gate authorizes configuration", () => {
   assert.equal(parseVoiceConfig({ ...env, NEXT_PUBLIC_OPENAI_API_KEY: config.apiKey }), null);
 });
 test("02D disabled handlers are uncached 503 without reads/provider", async () => {
-  const f = fixture(); f.gate(); for (const h of [f.handlers.prepare, f.handlers.credential]) {
+  const f = fixture(); f.gate(); for (const h of [f.handlers.prepare, f.handlers.credential, f.handlers.cancel]) {
     const r = await h(f.request({})); assert.equal(r.status, 503); assert.equal(r.headers.get("cache-control"), "no-store");
   } assert.equal(f.calls, 0); assert.equal(f.reads, 0);
 });
+test("08D cancellation is owner/source/request bound, idempotent, uncached and cannot refund preparation attempts", async () => {
+  const f = fixture(), other = fixture(), p = await f.start();
+  const input = { sourceId: f.row.id, requestId: f.requestId };
+  const foreign = await f.handlers.cancel(other.request(input)); assert.equal(foreign.status, 200);
+  assert.equal(f.registry.resources.entries, 1);
+  for (const altered of [{ ...input, sourceId: randomUUID() }, { ...input, requestId: randomUUID() }]) {
+    assert.equal((await f.handlers.cancel(f.request(altered))).status, 200); assert.equal(f.registry.resources.entries, 1);
+  }
+  for (let n = 0; n < 2; n++) {
+    const r = await f.handlers.cancel(f.request(input)); assert.equal(r.status, 200); assert.equal(r.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await r.json(), { cancelled: true });
+  }
+  clean(f); assert.equal((await f.credential(p)).status, 404); assert.equal((await f.prepare()).status, 409); assert.equal(f.calls, 0);
+  const fresh = await f.handlers.prepare(f.request({ sourceId: f.row.id, requestId: randomUUID() })); assert.equal(fresh.status, 201);
+  // A late Stop for the old request cannot cancel the fresh preparation.
+  assert.equal((await f.handlers.cancel(f.request(input))).status, 200); assert.equal(f.registry.resources.entries, 1);
+});
+test("08D cancelled pending mint remains charged until late result settles; no credential delivered", async () => {
+  const f = fixture(), hold = deferred<{ clientSecret: string; expiresAt: number }>(); f.mint(() => hold.promise);
+  const p = await f.start(), pending = f.credential(p); await until(() => f.calls === 1);
+  assert.equal((await f.handlers.cancel(f.request({ sourceId: f.row.id, requestId: f.requestId }))).status, 200);
+  assert.equal((await pending).status, 404); clean(f, 1);
+  hold.resolve({ clientSecret: "ek_synthetic08d_late", expiresAt: Math.floor(f.now() / 1000) + 60 });
+  await until(() => f.registry.resources.pendingMints === 0); clean(f); assert.equal(f.calls, 1);
+});
+test("08D cancellation interrupts a pending preparation; a late read cannot recreate its ticket", async () => {
+  const f = fixture(), held = deferred<typeof f.row>(); f.read(() => held.promise);
+  const pending = f.prepare(); await until(() => f.reads === 1);
+  assert.equal((await f.handlers.cancel(f.request({ sourceId: f.row.id, requestId: f.requestId }))).status, 200);
+  assert.equal((await pending).status, 404); clean(f); held.resolve(f.row); await delay(1); clean(f); assert.equal(f.calls, 0);
+});
+for (const [label, headers, status] of [["missing visitor", { cookie: "" }, 401], ["foreign origin", { origin: "https://foreign.example" }, 403], ["cross-site", { "sec-fetch-site": "cross-site" }, 403]] as const)
+  test(`08D cancellation ${label} denied without affecting ticket`, async () => {
+    const f = fixture(); await f.start(); const r = await f.handlers.cancel(f.request({ sourceId: f.row.id, requestId: f.requestId }, headers));
+    assert.equal(r.status, status); assert.equal(r.headers.get("cache-control"), "no-store"); assert.equal(f.registry.resources.entries, 1);
+  });
 for (const kind of ["PDF", "YOUTUBE"]) test(`02D ${kind} complete structuredB; one credential; replay denied`, async () => {
   const f = fixture(kind), p = await f.start();
   assert.equal(p.input.policy.model, policy.model); assert.equal(p.input.variant.id, "B"); assert.equal(p.conversationReady, false);
