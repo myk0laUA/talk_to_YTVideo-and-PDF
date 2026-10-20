@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+test("owned-source text routes stay default-disabled and no-store", async ({ request }) => {
+  for (const [method, path] of [["POST", "/api/text-sessions"], ["POST", "/api/text-sessions/question"],
+    ["POST", "/api/text-sessions/stop"], ["GET", "/api/text-sessions/00000000-0000-4000-8000-000000000001/stream"]]) {
+    const response = await request.fetch(path, { method, headers: { origin: "http://127.0.0.1:3100" } });
+    expect(response.status()).toBe(503); expect(response.headers()["cache-control"]).toBe("no-store");
+    expect(response.headers()["set-cookie"]).toBeUndefined();
+    expect(await response.json()).toEqual({ error: "Text conversation unavailable" });
+  }
+});
+
 test("owned PDF routes are disabled with no-store", async ({ request }) => {
   for (const [method, path] of [["POST", "/api/sources/pdf"], ["GET", "/api/sources/00000000-0000-4000-8000-000000000001"], ["DELETE", "/api/sources/00000000-0000-4000-8000-000000000001"]]) {
     const response = await request.fetch(path, { method, headers: { origin: "http://127.0.0.1:3100" } });

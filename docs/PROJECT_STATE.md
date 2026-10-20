@@ -1,5 +1,48 @@
 # Project state — Talk to a Document
 
+## PM10D acceptance — 20October2026UTC
+
+Accepted for local implementation/injected-provider scope. All31delivery hashes matched. Reviewed route ownership/origin/body gates, server-only configuration/socket, actual repository post-commit invalidation, bounded registry/timers/stream queue, request correlation and browser disposal. Fresh pinned Node24.22.0 focused tests `node --conditions=react-server --test tests/unit/owned-text.test.ts tests/unit/text-http-controller.test.ts` PASS27/27 exit0 (`artifacts/local/10d/pm-focused.log`). Fresh built `node --conditions=react-server scripts/verify-owned-text.mjs` in retained secret-free offline-checkout PASS414assertions/seven browser contexts, exit0,started2026-10-20T21:12:11.323Z, build gUL_AQwG6882ff0nt64y7. Log `artifacts/local/10d/pm-integrated.log`; detailed report in offline-checkout/artifacts/local/10d/integrated-results.json. No real provider/database call in PM review. Existing limits and process-local/restart caveats remain material.
+
+No scoped blocker found. Default public gate remains off. Next sole assignment [10E](WORKER_TASK_10E.md) is a delegated, bounded real local application check using actual PDF upload, normal visitor-owned storage and live text provider. PM authorizes process-only local configuration and normal test-owned upload/remove, not provisioning, migration, shared cleanup or deployment. Standing test-credit authorization applies with a US$0.25 allocation, at most2sessions/4responses including a documented corrective rerun. Full Steps02/07/10 remain unfinished pending this and broader gates; voice/public YouTube unchanged.
+
+## Worker10D — proposed READY_FOR_REVIEW, 20 October 2026 UTC
+
+**Task10D implemented locally; PM acceptance pending.** Clean arrival `main` / HEAD `1af940d8ba108a4b71ad96ec3c206a9bbdfe4109`; delivery is dirty and uncommitted, no push/deployment. Final application build **`gUL_AQwG6882ff0nt64y7`**, pinned **Node v24.22.0 / npm11.19.1**. Original Steps02/07/10 remain open. [10D integration report, endpoint/gate policy, acceptance mapping and exact PM live-check runbook](OWNED_TEXT_INTEGRATION_10D.md).
+
+**Behavior/files:** new server-owned text HTTP routes, process registry, Node-only WebSocket adapter/config, safe availability DTO and stable browser proxy wired to existing SourceWorkspace/ConversationArea/TextSession. The existing accepted lifecycle handles complete structured B source ACKs and text turns. Fixed gpt-realtime-2.1-mini/provider policy/512 output/minimal/text-only/disabled truncation. Actual Source repository commit notifications invalidate active sessions after replace/remove, with fresh owned reads after prep/acquisition and at every question. Browser commands cannot override settings, owner or source content. Voice remains unavailable. New default-false **OWNED_SOURCE_TEXT_ENABLED**; no real .env or Render edit, key exposure, dependency/lock/schema/migration change, accounts/retrieval/permanent history or paid calls. Test changes cover strict HTTP boundaries, resource limits, actual repository rollback/commit, response-reader cancellation and queued-ready correlation; all changed paths/hashes are in the manifest.
+
+**Environment:** all ordinary checks ran in an .env-free isolated copy with reused dependency junction, empty real keys, unusable synthetic loopback DB and external-network denial. Built integration injects synthetic Prisma and a local fake socket through explicit test-only Node preloads; browser source acquisition is a seeded fixture, while saved-source reads/new text routes/adapter/lifecycle/UI are actual application code. Seven Chromium browser contexts include both kinds at1440/390px plus partial capacity rejection, withheld source ACK and replacement. Mobile viewport is not physical phone/audio evidence. New focused unit files contain27checks (also included in1,199); no application live provider/database check or fresh install claimed.
+
+| Exact command | UTC start–end (20 October2026) | Observed | Status/exit | Evidence under artifacts/local/10d |
+| --- | --- | --- | --- | --- |
+| `npm run lint` | 2026-10-20T21:08:02.889Z–2026-10-20T21:08:54.633Z | Clean | PASS / 0 | `lint-2026-10-20T21-08-02-889Z.log` |
+| `npm run typecheck` | 2026-10-20T21:01:52.145Z–2026-10-20T21:01:55.720Z | Prisma/Next types + TypeScript | PASS / 0 | `typecheck-2026-10-20T21-01-52-145Z.log` |
+| `npm run test` | 2026-10-20T21:01:55.722Z–2026-10-20T21:01:59.971Z | 1,199/1,199 | PASS / 0 | `test-2026-10-20T21-01-55-722Z.log` |
+| `npm run build` | 2026-10-20T21:01:59.973Z–2026-10-20T21:02:09.495Z | Build gUL_AQwG6882ff0nt64y7 | PASS / 0 | `build-2026-10-20T21-01-59-973Z.log` |
+| `npm run test:owned-text` | 2026-10-20T21:08:58.293Z–2026-10-20T21:09:13.081Z | 414 safe assertions / actual built HTTP + 7 browser contexts | PASS / 0 | `test-owned-text-2026-10-20T21-08-58-293Z.log` |
+| `npm run test:smoke` | 2026-10-20T21:03:43.551Z–2026-10-20T21:03:48.310Z | 18/18 | PASS / 0 | `test-smoke-2026-10-20T21-03-43-551Z.log` |
+| `npm run test:text-session` | 2026-10-20T21:03:48.312Z–2026-10-20T21:04:29.638Z | 108/108 | PASS / 0 | `test-text-session-2026-10-20T21-03-48-312Z.log` |
+| `npm run test:mode-switch` | 2026-10-20T21:04:29.640Z–2026-10-20T21:05:39.372Z | 156/156 | PASS / 0 | `test-mode-switch-2026-10-20T21-04-29-640Z.log` |
+| `npm run test:recovery` | 2026-10-20T21:05:39.373Z–2026-10-20T21:07:28.847Z | 248/248 | PASS / 0 | `test-recovery-2026-10-20T21-05-39-373Z.log` |
+| `npm run test:boundaries` | 2026-10-20T21:07:28.848Z–2026-10-20T21:07:33.513Z | 186 focused units + 59 built HTTP checks | PASS / 0 | `test-boundaries-2026-10-20T21-07-28-848Z.log` |
+
+**Integrated matrix/resources:** gate/key absent, missing/forged/expired/foreign visitor, cross-owner source/session/stream/Stop, malformed IDs/shape/body, Origin/metadata mismatch, settings/source-text injection, replay/overlap/stale commands and duplicate stream denied. Complete source ACK barrier, two streamed answers/follow-up, Stop/partial transcript retention, source/mode changes, real navigation/unmount and context-limit recovery pass. Initial-read cancellation and actual source removal during asynchronous preparation open no stale provider. Full source reconstruction is asserted at the fake-provider boundary for every completed priming run; all page/segment fragments including empty/Unicode/adversarial text are compared to the exact stored fullText.
+
+| Process group | Provider opens/closes | Responses | Exact fidelity checks | Remaining sessions/listeners/provider timers |
+| --- | --- | --- | --- | --- |
+| flow | 10/10 | 16 | 10 | 0/0/0 |
+| denials | 1/1 | 1 | 1 | 0/0/0 |
+| cleanup | 7/7 | 3 | 5 | 0/0/0 |
+| browser-recovery | 3/3 | 2 | 3 | 0/0/0 |
+
+Session entries are empty after terminal paths; separate bounded replay/cancellation keys intentionally remain (max512, no text). Unit checks cover5s attach/2min idle/10min absolute using shortened test bounds, source expiry, abandoned/cancelled stream, bounded slow consumer, one active/pending session/turn,3-Start visitor admission, default20-question cap, Stop-before-Start and noncooperating late acquisition. No automatic paid retry. Production13client chunks exclude server-only WS/key/registry/fixture markers;17route dependency traces exclude test/script/artifact imports. All new endpoints default503/no-store in smoke. Worker visually inspected current390px PDF/context-error and1440px YouTube renders; complete preview/retained turns readable, no CSS redesign.
+
+**Evidence:** ignored `artifacts/local/10d/commands.jsonl` retains all actual invocations, UTC/exits/failures; `final-checks.json`, `identity.json`, `changed-files.sha256.json`, `integrated-results.json`, `visual-review.json`, `integrated-final/` and `regressions/` preserve safe results/screenshots and bundle/resource audit. Isolated copy is retained for review; code inputs match the delivery, documentation updated afterward. Lock/schema/migrations remain identical to HEAD; git diff --check and owned-port rebind audit pass. No commit fabricated for identity.
+
+**Failures/limitations retained:** initial clock typing/lint findings; obsolete no-factory static assertion; blocked fake-provider injection before externalization (network guard prevented real contact); overbroad audit marker hitting old diagnostic proof; premature replacement assertion; pending reader cancellation defect fixed; synthetic snapshot read/reseed fixture race fixed. An existing tablet hydration/scroll-listener failure107/108 passed on unchanged rerun; trace retained separately. Full failure UTC/exits/logs remain in commands.jsonl and the integration report. No new unresolved scoped defect. Process restart loses sessions and requires fresh Start; no cross-instance durability or hard account spend cap. Worker actual application/live, deployed and physical-phone checks **NOT_RUN**; no live activation allocation used. PM must review/accept and run the documented bounded public-PDF application check privately before activation. Do not mark full original Steps02/07/10 complete.
+
+
 ## PM07F correction acceptance — 20October2026UTC
 
 Accepted the corrected bounded live full-source matrix. PM independently inspected all4retained synthetic Q/A review images against committed fixture facts: PDF A/B and YouTube A/B correct for both assigned questions. YouTube/A manual PASS is justified by explicit A6/B4minutes-per-lamp associations and correct recorder; automatic REVIEW_REQUIRED remains preserved. Every case retains2user/2assistant turns after Stop. This is the assigned small-fixture matrix, not full12-question quality, real caption retrieval, overflow, WebRTC or phone proof.

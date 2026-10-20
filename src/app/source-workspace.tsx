@@ -1,4 +1,5 @@
 "use client";
+import { createHttpTextController } from "./text-http-controller";
 
 import { useEffect, useRef, useState } from "react";
 import { useSource } from "./use-source";
@@ -26,7 +27,7 @@ function timestamp(seconds: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}${fraction ? `.${fraction}` : ""}`;
 }
 
-export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailable: boolean; youtubeAvailable: boolean }) {
+export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable = false }: { pdfAvailable: boolean; youtubeAvailable: boolean; textAvailable?: boolean }) {
   const { state, importFile, importYoutube, retryRead, remove, cancel, busy } = useSource();
   const input = useRef<HTMLInputElement>(null);
   const videoInput = useRef<HTMLInputElement>(null);
@@ -98,7 +99,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable }: { pdfAvailab
       </section>
       <section className="conversation-panel" aria-labelledby="conversation-heading">
         <h2 id="conversation-heading" tabIndex={-1}>Conversation</h2>
-        <ConversationArea source={known ? { id: known.id, title: known.title } : null} />
+        <ConversationArea source={known ? { id: known.id, title: known.title } : null} createTextController={textAvailable ? createHttpTextController : undefined} />
       </section>
     </div>
     {expanded && state.content ? <section id="source-text" className="source-reader" aria-labelledby="reader-heading">

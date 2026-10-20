@@ -13,7 +13,7 @@ export default defineConfig({
   ],
   webServer: {
     // Smoke checks must never opt into a real database write or provider request.
-    env: { YOUTUBE_INGESTION_ENABLED: "false", PDF_INGESTION_ENABLED: "false", PROOF_ENABLED: "false", TEXT_PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", CAPTION_PROOF_ENABLED: "false", PDF_PROOF_ENABLED: "false" },
+    env: { OWNED_SOURCE_TEXT_ENABLED: "false", YOUTUBE_INGESTION_ENABLED: "false", PDF_INGESTION_ENABLED: "false", PROOF_ENABLED: "false", TEXT_PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", CAPTION_PROOF_ENABLED: "false", PDF_PROOF_ENABLED: "false" },
     command: "npm run start -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,

@@ -13,7 +13,7 @@ type Props = {
 /** Only the selected child owns a controller. React unmounts the previous child
  * (synchronous dispose) before mounting its replacement. Late adapter returns
  * remain the responsibility of that disposed lifecycle. Factories must remain
- * stable for each owner; there are deliberately no default application adapters. */
+ * stable for each owner. Server availability selects the application text adapter. */
 export function ConversationArea({ source, createVoiceController, createTextController }: Props) {
   const [mode, setMode] = useState<"voice" | "text">("text");
   const id = useId();

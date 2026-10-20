@@ -56,7 +56,8 @@
     "test:voice-session": "node scripts/verify-voice-session.mjs",
     "test:recovery": "node scripts/verify-recovery.mjs",
     "test:boundaries": "node scripts/verify-boundaries.mjs",
-    "test:mode-switch": "node scripts/verify-mode-switch.mjs"
+    "test:mode-switch": "node scripts/verify-mode-switch.mjs",
+    "test:owned-text": "node --conditions=react-server scripts/verify-owned-text.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

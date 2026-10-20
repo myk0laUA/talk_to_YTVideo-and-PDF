@@ -1,4 +1,5 @@
 import "server-only";
+import { sourceChanged } from "./invalidation.ts";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { checkedSource, SourceError, UPLOADED_PDF_PARSER, type SourceRepository, type UploadedSource } from "./service.ts";
 
@@ -30,33 +31,41 @@ export function createSourceRepository(database: () => PrismaClient): SourceRepo
     catch (error) { return storageError(error); }
   };
   return {
-    replace: (value, guard) => transaction(async tx => {
-      guard();
-      const candidate = checkedSource(value);
-      if (candidate.activeSourceOwner !== candidate.ownerSessionHash) throw new SourceError("storage_unavailable");
-      // Unique activeSourceOwner (legacy SQL column) is the cross-process invariant. Concurrent insert/delete
-      // conflicts roll this whole transaction back; no automatic retry of a replacement.
-      await tx.source.deleteMany({ where: identity(value.ownerSessionHash) });
-      guard();
-      const saved = await tx.source.create({ data: { ...candidate, kind: candidate.kind as "PDF" | "YOUTUBE", extractionStatus: "READY" }, select });
-      guard();
-      const result = record(saved);
-      if (result.expiresAt.getTime() <= Date.now()) throw new SourceError("visitor_required");
-      return result;
-    }),
+    replace: async (value, guard) => {
+      const saved = await transaction(async tx => {
+        guard();
+        const candidate = checkedSource(value);
+        if (candidate.activeSourceOwner !== candidate.ownerSessionHash) throw new SourceError("storage_unavailable");
+        // Unique activeSourceOwner (legacy SQL column) is the cross-process invariant. Concurrent insert/delete
+        // conflicts roll this whole transaction back; no automatic retry of a replacement.
+        await tx.source.deleteMany({ where: identity(value.ownerSessionHash) });
+        guard();
+        const saved = await tx.source.create({ data: { ...candidate, kind: candidate.kind as "PDF" | "YOUTUBE", extractionStatus: "READY" }, select });
+        guard();
+        const result = record(saved);
+        if (result.expiresAt.getTime() <= Date.now()) throw new SourceError("visitor_required");
+        return result;
+      });
+      sourceChanged(value.ownerSessionHash);
+      return saved;
+    },
     get: (id, owner, at) => transaction(async tx => {
       const row = await tx.source.findFirst({ where: owned(id, owner, at), select });
       return row ? record(row) : null;
     }),
-    remove: (id, owner, at, guard) => transaction(async tx => {
-      guard();
-      const row = await tx.source.findFirst({ where: owned(id, owner, new Date(Math.max(at.getTime(), Date.now()))), select: { expiresAt: true } });
-      guard();
-      if (!row || row.expiresAt.getTime() <= Date.now()) return false;
-      const result = await tx.source.deleteMany({ where: owned(id, owner, new Date()) });
-      guard();
-      if (row.expiresAt.getTime() <= Date.now()) throw new SourceError("unavailable");
-      return result.count === 1;
-    }),
+    remove: async (id, owner, at, guard) => {
+      const removed = await transaction(async tx => {
+        guard();
+        const row = await tx.source.findFirst({ where: owned(id, owner, new Date(Math.max(at.getTime(), Date.now()))), select: { expiresAt: true } });
+        guard();
+        if (!row || row.expiresAt.getTime() <= Date.now()) return false;
+        const result = await tx.source.deleteMany({ where: owned(id, owner, new Date()) });
+        guard();
+        if (row.expiresAt.getTime() <= Date.now()) throw new SourceError("unavailable");
+        return result.count === 1;
+      });
+      if (removed) sourceChanged(owner);
+      return removed;
+    },
   };
 }

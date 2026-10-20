@@ -1,12 +1,13 @@
 "use client";
 
 import { Component, createRef, useId } from "react";
-import { TEXT_QUESTION_LIMIT, type TextLifecycle, type TextStatus } from "../shared/text-lifecycle";
+import { TEXT_QUESTION_LIMIT, type TextStatus } from "../shared/text-lifecycle";
+import type { TextController } from "../shared/text-relay";
 import { TranscriptView, type TranscriptViewSnapshot } from "./transcript-view";
 import { BrowserSession, browserSessionMessage, initialBrowserSession, type BrowserSessionState } from "./browser-session";
 
 type Source = { id: string; title: string };
-export type TextControllerFactory = (notify: (status: TextStatus) => void) => TextLifecycle;
+export type TextControllerFactory = (notify: (status: TextStatus) => void) => TextController;
 type Props = { source: Source | null; createController?: TextControllerFactory; fieldId: string };
 type State = { browser: BrowserSessionState; status: TextStatus | null; transcript: TranscriptViewSnapshot | null; draft: string; attempted: boolean; session: number; receipt: boolean };
 const active = new Set<TextStatus["phase"]>(["connecting", "priming", "ready", "admitting", "sending", "awaiting-response", "responding"]);
@@ -39,7 +40,7 @@ function message(status: TextStatus | null, available: boolean) {
  * observers before dispose. Start is always a user action, including in StrictMode. */
 class OwnedTextSession extends Component<Props, State> {
   state: State = { browser: initialBrowserSession, status: null, transcript: null, draft: "", attempted: false, session: 0, receipt: false };
-  private controller?: TextLifecycle;
+  private controller?: TextController;
   private browser?: BrowserSession;
   private mounted = false;
   private composing = false;
@@ -117,8 +118,7 @@ class OwnedTextSession extends Component<Props, State> {
   }
 }
 
-/** Without an application-supplied controller this is an unavailable presentation.
- * No provider, positive admission, route or query switch is supplied by production. */
+/** Without a safely available application controller this is an unavailable presentation. */
 export function TextSession({ source, createController }: { source: Source | null; createController?: TextControllerFactory }) {
   const id = useId();
   return <OwnedTextSession key={source?.id ?? "no-source"} source={source} createController={createController} fieldId={`${id}-question`} />;
