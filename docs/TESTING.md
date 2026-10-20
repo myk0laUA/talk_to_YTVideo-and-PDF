@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## Worker07F — bounded full-source live text proof
+
+Proposed **READY_FOR_REVIEW**, with a retained live failure. [07F runbook, commands, allocation and acceptance map](FULL_SOURCE_TEXT_07F.md). `npm run test:full-source` runs12network-blocked harness tests; `npm run probe:full-source` defaults to4scripted PDF/YouTube A/B cases using actual owned preparation/PrimingController/TextLifecycle. Ordinary commands require the existing disposable no-key copy strategy; final1128units/lint/typecheck/default matrix pass. No fresh app build/browser check was needed because application/shared runtime is unchanged.
+
+The explicitly authorized real matrix stopped after PDF/A question2 failed strict numeric match criteria. Actual full preparation/hash, initial/item/final ACKs, effective policy and both response cycles passed; first answer3/3facts matched, follow-up1/3. Equivalent numeric formats were not all accepted by the matcher, so semantic accuracy is unresolved. No retry:1session/2responses,1164input(512cached)/244output tokens, estimated$0.00100752. Remaining3live variants, live overflow and live after-Stop retention are NOT_RUN. Original sanitized report/executed version/command exits live under ignored `artifacts/local/07f/`; final harness fixes failure-summary sampling with an offline regression, without relabelling historical results. Keep allocation lock; PM reviews before further live work. No endpoint, public activation, deployment, real SQL or phone/audio claim.
+
 ## Worker07E — explicit provider-enforced text admission
 
 Proposed **READY_FOR_REVIEW** for07E only. [07E contract, acceptance matrix and integration runbook](PROVIDER_ADMISSION_07E.md). The separate exact-mini/text policy never asserts measured fit; disabled truncation,512output cap, minimal reasoning, no tools/VAD/transcription and complete source/final settings ACKs establish protocol readiness only. Every response may still be rejected for capacity. Default production has no source-session factory and remains unavailable; voice rejects this basis before resources.
