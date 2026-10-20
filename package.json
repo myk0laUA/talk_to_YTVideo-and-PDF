@@ -16,6 +16,8 @@
     "typecheck": "prisma generate && next typegen && tsc --noEmit",
     "test": "node --conditions=react-server --test tests/unit/*.test.ts",
     "test:budget": "node --conditions=react-server --test tests/unit/model-budget.test.ts",
+    "probe:realtime": "node scripts/realtime-probe.ts",
+    "test:realtime-probe": "node --conditions=react-server --test tests/unit/realtime-probe.test.ts",
     "test:context": "node --conditions=react-server --test tests/unit/context.test.ts",
     "test:priming": "node --conditions=react-server --test tests/unit/priming.test.ts",
     "test:lifecycle": "node --conditions=react-server --test tests/unit/voice-lifecycle.test.ts",
