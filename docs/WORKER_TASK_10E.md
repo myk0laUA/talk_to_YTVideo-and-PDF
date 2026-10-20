@@ -1,5 +1,7 @@
 # Task10E — real local application text acceptance check
 
+**PM resume note,20October2026UTC:** initial run stopped before upload/provider acquisition because the local signing secret was absent. PM has now generated and privately saved a valid VISITOR_COOKIE_SECRET in ignored .env; safe evidence is artifacts/local/10e/pm-secret-setup.json. Resume this same task with a fresh visitor and the unused original allowance. Preserve initial failure/audits, establish a new expected private-file baseline without printing values, and distinguish resumed evidence. No further human setup is required. Reuse the retained build if source identity still matches; no build repetition solely for the new runtime secret.
+
 Use prompts/WORKER_PROMPT.md. Sole active worker task under original Steps02/07/10. Estimate60–120minutes. PM owns completion/deployment; this task delegates a narrow local verification, not service provisioning or public activation.
 
 ## Starting evidence and outcome
