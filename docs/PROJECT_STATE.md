@@ -1,5 +1,15 @@
 # Project state — Talk to a Document
 
+## PM07D live result and07E assignment — 20 October 2026 UTC
+
+User explicitly authorized using API credits as needed for project work. This authorization persists for reasonable bounded project tests within the recorded $50 overall ceiling; currently funded balance was $15. Do not repeatedly request per-probe permission within that scope. No authorization to buy more credits, change billing or purchase hosting is inferred. Continue recording usage and bounding calls.
+
+On accepted probe commit `0b0ae76`, PM executed exactly the runbook mini response command (15s,64output tokens,5request units), redirecting sanitized JSON to `artifacts/local/07d/pm-live-mini.json`. External command UTC2026-10-20T19:04:26.4591242Z–19:04:28.5460865Z, exit0; provider-run interval19:04:26.669Z–19:04:28.535Z,1866ms. PASS: one connection/four events/one response/one close,17inbound events, sessionCreated/sessionUpdated/both completed item ACKs true, answerMatches true. Usage64input+20output=84tokens, cache/audio/image0. Reported text-cost estimate US$0.0000864 using07D rates; actual billed charge not yet reconciled. Usage dashboard for Default project/last7days showed no data on immediate inspection; record as pending reporting, not zero charged. No retry.
+
+This establishes a real short synthetic text response over server WebSocket only. No full-source admission, overflow, WebRTC, microphone, phone or public integration proof. Source factories/public flags/deployment unchanged. No new application build.
+
+PM approves a distinct provider-enforced text admission policy as described in [Task07E](WORKER_TASK_07E.md), exact mini model, no local-fit assertion, disabled truncation and fail-closed response errors. Readiness must distinguish full ACKs from provider capacity at generation. Existing unsupported measured-budget and voice paths remain closed. Next single worker assignment is07E implementation/tests only; no live worker calls or public activation. Full original gates remain unfinished.
+
 ## PM07D acceptance — 20 October 2026 UTC
 
 Accepted for offline probe preparation only. Reviewed CLI, bounded protocol coordinator, deferred live adapter, tests and runbook; all10 delivered/input hashes matched before PM edits. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/realtime-probe.test.ts` passed104/104, exit0,2026-10-20T19:03:24.5928283Z–19:03:25.1170264Z. Network was blocked by the test harness. Evidence: `artifacts/local/07d/pm-focused.log`, `pm-review.json`. `git diff --check` exit0 with existing CRLF notices. Worker lint/typecheck/full1056-unit results retain their original isolated-copy context. No application/shared-runtime changes, so no fresh application build required or claimed.
