@@ -1,5 +1,14 @@
 # Testing and evidence — Talk to a Document
 
+**PM08E decision:** offline MIME fix accepted after5hashes and fresh57adapter tests PASS/0. Live success remains unproven. Only WORKER_TASK_08E_CORRECTION.md authorizes one additional corrective attempt under a separate ledger/$0.50 allocation; original08E ledger remains consumed.
+
+## Task08E — partial live check and offline SDP MIME correction
+
+[08E report](VOICE_LIVE_08E.md) distinguishes two real failed sessions from the corrected injected regression. Both real normal PDF uploads/full previews/owned preparation/credentials passed, but SDP HTTP201 text/plain was rejected before native connection/ACK/media. Six focused tests first5/6 then6/6; final lint/typecheck/1444units/build/adapter57+378/owned-voice94+392/mode156/recovery248/boundaries186+59 PASS/0 in the retained secret-free copy. Corrected build **eWWc14UbbAeK9tTjsF5oN**; no corrected live pass.
+
+Task08E allowance is **exhausted:2credential/session attempts,0observed response starts**. Preserve ignored artifacts/local/08e/allowance.json and failed evidence; **do not run a live driver again** under that allocation. Actual usage/billing unavailable, not zero cost. Run offline checks only in the .env-free isolated copy with pinned Node24.22.0/npm11.19.1, empty real keys/unusable DB/network guard. Focused command: `node --conditions=react-server --test --test-name-pattern=08E tests/unit/voice-browser-adapters.test.ts`. Body/SDP/ownership/ACK/media checks stay fail closed. User transcription/human audio/phone/hosted/grounded voice remain NOT_RUN. PM owns any new bounded live assignment.
+
+
 **PM08D acceptance:**19hashes matched; fresh51adapter units and378built checks/32scenarios PASS/exit0, buildoPnTtxqDDAJ354MEMqPB3, injected/offline only. Logs/results under artifacts/local/08d/pm-*. Next08E is bounded live transport verification, with synthetic audio input explicitly distinguished from physical microphone/speaker/phone proof. User transcription remains unavailable.
 
 **PM02D acceptance:**14hashes matched; fresh88focused units and366built assertions/4groups PASS/exit0, build3CZnJ4A2b8LMobw-ksQIe. PM logs/results under artifacts/local/02d/pm-*. No live provider/SQL/media. Next08D tests adapter integration offline; public and physical-device gates remain open.

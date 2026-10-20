@@ -92,6 +92,33 @@ for (const kind of ["PDF", "YOUTUBE"]) test(`08D ${kind} actual boundary → nat
   f.start(); await until(() => f.controller.snapshot.microphone === "available"); assert.equal(f.calls(), 2); await f.stopped();
 });
 
+for (const mime of ["application/sdp", "text/plain; charset=utf-8"]) test(`08E SDP201 ${mime} retains full ACK-before-media and Stop cleanup`, async () => {
+  const f = fixture(), base = f.deps.fetch;
+  f.deps.fetch = async (url, init) => {
+    const response = await base(url, init);
+    return String(url).startsWith("https://api.openai.com")
+      ? new Response(response.body, { status: 201, headers: { "content-type": mime } }) : response;
+  };
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  assert.equal(f.native.counts.remote, 1); assert.equal(f.native.counts.media, 1);
+  assert.equal(f.native.counts.attached, 1); assert.equal(f.native.counts.violations, 0);
+  await f.stopped();
+});
+
+for (const fault of ["html", "malformed-plain", "oversized-plain", "redirect"]) test(`08E SDP ${fault} still fails before remote description/media`, async () => {
+  const f = fixture(), base = f.deps.fetch;
+  f.deps.fetch = async (url, init) => {
+    if (!String(url).startsWith("https://api.openai.com")) return base(url, init);
+    return new Response(fault === "oversized-plain" ? "v=0\r\n" + "x".repeat(100_001) : "not SDP", {
+      status: fault === "redirect" ? 302 : 201,
+      headers: { "content-type": fault === "html" ? "text/html" : "text/plain; charset=utf-8" },
+    });
+  };
+  f.start(); await until(() => f.controller.snapshot.phase === "failed");
+  assert.equal(f.native.counts.remote, 0); assert.equal(f.native.counts.media, 0);
+  await f.stopped();
+});
+
 for (const fault of ["expired", "correlation", "source", "policy", "mode", "manifest", "credential", "credential-expiry", "credential-correlation", "sdp-mime", "sdp-body", "settings", "item", "provider", "context", "malformed", "oversized"]) test(`08D ${fault} fails closed`, async () => {
   const f = fixture("PDF", fault); f.start(); await until(() => f.controller.snapshot.phase === "failed");
   assert.equal(f.native.counts.media, 0); assert.equal(f.controller.canSendQuestions, false);

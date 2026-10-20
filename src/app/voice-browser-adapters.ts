@@ -29,8 +29,10 @@ function wait<T>(pending: Promise<T>, signal: AbortSignal, late: (v: T) => void 
     if (signal.aborted) abort();
   });
 }
-async function read(response: Response, mime: string, limit: number, signal: AbortSignal) {
-  if (!response.ok || response.redirected || response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== mime
+async function read(response: Response, mime: string | readonly string[], limit: number, signal: AbortSignal) {
+  const allowed = typeof mime === "string" ? [mime] : mime;
+  const contentType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
+  if (!response.ok || response.redirected || !contentType || !allowed.includes(contentType)
     || Number(response.headers.get("content-length")) > limit || !response.body) { cancelBody(response); throw unavailable(); }
   const reader = response.body.getReader(), decoder = new TextDecoder("utf-8", { fatal: true });
   let size = 0, text = "";
@@ -230,7 +232,9 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
             credentials: "omit", cache: "no-store", redirect: "error", headers: { Authorization: `Bearer ${clientSecret}`, "Content-Type": "application/sdp" } });
           clientSecret = undefined;
           const response = await wait(pending, abort.signal, cancelBody);
-          const sdp = await read(response, "application/sdp", 100_000, abort.signal);
+          // The real calls endpoint can return SDP as text/plain. Keep the
+          // bounded reader and SDP structure/native parser checks for both types.
+          const sdp = await read(response, ["application/sdp", "text/plain"], 100_000, abort.signal);
           if (credentialExpiry <= deps.now() || !/^v=0\r?\n/.test(sdp) || !/^m=audio /m.test(sdp) || !/^m=application /m.test(sdp)) throw unavailable();
           await wait(pc.setRemoteDescription({ type: "answer", sdp }), abort.signal);
         } finally { clientSecret = undefined; }
