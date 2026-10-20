@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+**PM10E decision:** local functional evidence accepted after three delivery hashes and both stopped-session screenshots were reviewed. Driver commands are not PASS; exhaustive capture of three unavailable response bodies remains open for later hosted verification. No additional live run authorized by the consumed10E allowance. Next07G is isolated voice-policy implementation; live WebRTC/phone/public activation remain NOT_RUN.
+
+## Task10E resumed — actual local live evidence, proposed READY_FOR_REVIEW
+
+[Updated10E report](OWNED_TEXT_APPLICATION_10E.md) records2actual browser application PDF uploads/owned reads/live mini sessions,4correct independently reviewed answers spanning all3pages, explicit Stop retaining2+2/full preview, native media calls0, socket/registry cleanup and normal test-owned DELETE200/read404. Retained build **G9m5MN0-jgjCbrVDV-c7v**, Node24.22.0/npm11.19.1; no product changes. New PM private-file baseline preserved; initial missing-secret evidence remains historical below.
+
+Automation caveat: first driver stalled after normal removal and required explicit closure; second exits1on3unavailable response-body observations. Do not label either live command an automated PASS or claim exhaustive unread-body scanning. Same-origin metadata/28first-run NDJSON snapshots/second-run DOM streaming/5of8nonstream scans and factual/Stop/remove checks are separate evidence. Offline `.env`-free guarded injected-provider diagnostic PASS414/0 reproduced Playwright getResponseBody/closed-target failures without real credentials. No runtime fix.
+
+Default-original-configuration check **PASS11/0,20October21:47:15.783–21:47:17.727UTC**: unavailable Start/Send,4text routes503/no-store, browser/server shutdown, private hashes unchanged. `artifacts/local/10e/resume-final/` holds default screenshot/results, combined usage, preservation/cleanup audit and3doc hashes; exact synthetic Q/A remains only under ignored resumed artifacts. All2sessions/4responses used; **US$0.00172068** estimated, cumulative project **US$0.00810552**, actual billing unreconciled. Never rerun using the consumed allowance. PM decides scoped acceptance/capture follow-up; hosted text/phone/WebRTC/live YouTube/full evaluation stay NOT_RUN. No deployment/new task.
+
 ## Task10E — real local application acceptance (proposed READY_FOR_REVIEW; BLOCKED)
 
 [10E report/acceptance map](OWNED_TEXT_APPLICATION_10E.md) records an actual preflight blocker: existing ignored `.env` has database/key but no `VISITOR_COOKIE_SECRET`, and no inherited secret. Existing-credentials-only authorization does not permit generating/substituting one. No upload/provider session/database operation occurred. Actual parser/storage/preview/ACK/streamed correctness/follow-up/Stop2+2retention/provider cleanup/owned removal are **NOT_RUN**;10D injections and07F protocol evidence do not replace them.
