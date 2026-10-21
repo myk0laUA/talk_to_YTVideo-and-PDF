@@ -1,5 +1,9 @@
 # Project state — Talk to a Document
 
+## PM08O user screenshot result — 21 October 2026 Toronto
+
+User returned one screenshot after requested summary/Stop/quiet/Continue test. Visible transcript shows summary marked interrupted, transcribed Stop, a verbose stop acknowledgement also marked interrupted, another short input rendered in non-English characters, then an answer beginning Continuing the summary. Session appears ready with microphone available and playback enabled. Screenshot does not establish heard stop latency, five-second silence, whether the later input was deliberate Continue, or device/audio route. Do not treat odd ASR text as proof of false input, prompt success, or actual word-level resume. Setup/completion details are collapsed. Await concise human clarification of audible Stop/quiet/Continue behavior before accepting or assigning another correction. No application/deployment/provider change; voice remains enabled on52ba0a0.
+
 ## PM08O deployed — 21 October 2026 Toronto
 
 User explicitly chose deployment and own testing before controlled comparison. Pushed52ba0a013c5693127343915b05a685fc6adefc7a (exit0); Render dep-dbcidpd9fdbs73a1gt9g reports Deploy succeeded / Live, instance nlgfq ready16:57:21 and live16:57:26Toronto. Startup confirms voice/text/PDF enabled, YouTube/proofs disabled. No configuration/secrets/DB changes; hosting remains Free. v6 prompt candidate is deployed, not behaviorally accepted.
