@@ -10,7 +10,7 @@ globalThis.fetch = async (url, init) => {
   counters.calls++;
   const data = JSON.parse(init.body), s = data.session;
   assert.deepEqual(data.expires_after, { anchor: "created_at", seconds: 60 });
-  assert.equal(s.model, "gpt-realtime-2.1-mini"); assert.equal(s.max_output_tokens, 512);
+  assert.equal(s.model, "gpt-realtime-2.1-mini"); assert.equal(s.max_output_tokens, 2048);
   assert.deepEqual(s.output_modalities, ["text"]); assert.deepEqual(s.tools, []);
   assert.equal(s.tool_choice, "none"); assert.equal(s.truncation, "disabled");
   assert.deepEqual(s.audio.input, { turn_detection: null, transcription: null });

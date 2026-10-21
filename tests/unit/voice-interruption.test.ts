@@ -41,6 +41,25 @@ async function ready() {
   return { ...h, r, emit, commands, state, clean };
 }
 
+test("08K output limit preserves safe reason/usage, buffer lifetime and next response", async () => {
+  const h = await ready(); h.emit(created(), buffer("started"));
+  h.emit(event("response.done", { response: { id: "resp_A", status: "incomplete",
+    status_details: { reason: "max_output_tokens", error: { message: "SECRET" } },
+    usage: { output_tokens: 512, output_token_details: { audio_tokens: 420, text_tokens: 92 }, private: "SECRET" }, output: [] } }));
+  assert.deepEqual(h.state().generation.terminal, { reason: "max_output_tokens",
+    usage: { outputTokens: 512, outputAudioTokens: 420, outputTextTokens: 92 } });
+  assert.equal(h.state().generation.state, "incomplete");
+  assert.equal(h.state().interruption.state, "idle");
+  assert.equal(h.state().output.state, "streaming");
+  assert.equal(h.state().issue, "response_incomplete");
+  assert.equal(h.commands().length, 0);
+  h.emit(buffer("stopped"), created("resp_B"), done("resp_B"), buffer("stopped", "resp_B"));
+  assert.equal(h.state().generation.terminal?.reason, "completed");
+  assert.equal(h.state().issue, undefined);
+  assert.equal(h.state().output.state, "stopped");
+  h.clean("08K-output-limit-follow-up");
+});
+
 test("Start→primed→generated→buffer playing→manual interrupt→next response→Stop", async () => {
   const h = await ready(); h.emit(created(), buffer("started"), done());
   assert.equal(h.state().generation.state, "completed"); assert.equal(h.state().output.state, "streaming");

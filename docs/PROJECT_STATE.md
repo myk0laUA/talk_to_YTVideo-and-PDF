@@ -1,5 +1,20 @@
 # Project state — Talk to a Document
 
+## PM08K correction accepted offline —21October2026Toronto
+
+Accepted evidence-backed finite voice output correction, not live completion. All18delivery hashes matched. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-terminal.test.ts tests/unit/provider-voice-admission.test.ts tests/unit/voice-interruption.test.ts tests/unit/transcript.test.ts` PASS267/267 exit0, artifacts/local/08k/pm-focused.log. Reviewed v4/2048 exact shared policy, voice-only concise instructions, closed reason/numeric usage projection, retained incomplete state and unchanged text policy. Worker actual local terminal incomplete/max_output_tokens at512 (204text/308audio) supports the correction; earlier hosted terminal causes were not recorded. No blocking scoped review finding.
+
+Corrected build1UDV80qweD2B0AC55i4kP remains offline verified; complete real summary/follow-up NOT_RUN.08K local session allowance consumed, no additional live call in PM review. Next PM deployment preserving voice enabled, then user reloads/imports PDF and checks one short summary plus follow-up with playback enabled, Stop after two answers or first failure. Inspect safe Answer completion details on incomplete. No active worker task; full hosted completion/audio/phone gates remain open. Last verified hosted application c1eaa38.
+
+## Worker08K — proposed READY_FOR_REVIEW —21October2026Toronto
+
+[Response-completion evidence, exact command table and PM handoff](VOICE_COMPLETION_08K.md). Real local authored-summary response on diagnostic build43pF8mVHCrFXPpflPPxSx reproduced **incomplete/max_output_tokens**, exactly512 output tokens (204text/308audio),789input/1301total. One session/one response, stopped immediately; actual earlier hosted reasons remain unobserved. Voice-only policy now v4/2048 plus concise spoken-answer guidance. Safe closed reason/numeric usage projection and retained per-turn feedback preserve incomplete text and separate cancellation/playback. Text policy remains v1/512; full context, ACK-before-mic, ownership/expiry and08J timing preserved.
+
+Arrival clean main HEAD98b58e02075d74125bfac63aaaca580278a5d15f; dirty/uncommitted delivery. Final offline build **1UDV80qweD2B0AC55i4kP**, Node24.22.0/npm11.19.1 in .env-free/network-denied artifacts/local/08k/offline-checkout. Final lint/typecheck/1572units/build PASS; voice-policy128,priming75,interruption64,transcript65,adapter107units+526built,owned-voice122units+392built,owned-text417,transcript-view36 PASS/exit0. Red-before failures prove missing terminal projection and512cap mismatch; retained development import/count/typecheck failures and first browser filechooser timeout documented. Exact UTC/commands/exits in artifacts/local/08k/commands.jsonl; delivery hashes alongside.
+
+Local live06:32:07.961–06:32:32.887UTC used native Chromium WebRTC, real owned PostgreSQL/authored PDF and synthetic speech, no physical-audio claim. New08K allocation consumed1session/1response of max1/2/120s/$0.50; conservative preflight$0.34992, observed response+ASR estimate$0.00803175, actual bill unknown. Stop released native resources, fixture removal/read404, browser/service closed. No retry or remaining-session authorization; original budgets preserved. Corrected real summary plus follow-up **NOT_RUN** because the sole session was used to diagnose. No deployment/public flag/.env change. PM reviews/deploys, then user reloads and checks one short summary/follow-up with playback enabled. Public voice remains enabled; hosted complete conversation/phone gates remain open.
+
+
 ## PM08K assignment —21October2026Toronto
 
 User reports audible partial answers; latest screenshot shows ready voice session/playback enabled, two incomplete assistant turns cut mid-thought. Mic muted at capture; this does not establish cancellation cause. Earlier screenshot/user report establishes first hosted response and later source-related partial text, but sustained complete response/audio gate remains open. Previous401/source expiry and ticket_future failures remain distinct.

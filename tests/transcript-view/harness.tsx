@@ -58,6 +58,7 @@ function Harness() {
     if (name === "Provisional order") { start(); event("conversation.item.added", { previous_item_id: "unknown", item: { id: "user_A", type: "message", role: "user", content: [{ type: "input_text", text: "Earlier turn has not arrived." }] } }); }
     if (name === "Conflicted order") event("conversation.item.added", { previous_item_id: "different_predecessor", item: { id: "user_A", type: "message", role: "user", content: [] } });
     if (name === "Failed answer") event("response.done", { response: { id: "response_A", status: "failed", output: [] } });
+    if (name === "Output limit") event("response.done", { response: { id: "response_A", status: "incomplete", status_details: { reason: "max_output_tokens", error: { message: "PRIVATE_08K" } }, usage: { output_tokens: 512, output_token_details: { audio_tokens: 420, text_tokens: 92 } }, output: [] } });
     if (name === "New session") start();
     if (name === "Replace source") {
       store.current.reset(); setSource(s => s === "A" ? "B" : "A"); setViewKey(`reset_${++sequence.current}`);
@@ -65,7 +66,7 @@ function Harness() {
     if (name === "Unavailable") { store.current.reset(); setAvailable(false); setViewKey(`unavailable_${++sequence.current}`); }
     setSnapshot(store.current.snapshot); setRevision(r => r + 1);
   }
-  const actions = ["Begin draft", "Append words", "Finalize", "Late question", "Long answer", "Append long", "Long final", "Next turn", "Second part", "Interrupt", "Stop", "Transcription failure", "Limit", "Provisional order", "Conflicted order", "Failed answer", "New session", "Replace source", "Unavailable"];
+  const actions = ["Begin draft", "Append words", "Finalize", "Late question", "Long answer", "Append long", "Long final", "Next turn", "Second part", "Interrupt", "Stop", "Transcription failure", "Limit", "Provisional order", "Conflicted order", "Failed answer", "Output limit", "New session", "Replace source", "Unavailable"];
   return <div className="app-shell">
     <header className="fixture-heading"><h1>Isolated transcript presentation fixture</h1><p>Loopback only. Synthetic events; no microphone, transport or provider.</p></header>
     <details><summary>Scripted fixture controls</summary><div className="proof-controls">{actions.map(name => <button key={name} onClick={() => action(name)}>{name}</button>)}</div></details>

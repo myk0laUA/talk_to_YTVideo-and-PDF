@@ -253,6 +253,10 @@ for (const limit of ["entries", "replayEntries"] as const) test(`02D bounded ${l
 
 const upstream = (session: unknown = initialVoiceSession, value: unknown = "ek_synthetic_provider02d", expires_at = Math.floor(Date.now() / 1000) + 60) =>
   Response.json({ value, expires_at, session });
+for (const cap of [512, 2047, 2049, "inf"]) test(`08K issuance rejects stale/wrong/unlimited effective cap ${cap}`, async () => {
+  const mint = createVoiceMint(async () => upstream({ ...initialVoiceSession, max_output_tokens: cap }));
+  await assert.rejects(mint({ apiKey: config.apiKey, safetyIdentifier: "x", signal: new AbortController().signal }), /^Error: Voice provider unavailable$/);
+});
 test("02D provider exact official request; source-free initial barrier and safe DTO", async () => {
   let count = 0;
   const mint = createVoiceMint(async (url, init) => {

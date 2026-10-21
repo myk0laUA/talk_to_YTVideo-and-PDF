@@ -18,8 +18,41 @@ import { SyntheticSourceDatabase } from "../sources/database.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { FakeClock, ScriptedTransport, flush, start, validateOutbound } from "../priming/harness.ts";
 import { resources, deferred } from "../priming/voice-harness.ts";
+import { initialVoiceSession } from "../../src/server/voice/provider.ts";
 
 const evidence: unknown[] = [];
+
+test("08K finite voice output headroom agrees across issuance and both priming stages", async () => {
+  assert.equal(policy.maxOutputTokens, 2048);
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v4");
+  assert.equal(initialVoiceSession.max_output_tokens, 2048);
+  const h = await input();
+  for (const event of [h.projection.manifest.configure, h.projection.manifest.finalize]) {
+    assert.equal(event.session.max_output_tokens, 2048);
+    assert.match(event.session.instructions, /two to four short sentences/);
+  }
+  assert.equal(PROVIDER_TEXT_POLICY.maxOutputTokens, 512);
+  assert.equal(PROVIDER_TEXT_POLICY.policyVersion, "provider-text-full-source-2026-10-20-v1");
+});
+
+test("08K stale v3 preparation rejects before source access; altered concise instruction fails admission", async () => {
+  const s = await source();
+  assert.equal((await s.prepare({ ...s.args, policyVersion: "provider-voice-full-source-2026-10-21-v3" })).status, "unavailable");
+  assert.equal(s.db.reads, 0);
+  const p = structuredClone((await input()).projection);
+  p.manifest.finalize.session.instructions = p.manifest.finalize.session.instructions.replace(policy.answerInstructions, "");
+  assert.equal(validateProviderAdmission(p), false);
+});
+
+for (const stage of ["initial", "final"] as const) for (const cap of [512, 2047, 2049, "inf"] as const) {
+  test(`08K ${stage} effective output cap ${cap} rejects before microphone`, async () => {
+    const h = await lifecycle(); await h.begin();
+    if (stage === "final") { await h.initial(); await h.items(); }
+    const ack = h.transport.config(); Object.assign(ack.session, { max_output_tokens: cap });
+    h.transport.emit(ack); await flush();
+    assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0); h.clean();
+  });
+}
 after(async () => {
   if (process.env.PROVIDER_VOICE_EVIDENCE_PATH) await writeFile(process.env.PROVIDER_VOICE_EVIDENCE_PATH,
     JSON.stringify({ environment: "07G local synthetic storage, scripted provider, fake media; no live WebRTC", evidence }, null, 2));
@@ -44,7 +77,7 @@ class VoiceTransport extends ScriptedTransport {
   override send(raw: string) {
     assert.ok(this.open); const e: (typeof this.outbound)[number] = JSON.parse(raw);
     if (e.type === "session.update") {
-      assert.equal(e.session.max_output_tokens, 512); assert.equal(e.session.tool_choice, "none");
+      assert.equal(e.session.max_output_tokens, 2048); assert.equal(e.session.tool_choice, "none");
       assert.equal(e.session.truncation, "disabled"); assert.deepEqual(e.session.tools, []);
       assert.deepEqual(e.session.audio.input.transcription, e.event_id.endsWith("_final") ? policy.transcription : null); assert.deepEqual(e.session.audio.output, { voice: "marin" });
       assert.equal("reasoning" in e.session, false);
@@ -289,7 +322,7 @@ test("09C provider empty transcription defaults preserve the exact model barrier
 
 test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
   const h = await lifecycle(); await h.begin();
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v3");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v4");
   assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
   assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
     { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600 });

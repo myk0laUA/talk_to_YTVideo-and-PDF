@@ -10,6 +10,18 @@ async function act(page: Page, name: string) {
   await expect(page.getByLabel("Fixture revision")).not.toHaveText(before!);
 }
 const turns = (page: Page) => page.getByRole("list", { name: "Conversation turns" }).getByRole("listitem");
+
+test("08K output limit preserves partial text and exposes only safe completion details", async ({ page }, info) => {
+  await act(page, "Begin draft"); await act(page, "Output limit"); await act(page, "Stop");
+  await expect(page.getByText("Answer incomplete. Any text received stays below.", { exact: true })).toBeVisible();
+  await expect(page.getByText("The answer reached its output limit. Ask for a shorter answer or a specific part.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Draft answer", { exact: true })).toBeVisible();
+  await page.getByText("Answer completion details", { exact: true }).click();
+  await expect(page.getByText("Reason: max_output_tokens", { exact: true })).toBeVisible();
+  await expect(page.getByText("Output tokens: 512; audio: 420; text: 92.", { exact: true })).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("PRIVATE_08K"); await fits(page);
+  await capture(page, info, "08k-output-limit");
+});
 async function capture(page: Page, info: TestInfo, name: string) {
   await mkdir("artifacts/local/09b/screenshots", { recursive: true });
   await page.screenshot({ path: `artifacts/local/09b/screenshots/${info.project.name}-${name}.png`, fullPage: true });

@@ -48,6 +48,19 @@ function exchange(overrides: Partial<TranscriptLimits> = {}) {
   const h = store(overrides); h.emit(user(), created(), output(), link()); return h;
 }
 
+test("08K incomplete terminal reason retains partial text through late text final and Stop", () => {
+  const h = exchange(); h.emit(text("delta", "Partial summary"));
+  h.emit(event("response.done", { response: { id: "response_A", status: "incomplete",
+    status_details: { reason: "max_output_tokens", error: { message: "PRIVATE" } },
+    usage: { output_tokens: 512 }, output: [] } }));
+  h.emit(text("done", "Partial summary"), done("completed"));
+  h.s.stop(); const turn = h.snap().turns[1];
+  assert.equal(turn.generation, "incomplete");
+  assert.equal(turn.terminal?.reason, "max_output_tokens");
+  assert.equal(turn.parts[0].text, "Partial summary");
+  assert.doesNotMatch(JSON.stringify(h.snap()), /PRIVATE/);
+});
+
 test("09C real ASR shapes preserve two content identities, failure drafts and stopped/stale isolation", () => {
   const h = exchange();
   const delta = input("delta", "partial speech"); h.emit(delta, delta);
@@ -306,5 +319,8 @@ test("Stop from transcript observer detaches the one listener before late conten
 });
 test("emitted transcript module is browser-safe and adds no persistence/provider/command dependencies", async () => {
   const source = await readFile("src/shared/transcript.ts", "utf8"), output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-  assert.doesNotMatch(output, /^import\s|fetch\(|WebSocket|RTCPeerConnection|getUserMedia|process\.env|localStorage|sessionStorage|\.send\(|setTimeout|innerHTML/m);
+  const dependency = 'import { projectResponseTerminal } from "./response-terminal.ts";';
+  assert.ok(output.includes(dependency));
+  const terminal = ts.transpileModule(await readFile("src/shared/response-terminal.ts", "utf8"), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+  assert.doesNotMatch(output.replace(dependency, "") + terminal, /^import\s|fetch\(|WebSocket|RTCPeerConnection|getUserMedia|process\.env|localStorage|sessionStorage|\.send\(|setTimeout|innerHTML/m);
 });

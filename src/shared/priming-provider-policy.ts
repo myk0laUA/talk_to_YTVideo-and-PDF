@@ -5,7 +5,8 @@ export const PROVIDER_TEXT_POLICY = Object.freeze({ basis: "provider_enforced", 
 export type ProviderTextPolicy = typeof PROVIDER_TEXT_POLICY;
 /** Separate voice opt-in. No tokenizer/framing binding or pre-admitted capacity. */
 export const PROVIDER_VOICE_POLICY = Object.freeze({ basis: "provider_enforced", model: "gpt-realtime-2.1-mini",
-  policyVersion: "provider-voice-full-source-2026-10-21-v3", mode: "voice", maxOutputTokens: 512, silenceDurationMs: 600,
+  policyVersion: "provider-voice-full-source-2026-10-21-v4", mode: "voice", maxOutputTokens: 2048, silenceDurationMs: 600,
+  answerInstructions: "Keep spoken answers concise: normally two to four short sentences, at most about 80 words. Finish the main point before offering details. For broad summaries, cover the key points briefly and let the user ask follow-up questions.",
   voice: "marin", transcription: Object.freeze({ model: "gpt-4o-mini-transcribe" }), capacity: "checked_at_each_response" } as const);
 export type ProviderVoicePolicy = typeof PROVIDER_VOICE_POLICY;
 export type ProviderPolicy = ProviderTextPolicy | ProviderVoicePolicy;

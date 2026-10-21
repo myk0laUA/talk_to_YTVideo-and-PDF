@@ -2,11 +2,12 @@
 
 import { Component, createRef, useId } from "react";
 import type { TranscriptSnapshot } from "../shared/transcript";
+import { responseTerminalMessage } from "../shared/response-terminal";
 
 type Turn = TranscriptSnapshot["turns"][number];
 /** Display facts only. No identity, event envelope, counts, transport or commands. */
 export type TranscriptViewSnapshot = Pick<TranscriptSnapshot, "phase" | "incomplete" | "ordering"> & {
-  turns: readonly (Pick<Turn, "itemId" | "role" | "ordering" | "generation" | "interrupted" | "playback" | "parts">)[];
+  turns: readonly (Pick<Turn, "itemId" | "role" | "ordering" | "generation" | "terminal" | "interrupted" | "playback" | "parts">)[];
 };
 type Props = { snapshot: TranscriptViewSnapshot | null; headingId: string; helpId: string };
 type Anchor = { element?: Element; top: number; follow: boolean; scrollY: number };
@@ -95,6 +96,11 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
               {turn.interrupted ? <p className="note transcript-notice">Interrupted. Words shown may include speech you did not hear.</p> : null}
               {turn.playback === "unconfirmed" && !turn.interrupted ? <p className="note">Generated speech text; playback is unconfirmed.</p> : null}
               {turn.generation === "failed" || turn.generation === "incomplete" || turn.generation === "cancelled" ? <p className="note transcript-notice">{turn.generation === "failed" ? "Answer failed." : turn.generation === "cancelled" ? "Answer cancelled." : "Answer incomplete."} Any text received stays below.</p> : null}
+              {responseTerminalMessage(turn.terminal) ? <p className="note transcript-notice">{responseTerminalMessage(turn.terminal)}</p> : null}
+              {turn.terminal ? <details className="note"><summary>Answer completion details</summary>
+                <p>Reason: {turn.terminal.reason}</p>
+                <p>Output tokens: {turn.terminal.usage.outputTokens ?? "unavailable"}; audio: {turn.terminal.usage.outputAudioTokens ?? "unavailable"}; text: {turn.terminal.usage.outputTextTokens ?? "unavailable"}.</p>
+              </details> : null}
               {!turn.parts.length ? <p className="note">{snapshot?.phase === "active" ? "Waiting for text…" : "No text was received for this turn."}</p> : null}
               {turn.parts.map(part => <div key={`${part.index}:${part.kind}`} className="transcript-part" data-reading-anchor="part">
                 <p className="transcript-text" dir="auto">{part.text}</p>

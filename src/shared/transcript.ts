@@ -1,5 +1,6 @@
 import type { RunIdentity } from "./priming-controller.ts";
 import type { ResponseState } from "./voice-response.ts";
+import { projectResponseTerminal, type ResponseTerminal } from "./response-terminal.ts";
 
 export type TranscriptIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 type Kind = "input_audio" | "input_text" | "output_audio" | "output_text";
@@ -7,7 +8,7 @@ type Terminal = "generating" | "completed" | "cancelled" | "failed" | "incomplet
 type Part = { index: number; kind: Kind; text: string; rank: number; state: "draft" | "final" | "transcription_failed" | "unfinished" };
 type Turn = { itemId: string; role: "user" | "assistant"; previous?: string | null;
   responseId?: string; outputIndex?: number; parts: Map<number, Part>; finalRank: number; conflict: boolean; established: boolean };
-type Response = { state: Terminal; done: boolean; interrupted: boolean; interruption: ResponseState["interruption"]["state"]; output: ResponseState["output"]["state"] };
+type Response = { state: Terminal; done: boolean; terminal?: ResponseTerminal; interrupted: boolean; interruption: ResponseState["interruption"]["state"]; output: ResponseState["output"]["state"] };
 export type TranscriptLimits = { items: number; partsPerItem: number; partCharacters: number; totalCharacters: number;
   eventIds: number; responses: number; pending: number };
 export const TRANSCRIPT_LIMITS: Readonly<TranscriptLimits> = Object.freeze({ items: 128, partsPerItem: 16,
@@ -19,7 +20,7 @@ export type TranscriptSnapshot = Readonly<{
   counts: Readonly<{ items: number; parts: number; characters: number; eventIds: number; responses: number; pending: number }>;
   turns: readonly Readonly<{ itemId: string; role: "user" | "assistant"; responseId?: string; outputIndex?: number;
     previousItemId?: string | null; ordering: "established" | "provisional" | "conflict";
-    generation?: Terminal; interrupted: boolean; interruption?: Response["interruption"]; playback: "unconfirmed" | "not_applicable";
+    generation?: Terminal; terminal?: ResponseTerminal; interrupted: boolean; interruption?: Response["interruption"]; playback: "unconfirmed" | "not_applicable";
     serverOutput?: Response["output"]; parts: readonly Readonly<{ index: number; kind: Kind; text: string; state: Part["state"] }>[] }>[];
 }>;
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -76,7 +77,7 @@ export class TranscriptStore {
       const parts = [...t.parts.values()].sort((a, b) => a.index - b.index).map(p => Object.freeze({ index: p.index, kind: p.kind, text: p.text, state: p.state }));
       return Object.freeze({ itemId, role: t.role, responseId: t.responseId, outputIndex: t.outputIndex, previousItemId: t.previous,
         ordering: t.conflict ? "conflict" as const : t.established ? "established" as const : "provisional" as const,
-        generation: r?.state, interrupted: r?.interrupted ?? false, interruption: r?.interruption,
+        generation: r?.state, terminal: r?.terminal, interrupted: r?.interrupted ?? false, interruption: r?.interruption,
         playback: parts.some(p => p.kind === "output_audio") ? "unconfirmed" as const : "not_applicable" as const,
         serverOutput: r?.output, parts: Object.freeze(parts) });
     });
@@ -200,6 +201,7 @@ export class TranscriptStore {
         const response = this.responses.get(r.id);
         if (!response || response.done || r.conversation_id !== undefined && r.conversation_id !== this.conversationId || !terminal(r.status)) return;
         response.done = true;
+        response.terminal = projectResponseTerminal(r);
         if (response.state === "generating") response.state = r.status;
         if (!Array.isArray(r.output)) return;
         if (r.output.length > this.limits.items) { this.overflow("items"); return; }

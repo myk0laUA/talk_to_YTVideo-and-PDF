@@ -1,5 +1,18 @@
 # Testing and evidence — Talk to a Document
 
+## PM08K correction accepted offline —21October2026Toronto
+
+Accepted evidence-backed finite voice output correction, not live completion. All18delivery hashes matched. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-terminal.test.ts tests/unit/provider-voice-admission.test.ts tests/unit/voice-interruption.test.ts tests/unit/transcript.test.ts` PASS267/267 exit0, artifacts/local/08k/pm-focused.log. Reviewed v4/2048 exact shared policy, voice-only concise instructions, closed reason/numeric usage projection, retained incomplete state and unchanged text policy. Worker actual local terminal incomplete/max_output_tokens at512 (204text/308audio) supports the correction; earlier hosted terminal causes were not recorded. No blocking scoped review finding.
+
+Corrected build1UDV80qweD2B0AC55i4kP remains offline verified; complete real summary/follow-up NOT_RUN.08K local session allowance consumed, no additional live call in PM review. Next PM deployment preserving voice enabled, then user reloads/imports PDF and checks one short summary plus follow-up with playback enabled, Stop after two answers or first failure. Inspect safe Answer completion details on incomplete. No active worker task; full hosted completion/audio/phone gates remain open. Last verified hosted application c1eaa38.
+
+## Task08K — terminal reason and finite voice response limit
+
+See [08K completion report](VOICE_COMPLETION_08K.md). Final offline build1UDV80qweD2B0AC55i4kP: pinned Node24.22.0/npm11.19.1, .env-free/network-denied harness artifacts/local/08k/verify.mjs. Run focused provider-voice-admission tests, test:priming, test:interruption, test:transcript, lint, typecheck, test, build, then test:voice-adapter, test:owned-voice, test:owned-text and test:transcript-view. All final exits0; exact counts/UTC/commands and retained failures in the report/commands.jsonl. New tests cover closed reasons/numeric fields, retained incomplete text after Stop/late final, separate buffer completion, v4/2048 issuance and both ACKs, stale/wrong/unlimited caps and voice-only concise instructions. Text remains512.
+
+Diagnostic real local build43pF8mVHCrFXPpflPPxSx reproduced incomplete/max_output_tokens with512output (204text/308audio). Authored PDF and synthetic speech, not phone/audio proof. One08K session/one response consumed; no live rerun under this allocation. Corrected cap real summary+follow-up NOT_RUN. Safe reason/usage and cleanup evidence: artifacts/local/08k/live-results.json, cost.json, allowance.json, terminal-390.png. PM deploys; user reloads and tries short summary/follow-up, reporting expanded completion reason/counts on incomplete results. No automatic continuation, .env or hosted flag edits.
+
+
 ## PM08K assignment —21October2026Toronto
 
 User reports audible partial answers; latest screenshot shows ready voice session/playback enabled, two incomplete assistant turns cut mid-thought. Mic muted at capture; this does not establish cancellation cause. Earlier screenshot/user report establishes first hosted response and later source-related partial text, but sustained complete response/audio gate remains open. Previous401/source expiry and ticket_future failures remain distinct.

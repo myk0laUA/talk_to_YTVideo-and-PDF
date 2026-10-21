@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08K acceptance:**local512-token truncation reproduced; v4/2048 correction accepted offline,18hashes/fresh267checks pass. Next PM deployment then real summary/follow-up verification. Voice stays enabled; no active worker task.
+
 **Current PM08K:**user now receives audible but incomplete answers. Sole worker task [08K](docs/WORKER_TASK_08K.md) investigates provider terminal reason/512-token voice cap and corrects evidenced truncation. Voice stays enabled; complete hosted conversation still unverified.
 
 **Current PM08J acceptance:**clock-skew correction accepted offline;11hashes/fresh288tests pass. Next PM deployment then Chrome reload/check; no active worker task. Voice stays enabled. Hosted repair/audio still unverified.

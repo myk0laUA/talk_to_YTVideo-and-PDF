@@ -1,10 +1,11 @@
 import type { PrimingClock, PrimingTransport } from "./priming-controller.ts";
+import { projectResponseTerminal, type ResponseTerminal } from "./response-terminal.ts";
 
 export type InterruptEvent = Readonly<{ type: "response.cancel"; event_id: string; response_id: string }>
   | Readonly<{ type: "output_audio_buffer.clear"; event_id: string }>;
 export type Generation = "idle" | "generating" | "completed" | "cancelled" | "failed" | "incomplete";
 export type ResponseState = Readonly<{
-  generation: Readonly<{ state: Generation; responseId?: string }>;
+  generation: Readonly<{ state: Generation; responseId?: string; terminal?: ResponseTerminal }>;
   input: Readonly<{ state: "idle" | "speaking" | "stopped"; itemId?: string }>;
   output: Readonly<{ state: "idle" | "streaming" | "stopped" | "cleared" | "unknown"; responseId?: string }>;
   interruption: Readonly<{ state: "idle" | "pending" | "confirmed" | "failed"; responseId?: string;
@@ -176,7 +177,7 @@ export class VoiceResponseController {
         const state = e.response.status;
         if (!["completed", "cancelled", "failed", "incomplete"].includes(state as string)) return;
         if (responseId === g.responseId && g.state === "generating") {
-          this.update({ generation: Object.freeze({ state: state as Generation, responseId }),
+          this.update({ generation: Object.freeze({ state: state as Generation, responseId, terminal: projectResponseTerminal(e.response) }),
             ...(state === "failed" ? { issue: "response_failed" } : state === "incomplete" ? { issue: "response_incomplete" } : {}) });
         }
         const p = this.pending;
