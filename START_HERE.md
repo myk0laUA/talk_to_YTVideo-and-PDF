@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08N:** headphone test still reports unintended interruption/new response. Sole worker task [08N](docs/WORKER_TASK_08N.md) isolates audio/event flow; no further threshold tuning. Voice stays enabled on74ec316; physical acceptance remains open.
+
 **Current PM08M deployed:**74ec316 is Live; readiness passes, voice stays enabled. Next affected-iPhone quiet listening and deliberate interruption/follow-up comparison. Acoustic improvement and actual provider ACK pending; no active worker task. Older summaries below are historical.
 
 **Current PM08M acceptance:** v5/0.6 activation candidate accepted offline;11hashes/fresh407checks pass. Next PM deployment and iPhone/Chrome comparison; acoustic improvement and live ACK unverified. No active worker task. Voice stays enabled.

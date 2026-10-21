@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## PM08N assignment —21October2026Toronto
+
+Clarification: earlier stop/continue attempt used speaker, not headphones. New user test explicitly used headphones, generally worked but still produced an unexpected interruption/renewed response. Screenshots show summary, Stop/acknowledgement, distinct follow-up, interrupted response starting Based on, user transcript Based on, then another answer. This is not proof of loopback or actual user speech; screenshot ordering is not protocol timing. Headphone comparison does not establish a clean acoustic result.
+
+Sole worker task08N (WORKER_TASK_08N.md) isolates native track wiring, interruption/automatic-response sequence and transcript ordering; narrow reproduced correction or safe bounded diagnostic fallback. No further blind sensitivity tuning. Deployed74ec316 remains enabled. Offline worker scope, no paid/provider or host changes this PM turn. Full natural interruption/follow-up acceptance remains open.
+
+
 ## PM post08M interruption-follow-up report —21October2026Toronto
 
 User reports the suggested comparison worked, but interruption is followed by the assistant starting its summary again. Four screenshots show an interrupted summary, a similar new summary after an empty displayed user turn, then a transcribed Stop with an acknowledgement and a later unexpected-language transcript followed by continuation. Exact spoken interruption, headset use and event sequence are awaiting clarification. Do not infer a session reset, replay, transcription-caused response or proof of acoustic root cause from screenshots.
