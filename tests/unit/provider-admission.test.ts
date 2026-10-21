@@ -59,7 +59,7 @@ function prime(projection: ProviderPrimingInput) {
 for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"] as const) {
   test(`07E ${kind}/${variant}: full reconstruction, server provenance, default protocol priming without fit claim`, async () => {
     const s = await input(kind, variant), p = s.projection, m = p.manifest;
-    const fragments = m.items.map(i => JSON.parse(i.item.content[0].text));
+    const fragments = m.items.map(i => JSON.parse(i.item.content[0].text)).flatMap(data => data.fragments ?? [data]);
     const sections = Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
     assert.equal(sections.join(p.variant.source.separator), s.row.fullText);
     assert.equal(s.db.reads, 3); assert.equal(s.db.creates, 1); assert.equal(s.db.deletes, 1); // Initial replace transaction only.

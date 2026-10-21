@@ -118,7 +118,7 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
         if (result.status !== "prepared") throw new Error("preparation");
         prepared = result.input;
         report.provenance = matchesProviderPreparation(prepared, args, Date.now());
-        const fragments = prepared.manifest.items.map(e => JSON.parse(e.item.content[0].text));
+        const fragments = prepared.manifest.items.map(e => JSON.parse(e.item.content[0].text)).flatMap(data => data.fragments ?? [data]);
         const sections = Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
         const full = sections.join(prepared.variant.source.separator);
         report.sourceSha256Utf16 = hash(row.fullText); report.reconstructedSha256Utf16 = hash(full);

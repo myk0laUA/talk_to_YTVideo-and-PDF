@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03E:** local YouTube setup accepted after lossless packing (11hashes/fresh169checks; ready~1.5s). Answers complete but citations inaccurate. Sole task [03E](docs/WORKER_TASK_03E.md) corrects and verifies text source references. No deployment; public voice enabled, YouTube disabled. Older summaries historical.
+
 **Current PM03D correction2:** bounded text delivery accepted (6hashes/fresh184checks). Full local grounding still blocked at321/428ACKs. Sole task [03D correction2](docs/WORKER_TASK_03D_CORRECTION_2.md) identifies first terminal cause with lightweight timing and resolves the evidenced readiness failure. Voice stays enabled; no deployment.
 
 **Current PM03D correction:** local real captions/storage/preview accepted partially; grounded conversation blocked before readiness. Sole task [03D correction](docs/WORKER_TASK_03D_CORRECTION.md) fixes reproduced send-pressure hazard and verifies live recovery. Live cause still unconfirmed. Voice stays enabled; public YouTube disabled. Older summaries below are historical.

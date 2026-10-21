@@ -1,5 +1,17 @@
 # Testing and evidence — Talk to a Document
 
+**PM03D correction2 review:**11hashes matched;169focused tests pass exit0. Same-video setup and response completion accepted in scoped local evidence; citation grounding FAIL remains.03E must verify every emitted citation against its supporting passage; correct facts with wrong timestamps do not pass. No fresh PM live provider calls.
+
+## Task03D correction 2 verification — 21 October 2026 UTC
+
+[Full report](YOUTUBE_LOCAL_03D_CORRECTION_2.md). Local setup failure now identified without inspector: first `priming_failure/timeout`, 248/428 source ACKs, all428 native writes already complete; cleanup precedes socket1006. Isolated first build `p7vnXBBqeh5AIWrL171RJ`, corrected build `bqZ5CU0IK1qC7r8hiuWSs`, starting main HEAD `3f1075ef14859ad1d0dfd67f3b64e2b85e622923` plus dirty diff.
+
+Lossless provider-text YouTube/B packing: same video/full428sections/18,822characters now7items; all texts/locators/timestamps/order/boundaries reconstruct exactly. No deadline increase. New deterministic tests cover before/after25s, permanently missing ACK, duplicates without progress/renewal, actual socket-close-first, malformed ACK, Stop, stable first cause and cleanup once. Packing tests cover Unicode/empty sections/delimiters/oversized sections/exact byte bounds/stale admission/ACK mismatches. Voice hash regression and eight real-source byte comparisons pass; existing FIFO pressure/cancellation coverage retained with428 authored PDF sections.
+
+Pinned Node24.22.0/npm11.19.1, isolated copy without private.env, blank real keys/fakeDB/external network denied: `npm run lint`, `npm run typecheck`, `npm test` (**1643/1643**), `npm run build`, `npm run test:owned-text` (**417**), `npm run test:owned-voice` (**125unit+392HTTP**), `npm run test:voice-adapter` (**113unit+571checks/48scenarios**) all exit0. Intermediate old single-fragment verification decoder failures retained and fixed to reconstruct arrays; no assertions removed. Exact commands/UTC/exits and logs: `artifacts/local/03d-correction-2/commands.jsonl`.
+
+Real loopback same-source session2: 7/7ACKs and final configuration, ready1514.176ms after configuring; summary and factual follow-up completed within45s each and four turns survived Stop. **Citation checks FAIL:** follow-up fact20minutes/20people is correct but returned~354.117s versus actual1040.594s; summary's cited passages also mismatch. Transport/readiness pass does not close the full grounded-answer gate. No more live attempts. Ledger closed at$0.237reserved/$0.25max,2sessions/2actual answers/1uncached direct extraction; actual billing unknown. Source DELETE200/GET404, preview retention, invalidURL zero requests, port/process/browser/private-file cleanup pass. Public/phone/YouTube-voice not run; no deployment. PM review required; proposed READY_FOR_REVIEW for correction with grounding BLOCKED.
+
 **PM03D correction acceptance:** all6hashes matched; fresh pinned Node text-socket-pacing/priming/text-lifecycle tests184/184 exit0. Bounded delivery accepted; live readiness and both answers remain BLOCKED. Next WORKER_TASK_03D_CORRECTION_2.md requires first terminal reason/timestamps without debugger overhead, then evidence-based correction and same-source grounding. No fresh PM live calls.
 
 ## Task03D correction verification — 21 October 2026 UTC

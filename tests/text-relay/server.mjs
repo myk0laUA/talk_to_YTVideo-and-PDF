@@ -56,7 +56,9 @@ class LocalProvider extends EventEmitter {
       const source = e.item.id.includes("_source_");
       if (source) {
         counters.sources++; const fragment = JSON.parse(e.item.content[0].text);
-        assert.equal(fragment.variant, "B"); this.sourceParts.push(fragment);
+        assert.equal(fragment.variant, "B");
+        this.sourceParts.push(...(fragment.fragments
+          ? fragment.fragments.map(part => ({ ...part, source: fragment.source, variant: fragment.variant })) : [fragment]));
       } else counters.questions++;
       const ack = () => { counters.acknowledgments++; this.event({ type: "conversation.item.done", previous_item_id: e.previous_item_id ?? null, item: { ...e.item, status: "completed" } }); };
       if (scenario === "withheld-source" && source || scenario === "withheld-question" && !source) held.push(ack);
