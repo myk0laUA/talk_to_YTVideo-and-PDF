@@ -17,6 +17,7 @@ test("03F matched excerpts and pending/incomplete/unmatched copy remain distinct
   await expect(page.getByText("Source reference pending.", { exact: true })).toBeVisible();
   await expect(page.getByText("Source reference incomplete. This claim is unconfirmed.", { exact: true })).toBeVisible();
   await expect(page.getByText("Source reference could not be matched. This claim is unconfirmed. Check the source preview.", { exact: true })).toBeVisible();
+  await expect(page.getByText("The answer format could not be read. Check your source preview or ask a short, specific question.", { exact: true })).toBeVisible();
   await page.getByText("Source excerpt · 1040.594s", { exact: true }).click();
   await expect(page.locator("blockquote")).toHaveText('Exact source excerpt 😀\n<script>inert</script>');
   await expect(page.getByRole("link", { name: "Open video at 1040.594s", exact: true })).toHaveAttribute("href", "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s");

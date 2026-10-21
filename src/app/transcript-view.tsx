@@ -113,6 +113,7 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
                   </details>)}
                   {unit.state !== "matched" ? <p className="note transcript-notice">{unit.state === "pending"
                     ? "Source reference pending."
+                    : unit.state === "format_error" ? "The answer format could not be read. Check your source preview or ask a short, specific question."
                     : unit.state === "incomplete" ? "Source reference incomplete. This claim is unconfirmed."
                     : "Source reference could not be matched. This claim is unconfirmed. Check the source preview."}</p> : null}
                 </div>) : <p className="transcript-text" dir="auto">{part.text}</p>}

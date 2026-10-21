@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current03F design checkpoint:** correction reviewed (11hashes/fresh62tests); live grounded references still FAIL, partial summary loss persists. Sole [03F decision task](docs/WORKER_TASK_03F_DECISION.md) is OFFLINE API-capability/design/replay, zero model calls. No more parser/prompt retries until PM selects design.03F IN_PROGRESS, no deployment; public voice enabled/YouTube disabled.
+
 **Current PM03F correction required:**16hashes/fresh51checks pass, but live parser projection hides follow-up and resolves zero references.03F is NOT accepted for deployment/completion. Sole [03F correction](docs/WORKER_TASK_03F_CORRECTION.md) diagnoses exact rejected output and restores useful answers before final verification. Public voice enabled/YouTube disabled.
 
 **Current PM03F:**03E partial review passes5hashes/149checks; factual follow-up citation passes, summary citations fail. Sole task [03F](docs/WORKER_TASK_03F.md) adds bounded source-resolved evidence for YouTube text, with semantic evaluation still required. No deployment; public voice enabled/YouTube disabled.

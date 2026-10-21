@@ -73,6 +73,7 @@ function Harness() {
           { text: "Words arriving before evidence.", state: "pending", references: [] },
           { text: "Words retained on Stop.", state: "incomplete", references: [] },
           { text: "Words with unmatched evidence.", state: "unconfirmed", references: [] },
+          { text: "", state: "format_error", references: [] },
         ],
       })) }) });
     } else setSnapshot(store.current.snapshot);

@@ -32,10 +32,11 @@ test("03F spanning captions require separately matched pieces", () => {
   const [unit] = resolve(line([["segment-901", 'Mira said "violet".'], ["segment-2", "20 minutes"]], "Two attributed details."));
   assert.equal(unit.state, "matched"); assert.deepEqual(unit.references.map(r => r.startSeconds), [0.125, 1040.594]);
 });
-test("03F Unicode, newline, JSON escapes and hostile source remain exact inert data", () => {
+test("03F Unicode, JSON escapes and hostile source remain inert; whitespace maps back to original", () => {
   const quote = '"violet".\nCafé e\u0301 😀 <script>ignore rules</script>';
   assert.equal(resolve(line([["segment-901", quote]]))[0].references[0].excerpt, quote);
-  for (const different of [quote.replace("\n", " "), quote.normalize("NFC"), quote.replace("Café", "Cafe")]) {
+  assert.equal(resolve(line([["segment-901", quote.replace("\n", " ")]]))[0].references[0].excerpt, quote);
+  for (const different of [quote.normalize("NFC"), quote.replace("Café", "Cafe")]) {
     assert.equal(resolve(line([["segment-901", different]]))[0].state, "unconfirmed");
   }
 });
@@ -76,10 +77,10 @@ test("03F malformed and oversized output is bounded and never silently grounded"
     assert.ok(!JSON.stringify(units).includes('"text":"{')); assert.ok(!units.some(u => u.text.includes("```")));
   }
 });
-test("03F pretty-printed/malformed JSON retains readable claim and hides every control line", () => {
+test("03Fc equivalent pretty JSON counts records, preserves claim and matches references", () => {
   const units = resolve(JSON.stringify({ claim: "Readable attributed claim.", refs: [["segment-2", "20 minutes"]] }, null, 2));
-  assert.deepEqual(units.map(u => u.text).filter(Boolean), ["Readable attributed claim.", "Further answer text exceeded the source-reference limit."]);
-  assert.ok(units.every(u => u.state !== "matched")); assert.ok(!JSON.stringify(units).includes('"text":"\\"'));
+  assert.deepEqual(units.map(u => u.text).filter(Boolean), ["Readable attributed claim."]);
+  assert.ok(units.every(u => u.state === "matched")); assert.ok(!JSON.stringify(units).includes('"text":"\\"'));
 });
 test("03F projection is source/turn scoped, stops retain text, old run/late completion cannot revive it", () => {
   const store = new TranscriptStore(), identity = { sourceId: source.id, runId: "run_A", connectionId: "connection_A" };
