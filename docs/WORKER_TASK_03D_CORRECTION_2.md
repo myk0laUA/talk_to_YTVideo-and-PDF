@@ -1,0 +1,37 @@
+# Task 03D correction 2 — identify and resolve incomplete source ACK readiness
+
+Use prompts/WORKER_PROMPT.md and required repository handoffs. Sole active worker task under03D/07/10. PM accepts the bounded text socket delivery correction; the full YouTube conversation gate remains BLOCKED. No deployment or later task.
+
+## Starting evidence
+
+Read YOUTUBE_LOCAL_03D.md and YOUTUBE_LOCAL_03D_CORRECTION.md. PM verified all6delivery hashes and freshly passed184tests (text-socket-pacing, priming, text-lifecycle), exit0, artifacts/local/03d-correction/pm-focused.log. Runtime delivery FIFO is accepted; do not undo it. Corrected build zojz2JxiN3u_BshX2EpA- sent428items with observed native peak681bytes, received321added/321done events, then generic local close/1006. No final configuration ACK or question. Live exact terminal reason/time was not recorded. Inspector false conditional breakpoints sampled hundreds of events and may have affected timing; zero pauses does not establish negligible overhead.
+
+Outcome: identify the first terminal reason using lightweight timing evidence, then narrowly correct the demonstrated readiness failure and prove the real local summary/follow-up. Do not spend another attempt collecting the same incomplete trace.
+
+## Phase A: offline inspection and evidence preparation
+
+Trace every setup deadline/close owner from server text registry/lifecycle to PrimingController and socket, including HTTP stream cleanup, source expiry and browser automatic Stop. Read actual code before guessing. Determine whether existing internal status already exposes the exact priming failure; preserve the first reason before cleanup overwrites it.
+
+Prepare a bounded local-only observer without debugger/inspector breakpoints or per-event filesystem/console writes. Capture monotonic offsets for priming start, initial config ACK, final native source write, first/last source ACK, final settings send/ACK, first terminal failure, and cleanup; numeric expected/unique ACK counts and fixed failure categories only. Capture both terminal origin and later socket close so1006 is not mistaken for the initiating cause. No keys, source bodies, headers, cookies or raw provider events. Accumulate a bounded summary in memory and flush on terminal/cleanup. Prefer test-only injection or existing callbacks; no public diagnostic endpoint or broad telemetry system. Observer must not alter flow, timing policy or provider messages.
+
+Use deterministic clocks to reproduce healthy ACKs completing just before/after the25-second deadline, permanently missing ACKs, real socket-close-first ordering, malformed ACKs and explicit Stop. Include proof that duplicate ACKs cannot count as progress or renew any deadline. Keep first terminal reason stable and prove cleanup exactly once. Confirm whether the existing many-item representation is necessary versus an accidental one-caption-per-provider-item overhead; do not change it before the evidence decision below.
+
+## Phase B: bounded real verification and decision
+
+Fresh task ledger under standing authorization: <=US$0.25 estimated, at most2sessions/4responses TOTAL, no automatic retries. Original03D and first-correction ledgers are closed. Check official current pricing and reserve input/output costs before each call. Reuse the same real UI/loopback/private-env/fresh-owned-visitor authorization and exclusions from03D. Same video Ks-_Mh1QhMc, uncached direct, <=2extractions; report language and counts. No short-source substitution. Public voice remains enabled, public YouTube disabled, no live voice or managed-caption calls.
+
+First session: same accepted application behavior, lightweight observer, NO inspector. If ready, immediately complete the predetermined summary and later-section factual follow-up within allowance; no second session needed. If it fails, preserve the exact first reason and timestamps before implementing a correction. If no complete cause evidence is captured, stop and report that gap; do not repeat blind.
+
+If normal ACK progress is cut off by the local deadline, prefer reducing unnecessary provider-item overhead while preserving the complete structured source over making the user wait longer. This task explicitly permits a narrowly scoped, lossless TEXT-ONLY packing of consecutive caption sections into bounded source messages IF the trace establishes deadline/ACK throughput as the blocker. Preserve every section's text, timestamp/locator, ordering, boundaries and untrusted-source labeling, with exact round-trip tests and existing byte/event/context limits. Recompute the actual manifest admission/ACK expectations; no cached stale manifest/policy acceptance. Inspect source authorization and admission binding carefully. Voice policy and wire format stay unchanged. This permission supersedes the previous task's no-grouping constraint only for this evidenced case. No summarization, omissions, retrieval, context expansion or truncation. If packing requires a broader protocol/policy migration beyond this bounded slice, return a concrete design/blocker to PM first.
+
+Do not increase deadlines by default. A deadline change needs evidence and an explicit bounded rationale, stall/absolute-cap/cancellation tests and PM review before any live retry using that change. If the cause is remote closure, stream cleanup or a different reproduced defect, implement only the smallest justified correction with a failing regression. No model/provider/dependency/UI changes.
+
+Second session, if needed, is permitted only after the diagnosed correction passes offline checks and a corrected build exists. Test same source with full fidelity/readiness then two grounded questions (45-second observation per response and explicit Stop). Stop on further failure. The goal is complete local grounding, not repeated diagnostic preparation.
+
+## Verification, cleanup and skills
+
+For runtime changes run pinned Node24.22.0/npm11.19.1 lint/typecheck/unit/build and npm run test:owned-text. Add context/manifest/admission boundary regressions for any lossless packing, including Unicode, timestamp precision, section delimiters, oversized sections, exact payload bounds, ACK identity/content mismatch and identical full-source preservation. If shared code changes, run npm run test:owned-voice and npm run test:voice-adapter and verify unchanged voice manifests/policy. Existing socket pacing/Stop/replacement tests must remain green. Synthetic tests/builds must have no real keys/database and must follow current browser-tool restrictions.
+
+Keep real .env untouched; only loopback child flags. Delete only own test source via normal API/UI; no SQL/migrations/reset/bulk cleanup. Stop task-owned server/browser, verify port and private-file integrity; retain unknown billing honestly. Source preview and received conversation must survive Stop; validate answers against the current captions independently. Hosted/phone/YouTube-voice remain unverified.
+
+Use selected playwright-cli skill for permitted browser checks, React skill only if needed, OpenAI Docs for API/pricing claims; local Next docs for framework changes. No UI polish. Return READY_FOR_REVIEW with docs/YOUTUBE_LOCAL_03D_CORRECTION_2.md, PROJECT_STATE/TESTING, changed-file hashes, exact commands/exits/build, first-cause trace, red/green evidence, answer checks and ledger/cleanup. Ignored artifacts: artifacts/local/03d-correction-2/. Distinguish confirmed observation from inference. No user phone action now.

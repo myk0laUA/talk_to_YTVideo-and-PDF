@@ -1,5 +1,14 @@
 # Testing and evidence — Talk to a Document
 
+**PM03D correction acceptance:** all6hashes matched; fresh pinned Node text-socket-pacing/priming/text-lifecycle tests184/184 exit0. Bounded delivery accepted; live readiness and both answers remain BLOCKED. Next WORKER_TASK_03D_CORRECTION_2.md requires first terminal reason/timestamps without debugger overhead, then evidence-based correction and same-source grounding. No fresh PM live calls.
+
+## Task03D correction verification — 21 October 2026 UTC
+
+[Full report](YOUTUBE_LOCAL_03D_CORRECTION.md), build zojz2JxiN3u_BshX2EpA-. New text-socket pacing regression fails before patch,19focused cases pass afterward; actual lifecycle/socket covers ordered428-item delivery, full/final ACK gates, delayed/duplicate/reverse/malformed ACKs, bounds, cancellation, deadline and late callbacks. Isolated lint/typecheck/1628unit/build/417owned-text/59YouTubeHTTP/99YouTubeUI PASS. Fixture-copy failure retained in command ledger; no real keys/services used offline.
+
+Live uncached same-video source fidelity PASS;428writes delivered with681byte sampled native peak,321ACKs before closure, no final settings ACK/readiness. Summary/follow-up BLOCKED, zero questions. Do not convert native delivery into grounding success or infer exact timeout cause. New correction allowance used1session; stopped under explicit first-failure rule. Evidence/ledger/cleanup/hashes: ignored artifacts/local/03d-correction/. No hosted/phone/YouTube-voice claim.
+
+
 **PM03D correction pending:** partial caption preservation evidence accepted. Bounded transport pacing, abort/Stop/ACK regressions and fresh real local summary/follow-up are required by WORKER_TASK_03D_CORRECTION.md. No PM fresh runtime tests; worker offline reproduction is not confirmed live causation.
 
 ## Task03D local live result — 21 October 2026 UTC
