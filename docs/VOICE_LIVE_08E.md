@@ -156,3 +156,78 @@ Review proposed **READY_FOR_REVIEW** for native-connection evidence plus an offl
 The next unfinished stage is real provider acceptance/completed ACK of the compact source IDs, then final settings/media/two spoken questions/numeric usage/active Stop with retention. The existing fixture questions and expected facts remain ignored. Any later authorized human run should upload fresh, inspect full preview, select Voice/Start once, wait for all source ACKs before speaking, enable playback normally, ask question1, review its facts/usage before question2, then Stop/remove/restore defaults. Stop on the first failed contract; this procedure alone does not authorize another paid attempt.
 
 Human audibility/physical mic/speaker/interruption, physical phone/iOS/Android, user transcription/both-speaker transcript, hosted integration, live YouTube/full grounding evaluation remain **NOT_RUN**. Connection/remote-track evidence is not spoken-answer or audible-playback proof. Local closure cannot establish upstream billing cessation or revoke previously delivered credentials.
+
+
+## Correction 2 — 21 October 2026 UTC / 20 October Toronto
+
+**Proposed READY_FOR_REVIEW: the bounded local synthetic-input live check passed on the retained corrected build.** Real provider acceptance of compact source IDs, all full-content source ACKs, effective final voice settings, two factual generated voice answers, numeric usage and explicit active Stop are now observed. Physical audio, full playback of the second answer, phone, interruption, user transcription, hosted integration, live YouTube and full evaluation remain separate unmet gates. PM owns acceptance and original Step02/07/08 completion; no next task or public activation.
+
+### Build, environment and allocation
+
+Arrival: clean main, HEAD **462f111e88f24c513a754eb52c551fe092383b4e**. Reused build **bfL8fNWLOziONuzc2GTon** in correction-1/offline-checkout after **114** application/package/config/schema inputs matched root and retained copy. Node **24.22.0**, npm **11.19.1**, local Windows native Chromium **156.0.8078.4**, fresh isolated browser profile/visitor for each attempt. No application code, model, policy, transcription, dependency, schema, private file or deployed setting changed; delivery is three documentation files, dirty/uncommitted. Therefore no unchanged build/full-suite repetition. Previous correction1 regression/build/affected suites and PM100 admission tests retain their own dated evidence.
+
+The exclusive new correction-2 ledger and per-attempt locks preceded acquisition. **Two credential/session attempts, three response starts total: one cancelled, two completed.** Both were stopped and fully cleaned up within120seconds from their respective credential requests. Allocation is now **EXHAUSTED_COMPLETE_NO_RERUN**, remaining attempts0; original08E/correction1 exhausted ledgers and every failed attempt remain preserved. No third call or preferred-wording retry. Safe evidence, exact commands, source IDs, numeric usage and hashes are ignored under **artifacts/local/08e/correction-2/**.
+
+Current [official model pricing](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini) and [client-event schema](https://developers.openai.com/api/reference/resources/realtime/client-events) were checked before acquisition; public snapshots are retained. USD/million: text input/cache/output **0.60/0.06/2.40**, audio input/cache/output **10/0.30/20**. Conservative four-response preflight **$0.26496 + $0.30 margin < $1** assumes10,000text input +5,000audio input +512all-audio output tokens per response, without caching. Event IDs/settings/reference IDs were reviewed offline: compact item IDs preserve all128UUIDbits plus ordinal, at most30characters across4096ordinals; no undocumented numeric upstream limit is asserted. Nullable idle timeout and boolean server-VAD fields match the official schema. No new protocol correction was needed.
+
+### Fixture and second-attempt diagnosis
+
+The existing synthetic3page PDF was uploaded through the ordinary UI, parsed normally, stored/read through the real owned PostgreSQL service, and fully previewed before Start and after Stop. PDF3022bytes SHA256 **a593fb961f3a9bfa7775df5433ba8443dc9df45ff05d3d47c3131433dd1be7e8**; normalized complete preview SHA256 **60a6d979eeff68b7aeada0061d0f912a0bec754fc486fd90ecde70577dee32d3**. Existing questions and expected facts are unchanged in the ignored fixture; raw synthetic text/answers are retained only in ignored screenshots/results. No source/storage/protocol seeding or response interception.
+
+Attempt1 used the original native file-backed microphone WAV, SHA256 **43eaadac4a3fca007b71be26710f9584ea8f0a7a23a4a99c49023f5c7e889798**. Source/final ACKs passed, but the first question's internal pause produced speech_stopped/response.created followed by resumed speech and response.done **cancelled**. First failed contract was completed first-response status; the driver immediately muted/stopped, without allowing the second question. No provider error code/parameter was emitted. Reported usage was numeric zero, which does not establish zero billing.
+
+Offline PCM analysis reproduced340ms/350ms quiet gaps inside the authored questions, plus separate trailing spoken prompts. The narrow correction is to the controlled synthetic input/harness, with application/model/VAD policy unchanged: preserve original main-question voiced PCM, compress quiet internal gaps to70ms, omit the separate trailing prompt, retain question order/second-question slot and191.2395second duration/trailing silence. Original WAV is preserved. Derived WAV18359038bytes SHA256 **6a850c52140159a9c3e8a8e9e762254071e33b267ba43b3f5b5f07ecdfd70c6d**. Offline regression asserts no150ms internal quiet gap; native Chromium capture confirms first speech5.1628–8.2706seconds, no loop before deadline, ended track/closed AudioContext/profile/server. The passive observer also exposes safe provider VAD defaults (200ms silence,300ms prefix,0.5threshold); projection/redaction/native-identity self-check passed before attempt2. The exact offline reason and evidence are sealed in second-authorized.json. This was a diagnosed input compatibility correction with an observer projection gap repaired, not an application fix requiring a rebuild.
+
+### Actual live acceptance and limits
+
+| Stage | Attempt1 | Attempt2 / evidence |
+| --- | --- | --- |
+| Fresh normal PDF upload/read/full preview | PASS | PASS: normal anonymous bootstrap401 then upload201/read200/no-store; all3pages exact |
+| Owned preparation/credential/SDP | PASS | PASS: preparation201, credential200/no-store, real SDP201 text/plain; actual native remote answer/stable signaling |
+| Native connection and compact IDs | PASS | PASS: one connected peer, one open ordered channel, all3completed source-item ACKs fully match expected content/role/status/identity |
+| Effective initial/final settings and media barrier | PASS | PASS: all11initial and all11final matches; final ACK page-time4842.1ms, sender absent then; first observed attached sender4916ms |
+| Native microphone/playback UI | PASS | PASS: real Chromium file microphone, ordinary Enable speaker playback clicked, unpaused audio/srcObject, incoming/outgoing native stats; no native API replacement |
+| Predetermined Q1 beginning-section facts | FAIL: turn cancelled before complete answer | PASS: both exact page1identity facts in completed assistant text, numeric usage checked before second unmute |
+| Predetermined Q2 middle/end facts and follow-up | NOT_RUN | PASS: exact quantity from page2 and destination/time from page3; completed assistant text and numeric usage |
+| Explicit active Stop/text/full preview | PASS for immediate failure Stop; no answer existed | PASS: clicked00:59:52.519–00:59:52.546UTC, both received assistant texts retained exactly, all3pages retained |
+| Peer/channel/tracks/audio/listeners released | PASS terminal resources | PASS: peer/channel closed, local+remote tracks ended, audio paused/srcObject cleared;0observed application event listeners on peer/channel/two tracks/audio after observer listeners removed |
+| Owned removal/default restoration | PASS | PASS: normal only-this-source DELETE200/no-store then read404/no-store; fresh original default process unavailable Start and three voice503/no-store routes |
+| Default native/external resources and shutdown | PASS | PASS: zero native peers/channels/audio/tracks and external requests; browser profiles/server processes closed; private hashes unchanged |
+
+The observer passively discovers native objects via CDP and projects safe event categories/match booleans/numeric usage/stats. No event injection, native API replacement, debugger pausing, credential response-body recording, HAR/raw SDP/audio deltas or permanent secrets. Explicit synthetic MessageEvents occur solely in isolated offline observer self-checks, never the live app. Exact microphone-acquisition call timing is not instrumented: the unchanged reviewed application orders getUserMedia after readiness, and the live observation proves no sender at effective final ACK and subsequent attachment. Complete content matching was not weakened.
+
+First answer snapshot: incoming **18,315bytes/583packets**,11.99seconds totalSamplesDuration and positive energy. Second answer snapshot: **270,811bytes/3,045packets**,61.24seconds samples and positive energy; final pre-Stop snapshot **274,223bytes/3,066packets**,61.65seconds samples, energy1.30013. These are cumulative transport/sample counters including silence, not speech duration or human audibility. Both response.done statuses are completed with generated speech text. First output_audio_buffer.stopped was observed; **second full audio playback completion was not observed before active Stop**, so neither full second playout nor human listening is claimed. UI after Stop still labels playback unconfirmed. User transcription remains null/unavailable; empty user-turn placeholders are visible and no user words were fabricated. No physical microphone/phone/interruption proof.
+
+### Usage, costs and command ledger
+
+| Numeric response.done usage | Attempt1 cancelled | Attempt2 Q1 | Attempt2 Q2 | Total |
+| --- | --- | --- | --- | --- |
+| Total / input / output tokens | 0 /0 /0 |1247 /744 /503 |1340 /890 /450 |2587 /1634 /953 |
+| Input text /audio /image |0 /0 /0 |708 /36 /0 |787 /103 /0 |1495 /139 /0 |
+| Cached text /audio |0 /0 |0 /0 |704 /0 |704 /0 |
+| Output text /audio |0 /0 |143 /360 |134 /316 |277 /676 |
+| Reasoning subset of output |not supplied |50 |54 |104 reported; not added again |
+| Known response estimate USD, cache adjusted |0 reported usage |0.008328 |0.00776364 |**0.01609164** |
+
+Undiscounted conservative known-response estimate **$0.0164718**. Cache-adjusted estimate uses791uncached input text +704cached text +139input audio +277output text +676output audio at the checked rates. Actual incremental/cumulative billed amounts and prior attempt costs remain **unavailable/null**; historical project estimate$0.00810552 is preserved separately, never substituted for actual unknown spending. Cancelled zero usage is not a zero-bill assertion. No billing action occurred; resource teardown is not proof of upstream billing cessation/revocation.
+
+Commands below use the pinned executable; node denotes **.tools/node-v24.22.0-win-x64/node.exe**, npm the adjacent npm-cli.js. Dates21October2026UTC. Live commands use the real built app/services; offline checks use no provider/session/real DB. Full commands, repeated offline self-check times and per-attempt environments are in commands.jsonl, each session's commands.jsonl and all-commands.json.
+
+| Command | UTC start–end | Exit / result |
+| --- | --- | --- |
+| node artifacts/local/08e/correction-2/preflight.mjs |00:52:00.641–00:52:09.308 |0 / matching114inputs, fixture/private presence/pricing/exclusive ledger |
+| node artifacts/local/08e/correction-2/protocol-audit.mjs |00:54:12.348–00:54:12.358 |0 / offline schema/ID audit |
+| node artifacts/local/08e/correction-2/live.mjs 1 |00:54:18.989–00:54:40.743 |**1 / FAIL**, first turn cancelled; preserved |
+| node artifacts/local/08e/correction-2/audio-correction.mjs |00:57:02.970–00:57:03.015 |0 / offline PCM regression |
+| node artifacts/local/08e/correction-2/capture-check.mjs |00:57:37.910–00:57:48.286 |0 / offline native derived-WAV capture |
+| node artifacts/local/08e/correction-2/observer-check.mjs, final |00:58:36.732–00:58:37.683 |0 / offline observer/native identity/redaction |
+| node artifacts/local/08e/correction-2/live.mjs 2 |00:58:45.134–00:59:56.798 |**0 / PASS**, bounded synthetic live check |
+| node artifacts/local/08e/correction-2/audit.mjs |01:06:04.471–01:06:08.708 |0 / PASS, preservation/private/process/port audit; final doc hashes refreshed after recording this row |
+
+Attempt1 credential00:54:24.371UTC, immediate active Stop00:54:37.013–00:54:37.158; attempt2 credential00:58:49.446UTC, second unmute00:59:35.792 only after first complete facts/usage, active Stop00:59:52.519–00:59:52.546. No failed mint/negotiation was omitted. Initial public-doc setup script had a local fetch status-property error before any acquisition; corrected status access succeeded, no provider/session attempt. Its exact initial wall-clock start/end were not separately captured. No failure is relabelled PASS.
+
+### Final preservation and handoff
+
+Stopped/preview-after-stop/default-disabled screenshots were visually inspected; all3source pages and both assistant texts remain visible after Stop. Final audit and three changed-document SHA256 values are in **audit.json** and **changed-files.sha256.json**. Preservation audit **PASS/exit0**:488other tracked files,114build inputs and3906pre-existing08E/correction1artifacts unchanged; original report prefix/private hashes preserved; owned processes exited, no remaining Playwright Chromium processes, loopback3134/3136 released, secret-value scan0matches, git diff --check passed. The final hash refresh/recheck is separately timed in commands.jsonl. No raw source protocol/secret/audio-delta evidence is committed. Only process-local loopback/PDF/voice gates changed during the run; original fresh defaults are disabled. No .env edit, migration/reset/manual SQL, caption call, billing action, deployment or public enablement.
+
+PM review is requested for this narrow local live result. All earlier failures remain historical evidence; the compact-ID/final-ACK/two-answer local gates now have real provider proof on bfL8fNWLOziONuzc2GTon, while human-device/audio/interruption, both-speaker transcription, hosted integration, YouTube and full evaluation remain open. No more live calls under this allocation.

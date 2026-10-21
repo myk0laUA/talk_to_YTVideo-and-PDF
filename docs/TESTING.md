@@ -1,5 +1,17 @@
 # Testing and evidence — Talk to a Document
 
+**PM08E correction2 acceptance:**3delivery hashes and factual stopped transcript reviewed; bounded real local voice with synthetic input accepted on bfL8fNWLOziONuzc2GTon. No additional live call. Human audio/phone/full second playout and natural-pause VAD usability remain open. Next09C adds/verifies actual user transcription under its separate allocation.
+
+## Task08E correction2 — real local source ACKs and two generated voice answers
+
+[Correction2 report](VOICE_LIVE_08E.md#correction-2--21-october-2026-utc--20-october-toronto): proposed READY_FOR_REVIEW. Retained build **bfL8fNWLOziONuzc2GTon**,114inputs matched, pinned Node24.22.0/npm11.19.1. No app changes or unchanged full-suite/build repetition. Attempt1 exit1 (WAV pause split/cancelled first turn) preserved; offline controlled-input PCM regression/native capture and safe observer self-check justified sole optional second attempt. Attempt2 exit0 proves actual compact IDs/all3complete matching source ACKs/final11effective settings before sender, two exact factual generated answers across beginning/middle/end, numeric usage, native incoming audio statistics and active Stop retaining text/full preview. Cleanup/removal404/fresh default503-no-store/zero resources/external requests/private preservation passed.
+
+Exact live commands: pinned node artifacts/local/08e/correction-2/live.mjs 1 (00:54:18.989–00:54:40.743UTC,21October2026,exit1) and same command with2 (00:58:45.134–00:59:56.798UTC,exit0). **Do not rerun**: new ledger exhausted2attempts/3starts, all prior ledgers unchanged. Offline observer/PCM/capture scripts and commands/UTC/exits are retained under the same ignored directory; no provider events injected into the live app/native APIs replaced. Original WAV preserved; derived main-question PCM quiet gaps compressed, wording/facts/order and policy unchanged. No further application correction to test/build.
+
+Generation completion and native transport/playback-start observations do not prove full second-answer playout or human audibility; Stop preceded second buffer completion. User transcription stays unavailable, no fabricated transcript. Physical phone/mic/speaker/interruption, both-speaker transcription, hosted integration, live YouTube and full evaluation remain NOT_RUN/separate gates. Current price-based known response estimate$0.01609164; actual prior/incremental/cumulative bills unavailable. PM owns acceptance/public sequencing.
+
+
+
 **PM correction1 review:**6hashes matched; fresh100provider-voice-admission tests PASS/0. Native WebRTC/initial ACK accepted as live evidence; compact IDs remain offline-only on buildbfL8fNWLOziONuzc2GTon. Next WORKER_TASK_08E_CORRECTION_2.md authorizes a separate bounded continuation; previous ledgers remain exhausted.
 
 ## Task08E correction1 — native connection proven, source item IDs blocked

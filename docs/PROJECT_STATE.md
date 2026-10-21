@@ -1,5 +1,26 @@
 # Project state — Talk to a Document
 
+## PM08E correction2 acceptance — 21 October2026UTC / 20OctoberToronto
+
+Accepted for bounded local native-WebRTC/synthetic-input live scope. All3delivery hashes matched; PM independently inspected session-2/stopped.png against authored fixture facts: both answers accurate across all3pages and retained after active Stop. Reviewed source/final ACK-before-sender, numeric usage, native audio statistics, owned removal/default restoration and preservation audit. BuildbfL8fNWLOziONuzc2GTon unchanged; documentation-only delivery, no test/build/provider repetition. Successful command00:58:45.134–00:59:56.798UTC exit0; first cancelled-turn failure and controlled-input correction preserved. Both correction2attempts consumed;3response starts total. Known-response estimateUS$0.01609164; actual prior/incremental/cumulative charges unknown.
+
+Not accepted as physical microphone/human audibility/full second playout/phone/interruption proof. Input transcription remains unavailable;200ms observed VAD silence sensitivity remains a real-human usability gate, not solved by compressed synthetic pauses. Original Steps02/07/08 remain open for their broader criteria. Public deployment unchanged.
+
+Next sole assignment [09C](WORKER_TASK_09C.md): actual user speech transcription/both-speaker transcript, offline implementation first then a bounded live check. New US$1 estimated allocation/max2credential-session attempts/4response starts/120seconds each under standing test-credit authorization, including transcription estimates; no billing or deployment changes. Existing ledgers stay exhausted. No human setup required for09C; physical and hosted verification follows separately.
+
+
+## Worker08E correction2 — proposed READY_FOR_REVIEW, local synthetic live check passed, 21 October2026UTC (20OctoberToronto)
+
+[Correction2 evidence and limitations](VOICE_LIVE_08E.md#correction-2--21-october-2026-utc--20-october-toronto). Clean arrival main HEAD **462f111e88f24c513a754eb52c551fe092383b4e**; retained build **bfL8fNWLOziONuzc2GTon**,114inputs matched, Node24.22.0/npm11.19.1. Three docs changed only; no app correction/rebuild/full-suite repetition, commit/push/deploy/private change or public activation.
+
+Two fresh real local native Chromium/PDF/parser/PostgreSQL/OpenAI WebRTC sessions consumed the separate correction2 allocation. Attempt1 **00:54:18.989–00:54:40.743UTC**, exit1: compact IDs/all3full-source ACKs/final11settings/media passed; original synthetic WAV internal pause split Q1 and cancelled its first response. Immediately active Stop; no second question. Offline PCM diagnosis/regression/native capture corrected only controlled fixture quiet gaps; original WAV preserved. Passive observer safely exposes provider VAD defaults; offline self-check passed. No blind retry/policy/model/transcription change.
+
+Attempt2 **00:58:45.134–00:59:56.798UTC**, exit0: full source/final ACK before sender, native connection/open ordered channel, both predetermined factual generated answers across pages1/2/3, first numeric usage checked before second unmute, incoming audio stats and explicit active Stop passed. Both assistant texts/full3page preview retained; peer/channel/tracks/audio/observed listeners released. First buffer stopped; second full playout/human audibility not established before Stop. Input transcription remains unavailable and no user text fabricated. Each fresh source removed normally/read404; fresh default process unavailable/three503-no-store routes/zero native objects/external requests; profiles/servers closed/private files unchanged.
+
+Ledger **EXHAUSTED_COMPLETE_NO_RERUN:2credential/session attempts,3response starts (1cancelled,2completed)**, each below120seconds; original/correction1ledgers preserved. Numeric completed usage2587total tokens (1634input/953output),1495inputtext/139inputaudio,704cachedtext,277outputtext/676outputaudio,104reasoning subset. Checked current rates yield **$0.01609164** cache-adjusted known-response estimate ($0.0164718undiscounted); actual bills/prior attempt costs unknown, not zero. Safe commands/UTC/exits, failed run, fixture/build/delivery hashes/audit under ignored artifacts/local/08e/correction-2. PM owns acceptance; original Steps02/07/08 and physical phone/human audio/interruption/both-speaker transcription/hosted/live-YouTube/full evaluation remain open. No next task.
+
+
+
 ## PM08E correction1 review — 21 October2026UTC / 20OctoberToronto
 
 Accepted native connection evidence and offline compact-ID correction; full live voice remains unfinished. Real SDP parsing/remote description, connected peer/open channel and initial effective configuration now pass. Provider rejected45-character source IDs; no source-complete ACK, microphone or spoken response yet. Incoming track is not audibility evidence. Reviewed lossless128bit UUID/base36 namespace plus ordinal, exact controller validation, original non-UUID mapping and foreign/altered ACK rejection. All6delivery hashes matched; fresh100provider-voice-admission tests PASS/exit0 in retained secret-free/network-blocked copy, logs/results artifacts/local/08e/correction-1/pm-focused*. Corrected build bfL8fNWLOziONuzc2GTon, not live verified. No PM provider call or code change.
