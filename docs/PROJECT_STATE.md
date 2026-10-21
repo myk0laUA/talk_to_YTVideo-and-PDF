@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08G diagnostic deployment and affected-Chrome observation —21October2026Toronto
+
+User requested diagnostic deployment and explicitly confirmed Re-enable voice for the test. Published ddaeb8d6aa855070ede3ed2adec6c37ef367d084; build deployment dep-dbc3vkks728c73dtv1l0 Live00:31:50Toronto, activation dep-dbc40j7avr4c73epefq0 Live00:32:35Toronto. Existing free service; stable secret/PDF/text preserved, voice enabled for one controlled attempt. Fresh pinned Node readiness exit0: root200, unauthenticated voice/text401/no-store, synthetic credential503/no-store. Evidence artifacts/local/08g-hosted; no PM paid session. Separate hosted ledger max1attempt/1response/120seconds/estimatedUS$0.50, actual cost unknown.
+
+User immediately supplied diagnostic-build screenshot: **Voice source preparation failed before microphone access**, no microphone notification. This narrows lifecycle failure to preparation, not a proven invalid API key or microphone permission issue. Voice setup details are collapsed; exact HTTP/validation row remains missing. Asked user to expand existing details without refreshing or starting again. Await that trace before assigning a correction; no active worker implementation task. Public voice currently enabled pending immediate evidence capture/containment. Do not claim repaired setup or completed voice gate.
+
 ## PM08G partial acceptance —21October2026Toronto
 
 Accepted bounded diagnostic instrumentation only; hosted root cause/fix remains unproven and full08G outcome unfinished. All11delivery SHA256 hashes matched. Reviewed closed stage/outcome/numeric projection, immutable bounded memory, stale reporter guards, failure-only UI and unchanged authorization/policy/media barriers. PM visually inspected synthetic setup-details-08g.png: safe initial-settings failure trace, not the user's reproduced failure. Fresh pinned Node24.22.0 command `node --conditions=react-server --test tests/unit/voice-diagnostics.test.ts tests/unit/voice-browser-adapters.test.ts tests/unit/voice-lifecycle.test.ts` PASS140/140 exit0, artifacts/local/08g/pm-focused.log; no live call or rebuild. Worker1490units/built coverage retained; diagnostic build BKAaUrr5lV6vuNI-D3rud remains offline verified, separate from baseline live YhkhD73NHaU1gpomogsBg.
