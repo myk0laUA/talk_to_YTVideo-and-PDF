@@ -1,5 +1,19 @@
 # Testing and evidence — Talk to a Document
 
+**PM03F decision review:**3document hashes and407protected file hashes match; diff check passes. Decision/replay accepted as scoped design evidence only, not route-A behavior or semantic success. WORKER_TASK_03F_ROUTE_A.md requires actual stream/UI text-preservation tests, source-resolved reference checks and one same-video semantic summary/follow-up pair. New <=$0.16estimated/1session/2responses allowance; no retries.
+
+## 03F decision replay — 21 October 2026 Toronto — design READY_FOR_REVIEW only
+
+[Decision and next implementation criteria](YOUTUBE_EVIDENCE_DECISION_03F.md). Clean main HEAD `80ac7ee2f6a4bf6101813392e226e30b44521d63`, documentation-only dirty delivery; no new build or runtime change. Existing root `R_ixIZMDu1UXwpkBpA8ws` is not current-HEAD evidence. Local pinned Node24.22.0/npm11.19.1, no environment/key loading, provider/DB/browser calls or physical-device checks. Official documentation read-only HTTP requests are not model requests. Proposed design does not pass the failed live citation gate; full03F/Steps03/07/10 remain open.
+
+| Exact command | UTC21October / exit | Observed / meaning |
+|---|---|---|
+| `.tools/node-v24.22.0-win-x64/node.exe --conditions=react-server artifacts/local/03f-decision/replay.mjs` |23:51:29.881–23:51:30.218 /0 |18/18decision assertions PASS;4exact capture diagnostic replays/all0matched; identity display preserves raw malformed output; stored355time/excerpt match; wrong354and unrelated canonical quote still match lexically; unknown ID denied; authored structured mocks do not prove provider compliance. |
+| `.tools/node-v24.22.0-win-x64/node.exe --conditions=react-server --test tests/unit/youtube-evidence.test.ts tests/unit/youtube-evidence-format.test.ts tests/unit/owned-text.test.ts tests/unit/text-http-controller.test.ts` |23:51:30.249–23:51:34.078 /0 |62/62existing checks PASS; unchanged current behavior and source/Stop guards, not route-A integration. |
+| `.tools/node-v24.22.0-win-x64/node.exe artifacts/local/03f-decision/audit.mjs` |23:54:22UTC /0 |407protected hashes unchanged, exactly three intended documents changed/added, replay ignored, whitespace check PASS, six official snapshots hashed; final delivery hashes/command rerun retained locally. |
+
+Evidence: ignored `artifacts/local/03f-decision/commands.jsonl`, `replay-results.json`, `replay.log`, `focused.log`, `protected-files.json`, official Markdown snapshots.407protected product/test/tooling inputs recorded for unchanged audit; no third-party raw text committed. Full build/lint/browser/live tests NOT_RUN as inappropriate for this documentation/replay scope. Next selected implementation must use authored committed fixtures, preserve independent answer display on every reference failure, test exact-source binding/Stop/late-event behavior and deterministic stored timestamps, then separately obtain PM live allowance for the same-video summary/follow-up semantic gate. Zero matched references and optional annotations alone never pass. No future allowance allocated here.
+
 **PM03F correction review:**11hashes matched, fresh62tests exit0. Real malformed-output cause captured; readable follow-up restored, summary still partly lost and0references matched. Full gate FAIL. Next03F decision checkpoint is offline only, no new live allowance, no product acceptance. Existing captures support design/replay without another user test.
 
 ## Task03F correction —21October2026Toronto
