@@ -1,5 +1,9 @@
 # Talk to a Document — repository handoff
 
+**Current PM08H partial acceptance:**8delivery hashes match; fresh116focused tests pass. Server diagnostics accepted, hosted timeout cause unresolved. Next is PM controlled diagnostic deployment/preparation-only observation; no active worker task or user retry. Voice stays contained, PDF/text enabled. Latest PROJECT_STATE supersedes historical summaries.
+
+**Current PM08H:** hosted Chrome preparation request timed out at25002ms before credentials/microphone. Voice contained again; PDF/text remain enabled. Sole worker assignment [08H](docs/WORKER_TASK_08H.md), offline isolation/safe server diagnostics. Root cause unresolved; latest PROJECT_STATE supersedes historical summaries below.
+
 **Current PM08G partial acceptance:** safe setup diagnostics accepted;11hashes match/fresh140focused tests pass. Hosted Chrome failure remains NOT_REPRODUCED locally, no root-cause fix claimed. Next is PM-controlled diagnostic deployment and one affected-Chrome observation; no active worker implementation task. Public voice remains contained, PDF/text available. Latest PROJECT_STATE supersedes older task summaries.
 
 **Current PM21October:** user reports Chrome voice setup failure with no microphone prompt. Exact cause unknown; sole worker assignment [08G](docs/WORKER_TASK_08G.md) diagnoses and narrowly corrects it. PM contains public voice only; working PDF/text remain. Earlier voice-availability evidence was not functional verification. Resume latest PROJECT_STATE.

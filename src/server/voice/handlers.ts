@@ -1,4 +1,5 @@
 import "server-only";
+import type { PreparationTrace } from "./diagnostics.ts";
 import type { VoiceConfig } from "./config.ts";
 import { VoiceError, type VoiceRegistry } from "./registry.ts";
 import { readVisitor } from "../proof/visitor.ts";
@@ -35,7 +36,7 @@ async function body(request: Request): Promise<Record<string, unknown>> {
   }
 }
 
-export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; registry: VoiceRegistry; now?: () => number }) {
+export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; registry: VoiceRegistry; now?: () => number; diagnostics?: () => PreparationTrace | undefined }) {
   const now = deps.now ?? Date.now;
   // Bounds body readers/invalid commands separately from preparation and issuance.
   const commands = new Admission({ visitor: 30, ip: 100, global: 100, lifetime: 500, windowMs: 3600_000, concurrent: 4 });
@@ -44,9 +45,13 @@ export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; re
   const cancellations = new Admission({ visitor: 12, ip: 40, global: 40, lifetime: 100, windowMs: 3600_000, concurrent: 4 });
   async function handle(request: Request, operation: "prepare" | "credential" | "cancel") {
     let release: (() => void) | undefined;
+    const trace = operation === "prepare" ? deps.diagnostics?.() : undefined;
+    let status = 503;
+    const respond = (code: number, value: unknown) => { status = code; trace?.mark("response"); return reply(code, value); };
     try {
-      const config = deps.config(); if (!config) return reply(503, { error: "Voice preparation unavailable" });
-      if (request.method !== "POST") return voiceMethodNotAllowed();
+      const config = deps.config(); if (!config) return respond(503, { error: "Voice preparation unavailable" });
+      if (request.method !== "POST") return respond(405, { error: "Method not allowed" });
+      trace?.mark("authorization");
       if (new URL(request.url).search || request.headers.get("origin") !== config.origin
         || ![null, "same-origin"].includes(request.headers.get("sec-fetch-site"))) throw new VoiceError(403);
       const cookie = request.headers.get("cookie"), visitor = readVisitor(cookie, config, now());
@@ -58,21 +63,25 @@ export function createVoiceHandlers(deps: { config: () => VoiceConfig | null; re
       };
       release = (operation === "cancel" ? cancellations : commands).acquire(visitor.owner, "unverified-network", now()) ?? undefined;
       if (!release) throw new VoiceError(429);
+      trace?.mark("body");
       const input = await body(request); freshVisitor();
       if (Object.keys(input).sort().join(",") !== (operation === "credential" ? "preparationId,requestId,sourceId" : "requestId,sourceId")
         || !voiceUuid(input.sourceId) || !voiceUuid(input.requestId)) throw new VoiceError(400);
       if (operation === "cancel") {
         deps.registry.cancel(visitor, input.sourceId, input.requestId, freshVisitor);
-        return reply(200, { cancelled: true }); // Identical for absent/foreign/already consumed work.
+        return respond(200, { cancelled: true }); // Identical for absent/foreign/already consumed work.
       }
-      if (operation === "prepare") return reply(201, await deps.registry.prepare(visitor, input.sourceId, input.requestId, request.signal, freshVisitor));
+      if (operation === "prepare") {
+        trace?.mark("registry");
+        return respond(201, await deps.registry.prepare(visitor, input.sourceId, input.requestId, request.signal, freshVisitor, trace));
+      }
       if (typeof input.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(input.preparationId)) throw new VoiceError(400);
-      return reply(200, await deps.registry.credential(visitor, input.sourceId, input.requestId, input.preparationId,
+      return respond(200, await deps.registry.credential(visitor, input.sourceId, input.requestId, input.preparationId,
         request.signal, freshVisitor, config.apiKey));
     } catch (error) {
       const status = error instanceof VoiceError ? error.status : 503;
-      return reply(status, { error: status === 429 ? "Voice preparation limit reached" : "Voice preparation unavailable" });
-    } finally { release?.(); }
+      return respond(status, { error: status === 429 ? "Voice preparation limit reached" : "Voice preparation unavailable" });
+    } finally { release?.(); trace?.finish(status); }
   }
   return { prepare: (r: Request) => handle(r, "prepare"), credential: (r: Request) => handle(r, "credential"), cancel: (r: Request) => handle(r, "cancel") };
 }

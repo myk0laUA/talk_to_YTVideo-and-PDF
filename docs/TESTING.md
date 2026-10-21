@@ -1,5 +1,30 @@
 # Testing and evidence — Talk to a Document
 
+## PM08H partial acceptance —21October2026Toronto
+
+Accepted bounded server preparation diagnostics and offline boundary analysis, not a root-cause fix. All8delivery SHA256 hashes matched before PM tracker edits. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/owned-voice.test.ts` PASS116/116 exit0; artifacts/local/08h/pm-focused.log. Reviewed handler/registry/runtime diff, closed diagnostic fields, four-traces-per60s sampling/32rows, late-event suppression, sink failure isolation and controlled stall tests. Existing authorization/deadlines/provider policy preserved; no blocking scoped review finding. Worker1512unit/built results and build8J0VB5pnQHv_7xf5I8eC5 remain local/offline evidence only.
+
+No active worker implementation task. Next owner PM: publish/deploy accepted diagnostics with public voice still contained, then arrange one authored-source preparation-only request and correlate safe server/browser timings under VOICE_PREPARATION_08H.md. Do not use ordinary Start for a provider-free test; do not mint credentials or infer physical microphone success. Any temporary public reactivation requires the existing action-time confirmation. This review made no hosting/configuration change or paid call. Hosted ddaeb8d/voice containment remains the last verified state. Exact hosted cause, repair and full Step08 remain open.
+
+## Worker08H — proposed READY_FOR_REVIEW (partial diagnosis) —21October2026Toronto
+
+[08H boundary map, acceptance evidence and PM-only observation plan](VOICE_PREPARATION_08H.md). Hosted preparation_http timeout25002ms remains **NOT_REPRODUCED**; no root-cause fix claimed. Added bounded server-only preparation timings for handler entry/auth/body, registry/context, five repository reads, response and exit. No source/owner/request identifiers, document text, cookies, keys, SDP or exceptions logged. Four sampled requests per60s/process, at most32rows each; late events ignored. Existing deadlines/ownership/expiry/admission/ACK gates unchanged. No UI, shared context, text/PDF, provider/model or public configuration change.
+
+Base main/HEAD7fb83b6d36ef07c1fe12bf905b7bd0868fc682c3, dirty delivery; preexisting PM edits/brief preserved. New local build **8J0VB5pnQHv_7xf5I8eC5**, Node24.22.0/npm11.19.1, .env-free/network-denied copy at artifacts/local/08h/offline-checkout. Focused116units/lifecycle63, lint/typecheck/full1512units/build, owned-voice116+392built, adapter76+444built, owned-text417 PASS/exit0. Exact UTC/commands/exits: artifacts/local/08h/commands.jsonl; hashes/identity/ports/runtime-log schema audit: audit.json and changed-files.sha256.json. All verification commands passed; no speculative product correction or retry.
+
+22new tests hold each of five reads under timeout/abort/Stop, body timeout/abort, late resolve/reject, synchronous stall expiry, resource release, sentinel secrecy, log-sink failure and output bounds. Preparation failures mint0credentials; retained adapter/lifecycle checks cover no microphone on failure. Registry5000ms covers reads/context but cannot preempt synchronous CPU work. Body has separate2000ms guard; module initialization/ingress and response delivery are outside it. Authored default-limit observations: authored_success: HTTP201 at17ms, initial_read_deadline: HTTP404 at5008ms, context_read_deadline: HTTP404 at5011ms. Underlying DB work may finish after cancellation; guards prevent late publication. Hosted startup/network/CPU/DB hypotheses remain unresolved, not findings.
+
+No paid/provider call, realDB access/reset/cleanup, private.env edits, commit/push/deployment, public activation or physical-phone/audio claim. Hosted build remains PM-recorded ddaeb8d6aa855070ede3ed2adec6c37ef367d084 with voice contained; worker made no hosted observation. PM should review/deploy accepted diagnostics and arrange one authored-source preparation-only observation with safe browser/server timing, then restore containment. Ordinary Start would proceed to paid credentials on success and requires separate PM allocation. No user retry requested. Full Step08/release remain open; worker stops here.
+
+
+## PM08H assignment —21October2026Toronto
+
+Expanded user screenshot confirms `preparation_http: timeout, 25002 ms`, no microphone prompt. This is a browser preparation-request deadline, before credential issuance/media; provider-free preparation means this trace does not establish a bad API key. Root cause remains unknown; no server response/status captured. Registry5000ms versus client25000ms deadlines require inspection of pre-registry work and deadline coverage, not speculative timeout increases. Device/OS/Chrome version unknown.
+
+Public voice contained again: Render dep-dbc4aebncjis738amms0 Live00:53:28Toronto on ddaeb8d6aa855070ede3ed2adec6c37ef367d084. Visible startup confirms OWNED_SOURCE_VOICE_ENABLED=false; PDF/text remain true. Evidence artifacts/local/08g-hosted/contained-after-timeout.png. No paid PM call or application code change/test this turn. User diagnostic attempt ended at preparation timeout; no client credential acquisition reached, actual billing unknown. Prior allocations unchanged.
+
+Sole active worker assignment [08H](WORKER_TASK_08H.md): offline preparation-timeout isolation, evidenced narrow correction or safe bounded server stage timings. No worker paid calls/deployment. Hosted/physical voice remains unverified; no user retry requested until reviewed diagnostics/fix. Earlier next-action summaries below are historical.
+
 **PM08G partial review:**11delivery hashes matched; fresh140diagnostics/adapter/lifecycle unit checks pass with pinned runtime (pm-focused.log). Synthetic failure screenshot inspected. Safe diagnostics accepted only; hosted cause still unknown. Next PM controlled deployment/one Chrome observation per latest PROJECT_STATE, not another unbounded local retry. Current voice containment remains in place; no live test/rebuild during review.
 
 ## Task08G — diagnostic handoff, reported failure NOT_REPRODUCED locally

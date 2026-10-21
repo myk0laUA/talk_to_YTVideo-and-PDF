@@ -3,6 +3,7 @@ import { afterEach, test } from "node:test";
 import { randomBytes, randomUUID } from "node:crypto";
 import { getEventListeners } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
+import { createPreparationDiagnostics, type PreparationTrace } from "../../src/server/voice/diagnostics.ts";
 import { parseVoiceConfig } from "../../src/server/voice/config.ts";
 import { VoiceRegistry } from "../../src/server/voice/registry.ts";
 import { createVoiceHandlers } from "../../src/server/voice/handlers.ts";
@@ -19,7 +20,7 @@ import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 const config = { origin: "https://voice.example", secure: true, cookieSecret: randomBytes(32).toString("hex"), apiKey: "sk-synthetic02d-not-a-real-key" };
 const registries: VoiceRegistry[] = [];
 afterEach(() => { for (const r of registries.splice(0)) r.dispose(); });
-function fixture(kind = "PDF", options: Partial<ConstructorParameters<typeof VoiceRegistry>[0]> = {}) {
+function fixture(kind = "PDF", options: Partial<ConstructorParameters<typeof VoiceRegistry>[0]> = {}, diagnostics?: () => PreparationTrace | undefined) {
   let at = Date.now(), available = true, calls = 0, reads = 0;
   const now = () => at, visitor = createVisitor(config, at), db = new SyntheticSourceDatabase();
   const row = kind === "PDF" ? uploadedRecord(pdfFixture, visitor) : captionRecord(captionFixture, visitor);
@@ -29,7 +30,7 @@ function fixture(kind = "PDF", options: Partial<ConstructorParameters<typeof Voi
   let mint: VoiceMint = async ({ signal }) => { assert.equal(signal.aborted, false); return { clientSecret: "ek_synthetic02d", expiresAt: Math.floor(at / 1000) + 60 }; };
   const registry = new VoiceRegistry({ repository: { get: (...args) => { reads++; return get(...args); } }, now,
     mint: input => { calls++; return mint(input); }, ...options }); registries.push(registry);
-  const handlers = createVoiceHandlers({ config: () => available ? config : null, registry, now });
+  const handlers = createVoiceHandlers({ config: () => available ? config : null, registry, now, diagnostics });
   const cookie = visitorCookie(visitor, config, at).split(";", 1)[0], requestId = randomUUID();
   const request = (input: unknown, headers: Record<string, string> = {}, signal = new AbortController().signal) => new Request(config.origin + "/api/voice-preparations", {
     method: "POST", headers: { cookie, origin: config.origin, "content-type": "application/json", ...headers }, body: JSON.stringify(input), signal });
@@ -278,3 +279,97 @@ test("02D provider already-aborted does not acquire transport", async () => {
   await assert.rejects(mint({ apiKey: config.apiKey, safetyIdentifier: "x", signal: AbortSignal.abort() })); assert.equal(calls, 0);
 });
 
+
+
+function diagnosticFixture(options: Partial<ConstructorParameters<typeof VoiceRegistry>[0]> = {}) {
+  const lines: string[] = [];
+  const f = fixture("PDF", options, createPreparationDiagnostics(line => lines.push(line)));
+  const events = () => lines.map(line => JSON.parse(line) as { event: string; sample: number; stage: string; elapsedMs: number; status: number });
+  return { f, lines, events };
+}
+test("08H success traces authorization, all five repository reads, context and serialized response without request data", async () => {
+  const { f, lines, events } = diagnosticFixture();
+  const response = await f.prepare(); assert.equal(response.status, 201);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.deepEqual(events().map(e => e.stage), ["entry", "authorization", "body", "registry", "initial_authorization",
+    "repository_start", "repository_end", "context", "repository_start", "repository_end", "repository_start",
+    "repository_end", "repository_start", "repository_end", "final_authorization", "repository_start", "repository_end", "response", "exit"]);
+  assert.equal(events().at(-1)?.status, 201); assert.equal(f.calls, 0);
+  for (const value of [f.row.id, f.requestId, f.visitor.owner, f.visitor.token, f.row.fullText, config.apiKey, config.cookieSecret])
+    assert.equal(lines.join("").includes(value), false);
+  const count = lines.length;
+  await f.handlers.cancel(f.request({ sourceId: f.row.id, requestId: f.requestId }));
+  assert.equal(lines.length, count); clean(f);
+});
+for (const read of [1, 2, 3, 4, 5]) for (const reason of ["deadline", "abort", "stop"] as const)
+  test(`08H held repository read ${read}: ${reason}, no late result or diagnostic revival`, async () => {
+    const { f, lines, events } = diagnosticFixture({ limits: { preparationMs: 100 } });
+    const held = deferred<typeof f.row>(); let reads = 0;
+    f.read((...args) => ++reads === read ? held.promise : f.repo.get(...args));
+    const abort = new AbortController(), request = f.request({ sourceId: f.row.id, requestId: f.requestId }, {}, abort.signal);
+    const pending = f.handlers.prepare(request); await until(() => reads === read);
+    assert.equal(events().at(-1)?.stage, "repository_start");
+    if (reason === "abort") abort.abort();
+    if (reason === "stop") assert.equal((await f.handlers.cancel(f.request({ sourceId: f.row.id, requestId: f.requestId }))).status, 200);
+    assert.equal((await pending).status, 404); assert.equal(events().at(-1)?.status, 404); clean(f);
+    assert.equal(getEventListeners(request.signal, "abort").length, 0);
+    const count = lines.length;
+    if (read % 2) held.resolve(f.row); else held.reject(new Error("PRIVATE_SOURCE_COOKIE_KEY_SENTINEL"));
+    await delay(5); clean(f); assert.equal(lines.length, count); assert.equal(f.calls, 0);
+  });
+for (const reason of ["deadline", "abort"] as const) test(`08H pre-registry body ${reason} is bounded, releases reader and admission`, async () => {
+  const { f, events } = diagnosticFixture(); let cancelled = 0;
+  const abort = new AbortController();
+  const request = new Request(f.request({}), { body: new ReadableStream({ cancel() { cancelled++; } }), signal: abort.signal, duplex: "half" } as RequestInit);
+  const pending = f.handlers.prepare(request);
+  assert.equal(events().at(-1)?.stage, "body");
+  if (reason === "abort") abort.abort();
+  assert.equal((await pending).status, 400); assert.equal(events().at(-1)?.status, 400);
+  assert.equal(cancelled, 1); assert.equal(f.reads, 0); assert.equal(f.calls, 0);
+  assert.equal(getEventListeners(request.signal, "abort").length, 0);
+  assert.equal((await f.prepare()).status, 201);
+});
+test("08H repository exceptions expose only category and status; auth denial never reads", async () => {
+  const { f, lines, events } = diagnosticFixture();
+  f.read(async () => { throw new Error("PRIVATE_SOURCE_COOKIE_KEY_SENTINEL"); });
+  assert.equal((await f.prepare()).status, 404);
+  assert.ok(events().some(e => e.stage === "repository_failed"));
+  assert.equal(lines.join("").includes("PRIVATE_SOURCE_COOKIE_KEY_SENTINEL"), false);
+  const reads = f.reads;
+  const r = await f.handlers.prepare(f.request({}, { cookie: "PRIVATE_SOURCE_COOKIE_KEY_SENTINEL" }));
+  assert.equal(r.status, 401); assert.equal(f.reads, reads); assert.equal(f.calls, 0);
+});
+test("08H synchronous work cannot be preempted by timers but cannot publish an expired preparation", async () => {
+  const { f, events } = diagnosticFixture({ now: Date.now, limits: { preparationMs: 10 } });
+  f.read(async () => { const end = performance.now() + 35; while (performance.now() < end) { /* controlled CPU stall */ } return f.row; });
+  assert.equal((await f.prepare()).status, 404); clean(f); assert.equal(f.calls, 0);
+  assert.ok(events().at(-1)!.elapsedMs >= 35);
+});
+test("08H diagnostics have closed fields, bounded sampling/output, clamped timing and inert late calls", () => {
+  const lines: string[] = []; let at = 0;
+  const begin = createPreparationDiagnostics(line => lines.push(line), () => at);
+  for (let n = 0; n < 1000; n++) {
+    const trace = begin();
+    if (!trace) continue;
+    trace.mark("PRIVATE_SOURCE_COOKIE_KEY_SENTINEL" as "body");
+    for (let i = 0; i < 1000; i++) trace.mark("body");
+    trace.finish(999); trace.mark("context"); trace.finish(201);
+  }
+  assert.equal(lines.length, 128);
+  for (const line of lines) {
+    const e = JSON.parse(line);
+    assert.deepEqual(Object.keys(e).sort(), ["elapsedMs", "event", "sample", "stage", "status"]);
+    assert.equal(e.event, "voice_preparation"); assert.ok(["entry", "body", "exit"].includes(e.stage));
+    assert.equal(e.status, 0); assert.equal(e.elapsedMs, 0); assert.ok(e.sample >= 1 && e.sample <= 4);
+  }
+  assert.equal(lines.join("").includes("SENTINEL"), false);
+  at = 60_000; const trace = begin()!; assert.ok(trace);
+  at = 999_999; trace.mark("body"); assert.equal(JSON.parse(lines.at(-1)!).elapsedMs, 300_000);
+  at = -10; trace.mark("body"); assert.equal(JSON.parse(lines.at(-1)!).elapsedMs, 0);
+  at = NaN; trace.finish(503); assert.equal(JSON.parse(lines.at(-1)!).elapsedMs, 0);
+  assert.equal(begin(), undefined);
+});
+test("08H a failed log sink cannot break preparation", async () => {
+  const f = fixture("PDF", {}, createPreparationDiagnostics(() => { throw new Error("PRIVATE_LOG_SINK_SENTINEL"); }));
+  assert.equal((await f.prepare()).status, 201); assert.equal(f.calls, 0);
+});

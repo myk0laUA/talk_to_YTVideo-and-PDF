@@ -1,4 +1,5 @@
 import "server-only";
+import type { PreparationTrace } from "./diagnostics.ts";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { PROVIDER_VOICE_POLICY as policy } from "../../shared/priming-provider-policy.ts";
 import type { ProviderPrimingInput } from "../../shared/priming-admission.ts";
@@ -51,9 +52,9 @@ export class VoiceRegistry {
     if (e.input && !matchesProviderPreparation(e.input, { model: policy.model, mode: "voice", policyVersion: policy.policyVersion,
       sourceId: e.sourceId, runId: e.runId }, this.now())) throw new VoiceError();
   }
-  private async authorize(e: Entry, freshVisitor: () => void) {
+  private async authorize(e: Entry, freshVisitor: () => void, repository = this.deps.repository) {
     const guard = () => this.guard(e, freshVisitor); guard();
-    const row = await guardedAwait(() => this.deps.repository.get(e.sourceId, e.visitor.owner, new Date(this.now())), e.abort.signal, guard);
+    const row = await guardedAwait(() => repository.get(e.sourceId, e.visitor.owner, new Date(this.now())), e.abort.signal, guard);
     guard(); requireOwned(row, e.visitor, this.now());
     if (row.id !== e.sourceId || (e.input && contextVariants(sourceContext(row)).B.serialized !== e.input.variant.serialized)) throw new VoiceError();
     if (!Number.isFinite(row.expiresAt.getTime()) || row.expiresAt.getTime() <= this.now()) throw new VoiceError();
@@ -64,7 +65,7 @@ export class VoiceRegistry {
     e.expires = at; clearTimeout(e.timer);
     e.timer = setTimeout(() => this.close(e), Math.max(1, at - this.now()));
   }
-  async prepare(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal, freshVisitor: () => void) {
+  async prepare(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal, freshVisitor: () => void, trace?: PreparationTrace) {
     const key = `${visitor.owner}:${requestId}`;
     if (this.seen.has(key) || this.owners.has(visitor.owner)) throw new VoiceError(409);
     if (this.entries.size >= this.limits.entries || this.seen.size >= this.limits.replayEntries) throw new VoiceError(429);
@@ -78,12 +79,20 @@ export class VoiceRegistry {
     const cancel = () => this.close(e); signal.addEventListener("abort", cancel, { once: true });
     try {
       if (signal.aborted) throw new VoiceError();
-      await this.authorize(e, freshVisitor);
-      const prepare = createProviderVoicePreparation({ repository: this.deps.repository, now: this.now });
+      const repository: Pick<SourceRepository, "get"> = { get: async (...args) => {
+        trace?.mark("repository_start");
+        try { const row = await this.deps.repository.get(...args); trace?.mark("repository_end"); return row; }
+        catch (error) { trace?.mark("repository_failed"); throw error; }
+      } };
+      trace?.mark("initial_authorization");
+      await this.authorize(e, freshVisitor, repository);
+      trace?.mark("context");
+      const prepare = createProviderVoicePreparation({ repository, now: this.now });
       const result = await guardedAwait(() => prepare({ visitor: e.visitor, sourceId, signal: e.abort.signal, model: policy.model,
         mode: "voice", policyVersion: policy.policyVersion, runId: e.runId, variant: "B" }), e.abort.signal, () => this.guard(e, freshVisitor));
       if (result.status !== "prepared") throw new VoiceError();
-      e.input = result.input; await this.authorize(e, freshVisitor); this.guard(e, freshVisitor);
+      e.input = result.input; trace?.mark("final_authorization");
+      await this.authorize(e, freshVisitor, repository); this.guard(e, freshVisitor);
       this.deadline(e, Math.min(this.now() + this.limits.ticketMs, visitor.expiresAt * 1000, Date.parse(e.input.variant.source.expiresAt)));
       this.guard(e, freshVisitor);
       return { preparationId: e.id, requestId, expiresAt: e.expires, conversationReady: false, providerConfirmed: false, input: e.input };
