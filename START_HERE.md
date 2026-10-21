@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08O:** v6 prompt accepted offline for controlled comparison;9 hashes and fresh215 checks pass. Neither reported symptom proven fixed. Next PM comparison, no active worker task. Live remains5d496b1 with voice enabled.
+
 **Current PM08N deployed:** 5d496b1 is Live with voice enabled; backend readiness passes. Next one iPhone/headphone safe-trace test; spoken-only cause remains unresolved. No active worker task.
 
 **Current PM08N review:** accepted for deployment as partial diagnosis; 15 hashes and fresh312 checks pass. Stale manual clear fixed; spoken headphone symptom remains unresolved. Next deployment and one safe-trace phone check. Voice stays enabled; no active worker implementation task.

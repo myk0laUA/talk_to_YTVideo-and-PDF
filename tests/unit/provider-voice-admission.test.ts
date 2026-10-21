@@ -22,9 +22,28 @@ import { initialVoiceSession } from "../../src/server/voice/provider.ts";
 
 const evidence: unknown[] = [];
 
+test("08O voice-only Stop/Continue candidate is bound to final ACK and rejects stale policy", async () => {
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
+  assert.match(policy.answerInstructions, /When the user asks you to stop/);
+  assert.match(policy.answerInstructions, /Never restart or resume/);
+  assert.match(policy.answerInstructions, /remaining point rather than restarting/);
+  const s = await source();
+  assert.equal((await s.prepare({ ...s.args, policyVersion: "provider-voice-full-source-2026-10-21-v5" })).status, "unavailable");
+  assert.equal(s.db.reads, 0);
+  const h = await lifecycle(); await h.begin(); await h.initial(); await h.items();
+  const final = h.transport.config();
+  final.session.instructions = final.session.instructions.replace(policy.answerInstructions, "Old concise-only instruction.");
+  h.transport.emit(final); await flush();
+  assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0);
+  h.transport.emit(h.transport.config()); await flush(); assert.equal(h.mediaCalls(), 0); h.clean();
+  const p = await input();
+  const text = encodeManifest(p.projection.variant, "text08O", "text", 16384, true);
+  assert.doesNotMatch(text.finalize.session.instructions, /When the user asks you to stop/);
+});
+
 test("08K finite voice output headroom agrees across issuance and both priming stages", async () => {
   assert.equal(policy.maxOutputTokens, 2048);
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v5");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
   assert.equal(initialVoiceSession.max_output_tokens, 2048);
   const h = await input();
   for (const event of [h.projection.manifest.configure, h.projection.manifest.finalize]) {
@@ -385,7 +404,7 @@ test("09C provider empty transcription defaults preserve the exact model barrier
 
 test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
   const h = await lifecycle(); await h.begin();
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v5");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
   assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
   assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
     { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600, threshold: policy.activationThreshold });

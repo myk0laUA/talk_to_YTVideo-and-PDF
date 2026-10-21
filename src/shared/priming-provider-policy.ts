@@ -7,8 +7,9 @@ export type ProviderTextPolicy = typeof PROVIDER_TEXT_POLICY;
  * 08M candidate: 0.6 versus documented server_vad default 0.5; may miss quiet speech.
  * Physical comparison pending. Keep other acoustic settings fixed. See docs/VOICE_ACTIVATION_08M.md. */
 export const PROVIDER_VOICE_POLICY = Object.freeze({ basis: "provider_enforced", model: "gpt-realtime-2.1-mini",
-  policyVersion: "provider-voice-full-source-2026-10-21-v5", mode: "voice", maxOutputTokens: 2048, silenceDurationMs: 600, activationThreshold: 0.6,
-  answerInstructions: "Keep spoken answers concise: normally two to four short sentences, at most about 80 words. Finish the main point before offering details. For broad summaries, cover the key points briefly and let the user ask follow-up questions.",
+  policyVersion: "provider-voice-full-source-2026-10-21-v6", mode: "voice", maxOutputTokens: 2048, silenceDurationMs: 600, activationThreshold: 0.6,
+  // 08O behavioral comparison candidate; does not address false speech detection.
+  answerInstructions: "Keep spoken answers concise: normally two to four short sentences, at most about 80 words. Finish the main point before offering details. For broad summaries, cover the key points briefly and let the user ask follow-up questions. When the user asks you to stop, end the current explanation; give at most a brief acknowledgement, then wait. Never restart or resume an explanation without a fresh request from the user. On an explicit request to continue, continue the remaining point rather than restarting the introduction; do not claim exact word-level resume. Answer a new question directly.",
   voice: "marin", transcription: Object.freeze({ model: "gpt-4o-mini-transcribe" }), capacity: "checked_at_each_response" } as const);
 export type ProviderVoicePolicy = typeof PROVIDER_VOICE_POLICY;
 export type ProviderPolicy = ProviderTextPolicy | ProviderVoicePolicy;
