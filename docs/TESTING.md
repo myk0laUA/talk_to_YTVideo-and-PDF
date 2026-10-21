@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## PM08O assignment — 21 October 2026 Toronto
+
+User clarifies lag is failed spoken Stop with restart from beginning and spontaneous interruption during silence. PM inspected assembled voice-policy path and response controller: voice instructions lack explicit Stop/continue semantics; spoken VAD path observes events, manual button sends cancel/clear, final provider policy permits automatic response creation. Prompt behavior is plausible for repetition but cannot alone establish the cause of quiet-input interruption. Latest screenshots provide incomplete trace and no proven audio route.
+
+Sole worker task WORKER_TASK_08O.md: detailed prompt/history/control-flow isolation, narrow red-before reproduced correction, one voice-only prompt candidate if justified, and runnable controlled WebRTC comparison preparation. Worker offline only; PM later owns bounded provider comparison using existing spending authorization and a new ledger. Do not repeat microphone-threshold tuning or claim physical success from mocks. No application/provider/host change this PM turn; voice enabled on5d496b1. One search included nonexistent source-context.ts and exited1; actual context/document.ts was located and inspected.
+
 ## PM08N iPhone screenshots — 21 October 2026 Toronto
 
 User reports interactions still feel laggy after08N deployment. Twelve screenshots show successful setup: preparation441ms, final-settings ACK3254ms, microphone attachment5095ms (cumulative since setup began, not separate stage durations). Transcript shows Stop acknowledgements, a distinct follow-up, several interrupted labels and later blank displayed user turns followed by additional assistant replies. This is partial physical evidence, not natural-interruption/latency acceptance. Current headset use, meaning/duration of lag, intentional speech behind blank turns, and quiet-interval outcome are not confirmed in this report.
