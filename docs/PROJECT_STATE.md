@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08I diagnostics deployed —21October2026Toronto
+
+User requested deployment with voice kept enabled. Published5242dfba5f2f7dbe595b6d4c67f0155383e3238d (push exit0); Render dep-dbc4shrrjlhs73ari9eg Live01:33:45Toronto. Startup visibly retains owned voice/text/PDF=true, YouTube/proofs=false; no secret/configuration changes. Fresh pinned Node HTTP check exit0: root200, unauthenticated voice preparation401/no-store. No paid/provider call or source upload. Evidence artifacts/local/08i-hosted/readiness.json and deployed.png.
+
+Next user check: reload Chrome, import small PDF, Start once, expand Voice setup details and report exact safe reason/time on failure; stop after one short answer on success. Diagnostic deployment is not a repaired cause or completed voice gate. No active worker implementation task. Voice stays enabled per standing user instruction.
+
 ## PM08I partial acceptance —21October2026Toronto
 
 Accepted safe validation categories and serialized browser-contract coverage, not a root-cause repair. All13delivery SHA256 hashes match before PM documentation edits. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/voice-diagnostics.test.ts tests/unit/priming.test.ts` PASS164/164 exit0, artifacts/local/08i/pm-focused.log. Reviewed adapter/admission equivalence, allowlisted category projection, lifecycle forwarding and synthetic390px ticket_future screenshot. No blocking scoped finding. Worker28native scenarios/1524units/built checks remain offline evidence on dqG5-FSyISEEOCazYPUxD.
