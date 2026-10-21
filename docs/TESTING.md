@@ -1,5 +1,15 @@
 # Testing and evidence — Talk to a Document
 
+**PM03E partial acceptance:**5hashes matched; fresh149focused tests exit0. Summary claim/citation accuracy FAIL, follow-up PASS by worker live evidence.03F requires deterministic stored timestamp/excerpt resolution plus independent semantic support evaluation; lexical quote membership alone is not grounded-answer acceptance. No PM live retry.
+
+## Task03E verification — 21 October 2026 Toronto
+
+[03E report](YOUTUBE_CITATIONS_03E.md). **READY_FOR_REVIEW with summary citation gate BLOCKED.** Main `db2a665ecacf0966562ca219f0c1c2220d7103c2` plus dirty delivery, normal uninstrumented build `hsh-GKuPBHnkbzIWSiE6U`. Pinned Node24.22.0/npm11.19.1 isolated secret-free configuration/external network denial: focused231/231, lint, typecheck, unit1649/1649, build, owned-text417, owned-voice125unit+392built, voice-adapter113unit+571built checks all exit0. Twenty-four real-caption-voice/authored-PDF manifest comparisons unchanged byte-for-byte versus HEAD. All original full captions/locators retained; six new authored tests verify citation metadata/instruction binding and final ACK/stale rejection, not live model compliance.
+
+Actual UI/direct uncached/real owned PostgreSQL/OpenAI text: one same-video `sq` import,428sections/18,822characters, complete XML/storage/preview fidelity PASS. Ready3464ms browser wall time. Planned summary and follow-up complete within45s and survive Stop. **Summary FAIL** (two invalid ID/time pairs; third citation only partially supports compound claim); **Princeton follow-up PASS** (both facts and exact supporting reference). No output rewriting/resolution or second session. Raw answers/every emitted citation/actual passages and evaluation in ignored `artifacts/local/03e/answer-checks.json`; screenshots/logs alongside. Stop at failed-candidate evidence, return bounded next design to PM.
+
+Fresh ledger closed at$0.158reserved of$0.25estimated;1session/2responses/1extraction, actual usage/billing UNKNOWN. Source DELETE200/ownGET404, full preview retention, browser/server cleanup/port3133 rebind/private integrity PASS. Commands/exits/times/hashes/build identity and honest intermediate2048-byte instruction-size failure recorded in03e artifacts/report. No deployment, live voice or phone check; public voice enabled/YouTube disabled unchanged. Neither full03E nor universal citation reliability is passed.
+
 **PM03D correction2 review:**11hashes matched;169focused tests pass exit0. Same-video setup and response completion accepted in scoped local evidence; citation grounding FAIL remains.03E must verify every emitted citation against its supporting passage; correct facts with wrong timestamps do not pass. No fresh PM live provider calls.
 
 ## Task03D correction 2 verification — 21 October 2026 UTC

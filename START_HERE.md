@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03F:**03E partial review passes5hashes/149checks; factual follow-up citation passes, summary citations fail. Sole task [03F](docs/WORKER_TASK_03F.md) adds bounded source-resolved evidence for YouTube text, with semantic evaluation still required. No deployment; public voice enabled/YouTube disabled.
+
 **Current PM03E:** local YouTube setup accepted after lossless packing (11hashes/fresh169checks; ready~1.5s). Answers complete but citations inaccurate. Sole task [03E](docs/WORKER_TASK_03E.md) corrects and verifies text source references. No deployment; public voice enabled, YouTube disabled. Older summaries historical.
 
 **Current PM03D correction2:** bounded text delivery accepted (6hashes/fresh184checks). Full local grounding still blocked at321/428ACKs. Sole task [03D correction2](docs/WORKER_TASK_03D_CORRECTION_2.md) identifies first terminal cause with lightweight timing and resolves the evidenced readiness failure. Voice stays enabled; no deployment.
