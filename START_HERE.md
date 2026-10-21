@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03D correction:** local real captions/storage/preview accepted partially; grounded conversation blocked before readiness. Sole task [03D correction](docs/WORKER_TASK_03D_CORRECTION.md) fixes reproduced send-pressure hazard and verifies live recovery. Live cause still unconfirmed. Voice stays enabled; public YouTube disabled. Older summaries below are historical.
+
 **Current PM03D assignment:** sole worker task [03D](docs/WORKER_TASK_03D.md): real local uncached free-direct YouTube import, complete preview and grounded text summary/follow-up. Public voice remains enabled and public YouTube disabled. Latest PROJECT_STATE supersedes historical summaries below.
 
 **Current PM08O deployed:**52ba0a0 is Live with voice enabled. User chose iPhone testing next; controlled comparison NOT_RUN. Prompt effectiveness and quiet-input interruption remain unverified.

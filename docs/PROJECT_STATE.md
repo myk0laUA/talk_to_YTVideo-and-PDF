@@ -1,5 +1,14 @@
 # Project state — Talk to a Document
 
+## PM03D partial review and correction assignment — 21 October 2026 Toronto
+
+Reviewed worker report and preservation/cleanup/provider/backpressure artifacts against current source. Accept local uncached direct import and full428segment preservation as partial03D evidence; required summary/follow-up remain BLOCKED. Actual language sq, not English proof. Code confirms synchronous source burst and256KB native-buffer closure guard; offline hazard reproduced by worker, live cause not proven because outgoing live pressure was not captured. No PM runtime/provider test this review. Sole active task WORKER_TASK_03D_CORRECTION.md: bounded paced delivery with cancellation/ACK regressions, then new <=US$0.25 estimated/2session/4response local verification allocation. Original03D allowance closed. Public voice enabled/YouTube disabled; no deployment or later step advancement. Worker documentation retained; PM application code unchanged.
+
+## Worker03D blocked — 21 October 2026 UTC
+
+[Local03D report](YOUTUBE_LOCAL_03D.md): real UI uncached direct import/real owned PostgreSQL/full preview PASS for Ks-_Mh1QhMc (language omitted → sq),428segments/18,822characters, complete XML→storage→DOM equality. Main HEAD4c61f3c, reused matching ducfQssE9QVLoPltybUbS, documentation-only dirty delivery. Both allowed text sessions failed before readiness; zero questions/answers. Second observer sees initial configuration ACK then close1006, no source ACK/provider error. Offline held socket reproduces256KB backpressure failure for313,622-byte manifest; live cause remains unconfirmed. No product fix/third session. New03D ledger reserves$0.158 of$0.25, actual usage unknown. Preview retained, malformed URL zero requests, test source DELETE200/GET404, processes closed/private hashes unchanged. Public voice remains enabled/YouTube disabled; no deployment. Full03D gate BLOCKED, returned to PM for bounded transport investigation and new live allowance if assigned; no later step advanced.
+
+
 ## PM03D assignment — 21 October 2026 Toronto
 
 User approved proceeding with the delivery sequence. Sole active worker task WORKER_TASK_03D.md closes the local YouTube import/preview/grounded-text gate. Delegated loopback-only real application verification with existing private credentials and fresh owned visitor; maximum four direct extraction attempts across three videos,45-minute extraction investigation, and NEW <=US$0.25 estimated text ledger/two sessions/four responses. One narrow evidenced integration correction allowed; larger or upstream blocker returns to PM. No provisioning, deployment, public activation, voice changes or database administration. Live remains52ba0a0; voice enabled, YouTube disabled. User need only paste the brief into the worker chat; no new account or phone test now. Documentation-only assignment; no runtime tests or live provider calls this PM turn.

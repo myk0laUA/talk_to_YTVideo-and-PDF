@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+**PM03D correction pending:** partial caption preservation evidence accepted. Bounded transport pacing, abort/Stop/ACK regressions and fresh real local summary/follow-up are required by WORKER_TASK_03D_CORRECTION.md. No PM fresh runtime tests; worker offline reproduction is not confirmed live causation.
+
+## Task03D local live result — 21 October 2026 UTC
+
+See [YOUTUBE_LOCAL_03D.md](YOUTUBE_LOCAL_03D.md) for exact commands/observed UTC/build identity and limitations. Real direct uncached import, full428segment XML/storage/preview comparison, malformed-URL no-call validation and owned removal pass on ducfQssE9QVLoPltybUbS. Both authorized text sessions close before readiness: summary/follow-up BLOCKED, zero questions sent. Offline held-socket reproduction identifies a backpressure hazard, not proven live causation. No runtime correction or fresh full-suite claim. Microphone-denial attempt ended with permission prompt state; denied-microphone gate NOT_PASSED. Two-session allowance consumed; do not rerun live under03D. Artifacts/ledger/cleanup/hashes in ignored artifacts/local/03d/. Hosted/phone/YouTube-voice checks remain separate.
+
+
 **Task03D pending:** current real local uncached direct YouTube → complete preview → grounded text summary/follow-up is NOT_RUN. Follow WORKER_TASK_03D.md for bounded live attempts, safe evidence and cleanup. Historical extraction/mocked UI results are not this gate; hosted/YouTube voice/physical-device checks remain separate.
 
 ## PM08O deployed — 21 October 2026 Toronto
