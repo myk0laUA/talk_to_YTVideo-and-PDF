@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## PM08M deployed —21October2026Toronto
+
+User requested deployment with voice enabled. Published74ec316bfcae7929eaab94905f163672c3b567a4 (push exit0). Render dep-dbch03vavr4c73ckqibg reports Deploy succeeded/Live at15:19:55Toronto; startup confirms owned voice/text/PDF enabled, YouTube/proofs disabled. No configuration/secret changes. Pinned Node HTTP check at19:20:20UTC PASS/exit0: root200, same-origin unauthenticated preparation401/no-store. Evidence artifacts/local/08m-hosted/readiness.json and deployed.png. No PM provider call.
+
+Next human check: reload iPhone, import same PDF, enable microphone/playback; same volume/position, listen silently through a concise summary then deliberately interrupt a new answer with a follow-up at ordinary volume, verify complete reply and Stop. Record unwanted cancellations versus missed deliberate speech separately. Capture safe setup/completion details on first failure; no repeated tuning attempts. Live provider ACK and acoustic improvement remain pending; readiness is not voice acceptance. Voice stays enabled. No active worker task.
+
+
 ## PM08M offline acceptance —21October2026Toronto
 
 Accepted one explicit0.6 speech-activation candidate for deployment/device comparison, not a proven acoustic improvement. All11 delivery SHA256 hashes match. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/provider-voice-admission.test.ts tests/unit/owned-voice.test.ts tests/unit/priming.test.ts tests/unit/voice-interruption.test.ts` PASS407/407 exit0; artifacts/local/08m/pm-focused.log. Reviewed v5 policy, final manifest/exact threshold ACK checks, initial disabled VAD, stale-policy and wrong/missing-threshold rejection plus built-browser evidence. No blocking scoped finding. Worker1590units/557built adapter checks remain separate offline evidence on3-El-Z-klqlvRbPgJxn3X.
