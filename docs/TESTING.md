@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## PM08K hosted user verification —21October2026Toronto
+
+After PM deployed cd48889 and requested Chrome reload/PDF/voice with speaker playback, concise summary plus follow-up and Stop, user reports: yep, just tested everything, it works good. Accept the requested hosted Chrome summary/follow-up flow by user report; no new screenshot/provider event/usage trace or independent PM observation supplied. This closes the08K affected-Chrome completion check at user-report evidence level, not a universal no-truncation guarantee. Previous local reproduction and offline tests remain separate evidence.
+
+Voice remains enabled per user instruction. No application/deployment/provider call this turn. Physical-phone voice, interruption/recovery checks, hosted YouTube ingestion, expiry/renewal UX and final release evaluation remain separate outstanding work; no blanket completion of original Steps01–14. No active worker task assigned by this status update.
+
 ## PM08K fix deployed —21October2026Toronto
 
 User requested deployment with voice enabled. Published cd48889ee0ea2fcf9484c2a1ec9aca94b9c06666 (push exit0). Render dep-dbcfq8uea8bs73fdj49g Live13:59:35Toronto; startup confirms owned voice/text/PDF=true, YouTube/proofs=false. No configuration/secret change. Fresh pinned Node HTTP readiness exit0: root200 and unauthenticated voice preparation401/no-store. Evidence artifacts/local/08k-hosted/readiness.json and deployed.png. No PM provider call.
