@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08O user-confirmed spoken Stop — 21 October 2026 Toronto
+
+User explicitly confirms the assistant stopped speaking when asked, and reports testing silence, Continue and deliberate gibberish. Accept spoken Stop in this reported test on deployed52ba0a0. Screenshots show a stop acknowledgement and subsequent continuation; deliberate gibberish means unusual transcription is not by itself evidence of spontaneous input or self-interruption. Do not request the same clarification again. Exact quiet-interval timing, word-level resume and physical device/audio route remain unmeasured; do not generalize this result to all iPhone speaker conditions or claim the earlier acoustic issue universally fixed.
+
+Stop acknowledgement remains verbose and continuation re-summarizes material; retain as behavior/polish observations, not a new blocker without a reported failure. Controlled v5/v6 comparison remains NOT_RUN. No new worker task, application changes, deployment or provider calls. Voice remains enabled. Next PM sequencing should return to remaining delivery gates rather than repeat generic voice diagnosis.
+
 ## PM08O user screenshot result — 21 October 2026 Toronto
 
 User returned one screenshot after requested summary/Stop/quiet/Continue test. Visible transcript shows summary marked interrupted, transcribed Stop, a verbose stop acknowledgement also marked interrupted, another short input rendered in non-English characters, then an answer beginning Continuing the summary. Session appears ready with microphone available and playback enabled. Screenshot does not establish heard stop latency, five-second silence, whether the later input was deliberate Continue, or device/audio route. Do not treat odd ASR text as proof of false input, prompt success, or actual word-level resume. Setup/completion details are collapsed. Await concise human clarification of audible Stop/quiet/Continue behavior before accepting or assigning another correction. No application/deployment/provider change; voice remains enabled on52ba0a0.
