@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## PM08K fix deployed —21October2026Toronto
+
+User requested deployment with voice enabled. Published cd48889ee0ea2fcf9484c2a1ec9aca94b9c06666 (push exit0). Render dep-dbcfq8uea8bs73fdj49g Live13:59:35Toronto; startup confirms owned voice/text/PDF=true, YouTube/proofs=false. No configuration/secret change. Fresh pinned Node HTTP readiness exit0: root200 and unauthenticated voice preparation401/no-store. Evidence artifacts/local/08k-hosted/readiness.json and deployed.png. No PM provider call.
+
+Next user check: reload Chrome, upload small PDF, start voice with microphone and speaker playback enabled; request concise summary, wait for full completion, ask one short follow-up, Stop. On incomplete result capture Answer completion details reason/output counts and stop retrying. New v4/2048 release is deployed, but successful real summary/follow-up and physical audio acceptance remain pending. Voice stays enabled per user. No active worker task.
+
 ## PM08K correction accepted offline —21October2026Toronto
 
 Accepted evidence-backed finite voice output correction, not live completion. All18delivery hashes matched. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-terminal.test.ts tests/unit/provider-voice-admission.test.ts tests/unit/voice-interruption.test.ts tests/unit/transcript.test.ts` PASS267/267 exit0, artifacts/local/08k/pm-focused.log. Reviewed v4/2048 exact shared policy, voice-only concise instructions, closed reason/numeric usage projection, retained incomplete state and unchanged text policy. Worker actual local terminal incomplete/max_output_tokens at512 (204text/308audio) supports the correction; earlier hosted terminal causes were not recorded. No blocking scoped review finding.
