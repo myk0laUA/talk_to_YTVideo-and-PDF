@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Task03D pending:** current real local uncached direct YouTube → complete preview → grounded text summary/follow-up is NOT_RUN. Follow WORKER_TASK_03D.md for bounded live attempts, safe evidence and cleanup. Historical extraction/mocked UI results are not this gate; hosted/YouTube voice/physical-device checks remain separate.
+
 ## PM08O deployed — 21 October 2026 Toronto
 
 User explicitly chose deployment and own testing before controlled comparison. Pushed52ba0a013c5693127343915b05a685fc6adefc7a (exit0); Render dep-dbcidpd9fdbs73a1gt9g reports Deploy succeeded / Live, instance nlgfq ready16:57:21 and live16:57:26Toronto. Startup confirms voice/text/PDF enabled, YouTube/proofs disabled. No configuration/secrets/DB changes; hosting remains Free. v6 prompt candidate is deployed, not behaviorally accepted.

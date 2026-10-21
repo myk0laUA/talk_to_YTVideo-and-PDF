@@ -1,5 +1,9 @@
 # Project state — Talk to a Document
 
+## PM03D assignment — 21 October 2026 Toronto
+
+User approved proceeding with the delivery sequence. Sole active worker task WORKER_TASK_03D.md closes the local YouTube import/preview/grounded-text gate. Delegated loopback-only real application verification with existing private credentials and fresh owned visitor; maximum four direct extraction attempts across three videos,45-minute extraction investigation, and NEW <=US$0.25 estimated text ledger/two sessions/four responses. One narrow evidenced integration correction allowed; larger or upstream blocker returns to PM. No provisioning, deployment, public activation, voice changes or database administration. Live remains52ba0a0; voice enabled, YouTube disabled. User need only paste the brief into the worker chat; no new account or phone test now. Documentation-only assignment; no runtime tests or live provider calls this PM turn.
+
 ## PM delivery reassessment — 21 October 2026 Toronto
 
 Current evidence supersedes older status summaries (including the original Steps table and README claims that uploaded-source voice/text are not connected). Live52ba0a0: PDF import/full preview/storage, hosted grounded text, native voice/transcription and human Chrome/phone interactions have scoped evidence; user confirms spoken Stop on08O. Do not infer universal acoustic acceptance or completion of all original Step gates.

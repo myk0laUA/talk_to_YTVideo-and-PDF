@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03D assignment:** sole worker task [03D](docs/WORKER_TASK_03D.md): real local uncached free-direct YouTube import, complete preview and grounded text summary/follow-up. Public voice remains enabled and public YouTube disabled. Latest PROJECT_STATE supersedes historical summaries below.
+
 **Current PM08O deployed:**52ba0a0 is Live with voice enabled. User chose iPhone testing next; controlled comparison NOT_RUN. Prompt effectiveness and quiet-input interruption remain unverified.
 
 **Current PM08O:** v6 prompt accepted offline for controlled comparison;9 hashes and fresh215 checks pass. Neither reported symptom proven fixed. Next PM comparison, no active worker task. Live remains5d496b1 with voice enabled.
