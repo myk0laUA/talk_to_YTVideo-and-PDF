@@ -6,7 +6,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     media: 0, attached: 0, trackStops: 0, remoteStops: 0, audio: 0, releases: 0, plays: 0,
     offers: 0, local: 0, remote: 0, sends: 0, finalAck: 0, items: 0, violations: 0 };
   const control = { hold: '', fault: '', denied: false, blockedPlayback: false, maxMessageSize: 16384, buffered: 0 };
-  const pending = [], peers = [], channels = [], tracks = [], trace = [], sourceParts = []; let eventSequence = 0;
+  const pending = [], peers = [], channels = [], tracks = [], trace = [], sourceParts = [], senders = [], speakers = []; let eventSequence = 0;
   class Target extends EventTarget {
     own = new Map();
     addEventListener(type, listener, options) {
@@ -25,7 +25,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     constructor(remote = false) { super(); this.remote = remote; tracks.push(this); }
     stop() { this.readyState = 'ended'; if (this.remote) counts.remoteStops++; else counts.trackStops++; }
   }
-  class Stream { constructor() { this.tracks = []; } getTracks() { return this.tracks; } addTrack(t) { this.tracks.push(t); } }
+  class Stream { constructor() { this.tracks = []; } getTracks() { return this.tracks; } addTrack(t) { if (!this.tracks.includes(t)) this.tracks.push(t); } }
   class Channel extends Target {
     readyState = 'connecting'; bufferedAmountLowThreshold = 0;
     constructor() { super(); counts.channels++; channels.push(this); }
@@ -69,10 +69,11 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     get sctp() { return { maxMessageSize: control.maxMessageSize }; }
     addTransceiver(kind, options) {
       if (kind !== 'audio' || options.direction !== 'sendrecv' || tracks.some(t => !t.remote && t.readyState === 'live')) counts.violations++;
-      return { sender: { replaceTrack: track => step('attach', () => {
+      const sender = { track: null, replaceTrack: track => step('attach', () => {
         if (track.enabled || !counts.finalAck) counts.violations++;
+        sender.track = track;
         counts.attached++; trace.push('attach');
-      }) } };
+      }) }; senders.push(sender); return { sender };
     }
     createDataChannel(name, options) { if (name !== 'oai-events' || !options.ordered) counts.violations++; return this.channel = new Channel(); }
     createOffer() { counts.offers++; return step('offer', () => ({ type: 'offer', sdp: 'v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\nm=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\n' })); }
@@ -89,11 +90,12 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     uuid: () => crypto.randomUUID(), fetch: (...args) => fetch(...args),
     media: () => { counts.media++; trace.push('media'); if (!counts.finalAck) counts.violations++;
       return step('media', () => { if (control.denied) throw new Error('denied'); const s = new Stream(); s.addTrack(new Track()); return s; }); },
-    audio: () => { counts.audio++; return { autoplay: false, srcObject: null,
+    audio: () => { counts.audio++; let bound = null; const speaker = { autoplay: false, assignments: 0,
+      get srcObject() { return bound; }, set srcObject(value) { bound = value; this.assignments++; },
       play: () => { counts.plays++; return step('play', () => { if (control.blockedPlayback) throw new Error('playback blocked'); }); },
-      pause() { counts.releases++; }, removeAttribute() {}, load() {} }; },
+      pause() { counts.releases++; }, removeAttribute() {}, load() {} }; speakers.push(speaker); return speaker; },
   };
-  const api = { counts, control, trace, deps, peers, channels, tracks, sourceParts,
+  const api = { counts, control, trace, deps, peers, channels, tracks, sourceParts, senders, speakers,
     release: phase => { const work = pending.splice(0); for (const p of work) if (!phase || p.phase === phase) p.release(); else pending.push(p); },
     emit: event => channels.at(-1).emit(event),
     snapshot: () => ({ captureRequest, activationThresholds: [...activationThresholds], counts: { ...counts }, trace: [...trace], pending: pending.length, liveTracks: tracks.filter(t => t.readyState === 'live').length,

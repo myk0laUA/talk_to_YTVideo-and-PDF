@@ -11,12 +11,121 @@ import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts"
 import { uploadedRecord, captionRecord } from "../../src/server/sources/service.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { fakeBrowserVoice } from "../voice-adapter/fakes.mjs";
+import { VoiceResponseController } from "../../src/shared/voice-response.ts";
+import { VoiceEventDiagnostics } from "../../src/shared/voice-event-diagnostics.ts";
 
 const config = { origin: "https://08d.invalid", cookieSecret: "08".repeat(32), secure: true, apiKey: "sk-synthetic08d-never-live" };
 const cleanups: (() => void)[] = [];
 afterEach(() => { for (const clean of cleanups.splice(0)) clean(); });
 const until = async (fn: () => boolean) => { for (let i = 0; i < 200; i++) { if (fn()) return; await new Promise(r => setTimeout(r, 1)); } assert.fail("condition deadline"); };
 const tick = () => new Promise(r => setImmediate(r));
+
+test("08N only the acquired mic reaches sender; duplicate remote delivery never rebinds or replays", async () => {
+  const f = fixture(); f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  const mic = f.native.tracks.find(t => !t.remote)!, remote = f.native.tracks.find(t => t.remote)!;
+  const sender = f.native.senders[0], speaker = f.native.speakers[0];
+  assert.equal(sender.track, mic); assert.notEqual(sender.track, remote);
+  assert.deepEqual(speaker.srcObject.getTracks(), [remote]); assert.equal(speaker.assignments, 1);
+  await f.controller.playAudio(); const plays = f.native.counts.plays;
+  const e = new Event("track"); Object.assign(e, { track: remote, streams: [speaker.srcObject] });
+  f.native.peers[0].dispatchEvent(e); f.native.peers[0].dispatchEvent(e);
+  assert.deepEqual(speaker.srcObject.getTracks(), [remote]); assert.equal(speaker.assignments, 1);
+  assert.equal(f.native.counts.plays, plays); assert.equal(sender.track, mic);
+  assert.equal(f.native.counts.peers, 1); assert.equal(f.native.counts.channels, 1); assert.equal(f.native.counts.media, 1);
+  await f.stopped();
+});
+
+test("08N queued old manual clear must not clear newer output after backpressure drains", async () => {
+  const f = fakeBrowserVoice(), pc = f.deps.peer(), dc = pc.createDataChannel("oai-events", { ordered: true });
+  pc.connectionState = "connected"; dc.readyState = "open";
+  const sent: string[] = []; dc.send = raw => { sent.push(JSON.parse(raw).type); };
+  const trace = new VoiceEventDiagnostics(() => performance.now());
+  const t = new BrowserVoiceTransport(pc as unknown as RTCPeerConnection, dc as unknown as RTCDataChannel, () => t.close(), trace);
+  const clock = { now: Date.now, setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimeout: (id: unknown) => clearTimeout(id as ReturnType<typeof setTimeout>) };
+  const response = new VoiceResponseController(clock, t, "run08n", () => {}, () => t.close(), 5000);
+  const receive = (type: string, fields: object) => response.receive({ type, event_id: "evt08n", ...fields });
+  try {
+    receive("response.created", { response: { id: "old08n", status: "in_progress" } });
+    receive("output_audio_buffer.started", { response_id: "old08n" });
+    assert.equal(response.interrupt(), true); // cancel is sent immediately
+    f.control.buffered = 100_000; await tick(); // clear is now queued, after cancel settles
+    assert.deepEqual(sent, ["response.cancel"]);
+    assert.equal(trace.snapshot.counts.enqueue, 2); assert.equal(trace.snapshot.counts.send, 1);
+    receive("response.created", { response: { id: "new08n", status: "in_progress" } });
+    receive("output_audio_buffer.started", { response_id: "new08n" });
+    f.control.buffered = 0; dc.dispatchEvent(new Event("bufferedamountlow")); await tick();
+    assert.deepEqual(sent, ["response.cancel"]);
+    assert.equal(trace.snapshot.counts.drop, 1); assert.equal(trace.snapshot.counts.send, 1);
+    assert.equal(response.snapshot.interruption.failure, "superseded");
+    assert.deepEqual(trace.snapshot.rows.filter(r => r.event === "output_audio_buffer.clear").map(r => [r.direction, r.command]), [["enqueue", 2], ["drop", 2]]);
+  } finally { response.stop(); t.close(); }
+});
+
+test("08N queued guards preserve FIFO/completion, dropped command counts and failure cleanup", async () => {
+  const f = fakeBrowserVoice(), pc = f.deps.peer(), dc = pc.createDataChannel("oai-events", { ordered: true });
+  pc.connectionState = "connected"; dc.readyState = "open"; f.control.buffered = 100_000;
+  const sent: string[] = []; dc.send = raw => sent.push(raw);
+  const t = new BrowserVoiceTransport(pc as unknown as RTCPeerConnection, dc as unknown as RTCDataChannel, () => t.close());
+  try {
+    let valid = true;
+    const a = t.send("first"), b = t.send("stale", () => valid), c = t.send("third"); valid = false;
+    f.control.buffered = 0; dc.dispatchEvent(new Event("bufferedamountlow")); await Promise.all([a, b, c]);
+    assert.deepEqual(sent, ["first", "third"]);
+    f.control.buffered = 100_000; const stopped = assert.rejects(t.send("stopped", () => true)); t.close(); await stopped;
+    assert.equal(f.counts.listeners, 0);
+  } finally { t.close(); }
+});
+
+for (const mode of ["absent", "throws"] as const) test(`08N optional capture settings ${mode} remain unknown without permission retry`, async () => {
+  const f = fixture(), media = f.deps.media;
+  f.deps.supportedCapture = () => { throw new Error("PRIVATE08N"); };
+  f.deps.media = async () => { const stream = await media();
+    if (mode === "throws") stream.getTracks()[0].getSettings = () => { throw new Error("PRIVATE08N"); };
+    return stream;
+  };
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  const capture = f.controller.eventDiagnostics!.capture!;
+  assert.deepEqual(capture.supported, { echoCancellation: "unknown", noiseSuppression: "unknown", autoGainControl: "unknown" });
+  assert.deepEqual(capture.effective, capture.supported); assert.equal(f.native.counts.media, 1);
+  await f.stopped();
+});
+
+test("08N native chronology distinguishes automatic generation, optional effective capture and explicit restart", async () => {
+  const f = fixture();
+  f.deps.supportedCapture = () => ({ echoCancellation: true, noiseSuppression: true });
+  const media = f.deps.media;
+  f.deps.media = async () => { const stream = await media(); stream.getTracks()[0].getSettings = () =>
+    ({ echoCancellation: false, noiseSuppression: true, deviceId: "PRIVATE08N", groupId: "PRIVATE08N" }); return stream; };
+  f.start(); await until(() => f.controller.snapshot.microphone === "available"); await f.controller.playAudio();
+  const emit = (type: string, fields: object = {}) => f.native.emit({ type, ...fields });
+  emit("response.created", { response: { id: "resp08n_A", status: "in_progress", conversation_id: "conv08n" } });
+  emit("output_audio_buffer.started", { response_id: "resp08n_A" });
+  emit("input_audio_buffer.speech_started", { item_id: "input08n_A", audio_start_ms: 100 });
+  emit("response.done", { response: { id: "resp08n_A", status: "cancelled", status_details: { reason: "turn_detected" } } });
+  emit("output_audio_buffer.cleared", { response_id: "resp08n_A" });
+  emit("input_audio_buffer.speech_stopped", { item_id: "input08n_A", audio_end_ms: 500 });
+  emit("input_audio_buffer.committed", { item_id: "input08n_A" });
+  emit("response.created", { response: { id: "resp08n_B", status: "in_progress", conversation_id: "conv08n" } });
+  emit("output_audio_buffer.started", { response_id: "resp08n_B" });
+  emit("conversation.item.input_audio_transcription.completed", { item_id: "input08n_A", content_index: 0, transcript: "PRIVATE08N" });
+  f.controller.mute(); f.controller.unmute();
+  const s = f.controller.eventDiagnostics!;
+  assert.equal(s.counts.session_start, 1); assert.equal(s.counts.priming_start, 1);
+  assert.deepEqual([s.counts.peer_created, s.counts.channel_created, s.counts.media_acquired, s.counts.play_requested, s.counts.playback_bound], [1, 1, 1, 1, 1]);
+  assert.deepEqual(s.rows.filter(r => r.event === "response.created").map(r => r.response), [1, 2]);
+  assert.equal(s.rows.some(r => r.event === "response.create" || r.event === "response.cancel" || r.event === "output_audio_buffer.clear"), false);
+  assert.equal(s.rows.find(r => r.event === "response.done")?.reason, "turn_detected");
+  assert.equal(s.capture?.effective.echoCancellation, false); assert.equal(s.capture?.effective.autoGainControl, "unknown");
+  assert.doesNotMatch(JSON.stringify(s), /PRIVATE08N|input08n|resp08n|conv08n|deviceId|groupId/);
+  const sends = f.native.counts.sends; await f.stopped();
+  const ended = f.controller.eventDiagnostics;
+  emit("response.created", { response: { id: "late08n", status: "in_progress" } });
+  assert.deepEqual(f.controller.eventDiagnostics, ended); assert.equal(f.native.counts.sends, sends);
+  f.controller.reset(); assert.equal((() => f.controller.eventDiagnostics)(), undefined);
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  assert.equal(f.controller.eventDiagnostics?.counts.session_start, 1);
+  assert.equal(f.controller.eventDiagnostics?.responseOrdinals, 0); await f.stopped();
+});
 function fixture(kind = "PDF", fault = "", hold = "") {
   const visitor = createVisitor(config, Date.now()), row = kind === "PDF" ? uploadedRecord(pdfFixture, visitor) : captionRecord(captionFixture, visitor);
   let calls = 0, cancel = 0, preparation: Record<string, unknown> | undefined, httpHold = "";

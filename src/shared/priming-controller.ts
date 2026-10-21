@@ -9,7 +9,9 @@ export type PrimingStatus = Readonly<{ state: PrimingState; acknowledged: number
   protocolReady: boolean; productionReady: false; basis?: Basis; failure?: Failure; message?: string }>;
 export interface PrimingTransport {
   isOpen(): boolean;
-  send(serializedEvent: string): void | Promise<void>;
+  // Optional command validity must be rechecked immediately before a queued native send.
+  // A superseded command is dropped with successful completion, preserving FIFO/bounds.
+  send(serializedEvent: string, valid?: () => boolean): void | Promise<void>;
   close(): void;
   // Adapter owns parsing and connection identity; disposal MUST remove all owned listeners.
   subscribe(receive: (event: unknown) => void, closed: () => void): () => void;

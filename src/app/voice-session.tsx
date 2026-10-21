@@ -97,12 +97,17 @@ class OwnedVoiceSession extends Component<Props, State> {
     const canInterrupt = ready && status?.microphone === "available" && response?.issue !== "capacity" && response?.interruption.state !== "pending"
       && response?.interruption.state !== "failed" && (!outputBusy || response?.output.responseId === response?.generation.responseId)
       && (response?.generation.state === "generating" || response?.output.state === "streaming");
+    const chronology = this.controller?.eventDiagnostics;
     return <div className="voice-session">
       {source ? <p className="text-source">Using source: {source.title}</p> : null}
       <p id="voice-session-guidance" className="voice-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : setup(status, available)}</p>
-      {status?.phase === "failed" && status.diagnostics?.length ? <details className="note">
+      {status?.diagnostics?.length || chronology?.rows.length ? <details className="note" onToggle={() => this.setState({ status: this.controller?.snapshot ?? null })}>
         <summary>Voice setup details</summary>
-        <ol>{status.diagnostics.map((row, i) => <li key={i}>{row.stage}: {row.outcome}{row.reason ? ` (${row.reason})` : ""}{row.httpStatus ? ` (HTTP ${row.httpStatus})` : ""}, {row.elapsedMs} ms</li>)}</ol>
+        <ol>{status?.diagnostics?.map((row, i) => <li key={i}>{row.stage}: {row.outcome}{row.reason ? ` (${row.reason})` : ""}{row.httpStatus ? ` (HTTP ${row.httpStatus})` : ""}, {row.elapsedMs} ms</li>)}</ol>
+        {chronology?.rows.length ? <>
+        <p>Local observation times only; these do not identify heard words or the physical audio route. Unknown processing means unreported. Opening these details refreshes the snapshot.</p>
+        <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: "24rem", overflow: "auto" }}>{JSON.stringify(chronology, null, 2)}</pre>
+        </> : null}
       </details> : null}
       <div className="source-actions voice-session-actions" aria-describedby="voice-session-guidance">
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || active} onClick={this.start}>{status?.phase === "ended" || status?.phase === "failed" ? "Start a fresh voice session" : "Start voice session"}</button>

@@ -48,6 +48,32 @@ function exchange(overrides: Partial<TranscriptLimits> = {}) {
   const h = store(overrides); h.emit(user(), created(), output(), link()); return h;
 }
 
+test("08N delayed ASR and duplicate/interleaved events never assign assistant output to user", () => {
+  const h = exchange();
+  const answer = text("delta", "The neutral guide describes three paths.");
+  h.emit(answer, answer, committed("user_B", "assistant_A"), user("user_B", "assistant_A"));
+  h.emit(created("response_B"), output("assistant_B", "response_B"), link("assistant_B", "user_B"));
+  h.emit(text("done", "Path two is shorter.", true, "assistant_B", "response_B"));
+  h.emit(input("completed", "Please summarize the guide."), input("completed", "Which path is shorter?", "user_B"));
+  // Deliberately cross the item/response roles; neither projection has authority.
+  h.emit(text("done", "must not cross", true, "user_B", "response_B"), input("completed", "must not cross", "assistant_A"));
+  assert.deepEqual(h.snap().turns.map(t => [t.role, t.parts[0]?.text]), [
+    ["user", "Please summarize the guide."], ["assistant", "The neutral guide describes three paths."],
+    ["user", "Which path is shorter?"], ["assistant", "Path two is shorter."],
+  ]);
+});
+
+test("08N characterize interruption label separately from completed generation and absent cancellation", () => {
+  const h = exchange(); h.emit(text("delta", "A neutral guide summary."));
+  h.s.observe(identity, { ...emptyResponse(), interruption: { state: "pending", responseId: "response_A", origin: "vad" } });
+  assert.equal(h.snap().turns[1].interrupted, true); // Existing presentation flag includes pending/failed.
+  assert.equal(h.snap().turns[1].interruption, "pending");
+  h.emit(done("completed"));
+  h.s.observe(identity, { ...emptyResponse(), interruption: { state: "failed", responseId: "response_A", origin: "vad", failure: "timeout" } });
+  assert.equal(h.snap().turns[1].interrupted, true); assert.equal(h.snap().turns[1].interruption, "failed");
+  assert.equal(h.snap().turns[1].generation, "completed"); assert.equal(h.snap().turns[1].terminal?.reason, "completed");
+});
+
 test("08K incomplete terminal reason retains partial text through late text final and Stop", () => {
   const h = exchange(); h.emit(text("delta", "Partial summary"));
   h.emit(event("response.done", { response: { id: "response_A", status: "incomplete",

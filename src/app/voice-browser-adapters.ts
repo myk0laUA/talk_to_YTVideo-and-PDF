@@ -6,12 +6,14 @@ import { matchesProviderVoicePolicy } from "../shared/priming-provider-policy.ts
 import { bytes, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES } from "../shared/priming-manifest.ts";
 import type { PrimingTransport } from "../shared/priming-controller.ts";
 import type { PreparationRejection, VoiceSetupReporter, VoiceSetupStage } from "../shared/voice-diagnostics.ts";
+import type { VoiceEventDiagnostics } from "../shared/voice-event-diagnostics.ts";
 
 export type BrowserVoiceDependencies = {
   fetch: typeof fetch; peer: () => RTCPeerConnection; audio: () => HTMLAudioElement;
   stream: () => MediaStream; media: () => Promise<MediaStream>; uuid: () => string;
   /** Monotonic milliseconds, never the browser's calendar clock. */
   now: () => number;
+  supportedCapture?: () => MediaTrackSupportedConstraints;
 };
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: unknown): v is string => typeof v === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(v);
@@ -64,7 +66,7 @@ export class BrowserVoiceTransport implements PrimingTransport {
   private receive?: (e: unknown) => void;
   private closed?: () => void;
   private ended = false;
-  private queue: { raw: string; size: number; resolve: () => void; reject: (e: Error) => void }[] = [];
+  private queue: { raw: string; size: number; valid?: () => boolean; resolve: () => void; reject: (e: Error) => void }[] = [];
   private queuedBytes = 0;
   private timer?: ReturnType<typeof setTimeout>;
   private events = 0;
@@ -72,8 +74,10 @@ export class BrowserVoiceTransport implements PrimingTransport {
   private channel: RTCDataChannel;
   private peer: RTCPeerConnection;
   private fail: () => void;
-  constructor(peer: RTCPeerConnection, channel: RTCDataChannel, fail: () => void) {
+  private trace?: VoiceEventDiagnostics;
+  constructor(peer: RTCPeerConnection, channel: RTCDataChannel, fail: () => void, trace?: VoiceEventDiagnostics) {
     this.peer = peer; this.channel = channel; this.fail = fail;
+    this.trace = trace;
     channel.bufferedAmountLowThreshold = 32_768;
     channel.addEventListener("message", this.message);
     channel.addEventListener("bufferedamountlow", this.drain);
@@ -89,23 +93,30 @@ export class BrowserVoiceTransport implements PrimingTransport {
       if (n > 24_576 || ++this.events > 32_768 || this.receivedBytes > 16_000_000) throw unavailable();
       const event: unknown = JSON.parse(e.data);
       if (!record(event) || typeof event.type !== "string" || event.type.length > 128) throw unavailable();
+      this.trace?.wire("inbound", event, this.bufferCounts());
       this.receive?.(event);
     } catch { this.failed(); }
   };
   isOpen() { return !this.ended && this.channel.readyState === "open" && this.peer.connectionState === "connected"; }
+  private bufferCounts() { return { bufferedBytes: this.channel.bufferedAmount, queuedBytes: this.queuedBytes, queuedCommands: this.queue.length }; }
+  private traceWrite(direction: "enqueue" | "send" | "drop", raw: string) {
+    if (!this.trace) return;
+    try { this.trace.wire(direction, JSON.parse(raw), this.bufferCounts()); } catch { /* Diagnostics never alter transport behavior. */ }
+  }
   subscribe(receive: (event: unknown) => void, closed: () => void) {
     if (this.receive || !this.isOpen()) throw unavailable();
     this.receive = receive; this.closed = closed;
     return () => { this.receive = undefined; this.closed = undefined; };
   }
-  send(raw: string) {
+  send(raw: string, valid?: () => boolean) {
     const size = bytes(raw), negotiated = this.peer.sctp?.maxMessageSize;
     const max = negotiated === undefined || negotiated === 0 || negotiated === Infinity ? MAX_EVENT_BYTES : Math.min(MAX_EVENT_BYTES, negotiated);
     if (!this.isOpen() || !size || size > max || this.queue.length >= MAX_ITEMS + 8 || this.queuedBytes + size > MAX_WIRE_BYTES + 65_536) {
       this.failed(); return Promise.reject(unavailable());
     }
     return new Promise<void>((resolve, reject) => {
-      this.queue.push({ raw, size, resolve, reject }); this.queuedBytes += size;
+      this.queue.push({ raw, size, valid, resolve, reject }); this.queuedBytes += size;
+      this.traceWrite("enqueue", raw);
       if (!this.timer) this.timer = setTimeout(this.failed, 5000);
       this.drain();
     });
@@ -115,7 +126,11 @@ export class BrowserVoiceTransport implements PrimingTransport {
     try {
       while (this.queue.length && this.channel.bufferedAmount <= 65_536) {
         const item = this.queue.shift()!; this.queuedBytes -= item.size;
-        try { this.channel.send(item.raw); item.resolve(); } catch { item.reject(unavailable()); throw unavailable(); }
+        try {
+          if (!item.valid || item.valid()) { this.channel.send(item.raw); this.traceWrite("send", item.raw); }
+          else this.traceWrite("drop", item.raw);
+          item.resolve();
+        } catch { item.reject(unavailable()); throw unavailable(); }
       }
       if (!this.queue.length) { clearTimeout(this.timer); this.timer = undefined; }
     } catch { this.failed(); }
@@ -219,7 +234,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       report("preparation_validation", "ok");
       return { input, serverRunId: input.manifest.runId };
     },
-    async connect(identity, signal, observe = () => {}) {
+    async connect(identity, signal, observe = () => {}, trace) {
       let stage: VoiceSetupStage = "credential_http", pending = false;
       const report: VoiceSetupReporter = (next, outcome, status) => { stage = next; pending = outcome === "pending"; observe(next, outcome, status); };
       const p = current(identity, signal);
@@ -259,6 +274,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         report("credential_validation", "ok");
         report("peer_creation", "pending");
         peer = deps.peer(); audio = deps.audio(); audio.autoplay = false;
+        trace?.mark("peer_created");
         const remote = deps.stream();
         const pc = peer, speaker = audio;
         // Pre-negotiate send/receive audio with NO local microphone or sender track.
@@ -268,13 +284,15 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
             if (closed) { safely(() => track.stop()); continue; }
             tracks.add(track); remote.addTrack(track);
           }
+          if (!closed) trace?.mark("remote_track", { remoteTracks: remote.getTracks().length });
           // Chromium can leave play() pending if srcObject was an empty stream.
           // Bind after the first remote track; repeated track events must not restart playback.
-          if (!closed && speaker.srcObject !== remote) speaker.srcObject = remote;
+          if (!closed && speaker.srcObject !== remote) { speaker.srcObject = remote; trace?.mark("playback_bound", { remoteTracks: remote.getTracks().length }); }
         };
         pc.addEventListener("track", ontrack); remove.push(() => pc.removeEventListener("track", ontrack));
         channel = pc.createDataChannel("oai-events", { ordered: true });
-        transport = new BrowserVoiceTransport(pc, channel, fail);
+        trace?.mark("channel_created");
+        transport = new BrowserVoiceTransport(pc, channel, fail, trace);
         const onstate = () => { if (["failed", "closed", "disconnected"].includes(pc.connectionState)) fail(); };
         pc.addEventListener("connectionstatechange", onstate); remove.push(() => pc.removeEventListener("connectionstatechange", onstate));
         report("peer_creation", "ok");
@@ -326,7 +344,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       } catch { close(); throw unavailable(); }
       finally { clientSecret = undefined; clearTimeout(timer); signal.removeEventListener("abort", stop); }
     },
-    async acquireMedia(identity, signal, report = () => {}) {
+    async acquireMedia(identity, signal, report = () => {}, trace) {
       const attempt = mediaAttempts.get(signal);
       if (!attempt || signal.aborted || !attempt.live() || attempt.identity.sourceId !== identity.sourceId
         || attempt.identity.runId !== identity.runId || attempt.identity.connectionId !== identity.connectionId) throw unavailable();
@@ -335,6 +353,11 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       const stream = await wait(deps.media().then(stream => { for (const t of stream.getTracks()) t.enabled = false; return stream; }), signal, stopTracks);
       const native = [...new Set(stream.getTracks())];
       if (signal.aborted || native.length !== 1 || native[0].kind !== "audio" || native[0].readyState !== "live") { stopTracks(stream); throw unavailable(); }
+      trace?.mark("media_acquired", { localTracks: native.length });
+      let supported: unknown, effective: unknown;
+      safely(() => { supported = deps.supportedCapture?.(); });
+      safely(() => { effective = native[0].getSettings?.(); });
+      trace?.processing(supported, effective);
       report("microphone_request", "ok");
       const wrappers: VoiceTrack[] = native.map(track => ({ get enabled() { return track.enabled; }, set enabled(v) { track.enabled = v; },
         get readyState() { return track.readyState; }, stop: () => track.stop(),
@@ -344,6 +367,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         if (!binding || binding.signal !== signal || signal.aborted || !binding.live()) throw unavailable();
         await wait(binding.sender.replaceTrack(native[0]), signal);
         if (signal.aborted || !binding.live()) throw unavailable();
+        trace?.mark("microphone_attached", { localTracks: native.length });
       }, release() { /* Lifecycle owns tracks and ended listeners; connection owns sender. */ } };
     },
   };
@@ -360,4 +384,5 @@ export const createBrowserVoiceController = (notify: (status: VoiceStatus) => vo
   media: () => navigator.mediaDevices.getUserMedia({ audio: {
     echoCancellation: { ideal: true }, noiseSuppression: { ideal: true },
   } }), uuid: () => crypto.randomUUID(), now: clock.now,
+  supportedCapture: () => navigator.mediaDevices.getSupportedConstraints?.() ?? {},
 }), notify);

@@ -41,6 +41,34 @@ async function ready() {
   return { ...h, r, emit, commands, state, clean };
 }
 
+test("08N pending VAD can cross a new response: input remains live, no commands, attribution waits for old timeout", async () => {
+  const h = await ready(); h.emit(created(), buffer("started"), speech("started"));
+  assert.equal(h.state().interruption.responseId, "resp_A");
+  h.emit(created("resp_B"), buffer("started", "resp_B"), speech("stopped", "item_A", 200), speech("started", "item_B", 300));
+  assert.equal(h.state().input.itemId, "item_B"); assert.equal(h.state().interruption.responseId, "resp_A");
+  assert.equal(h.controller.interruptCurrentResponse(), false); // Bounded existing pending gate, not a restart.
+  assert.equal(h.controller.canSendQuestions, true); assert.equal(h.commands().length, 0);
+  assert.ok(h.r.tracks.every(t => t.enabled));
+  h.clock.tick(5000);
+  assert.equal(h.state().interruption.failure, "timeout");
+  assert.equal(h.state().output.responseId, "resp_B"); assert.equal(h.state().output.state, "streaming");
+  assert.equal(h.commands().length, 0); h.clean("08N-pending-vad-crosses-new-response");
+});
+
+test("08N VAD pending and timeout do not prove cancelled generation; terminal reason distinguishes completion", async () => {
+  for (const cancelled of [false, true]) {
+    const h = await ready(); h.emit(created(), buffer("started"), speech("started"));
+    h.emit(event("response.done", { response: { id: "resp_A", status: cancelled ? "cancelled" : "completed",
+      status_details: { reason: "turn_detected" }, output: [] } }), buffer("stopped"));
+    assert.equal(h.state().generation.terminal?.reason, cancelled ? "turn_detected" : "completed");
+    assert.equal(h.state().interruption.state, "confirmed"); // Means generation+buffer ended, not heard words.
+    assert.equal(h.commands().length, 0); h.clean(`08N-vad-terminal-${cancelled}`);
+  }
+  const h = await ready(); h.emit(created(), buffer("started"), speech("started")); h.clock.tick(5000);
+  assert.equal(h.state().interruption.state, "failed"); assert.equal(h.state().generation.state, "generating");
+  assert.equal(h.commands().length, 0); h.clean("08N-vad-pending-timeout");
+});
+
 test("08K output limit preserves safe reason/usage, buffer lifetime and next response", async () => {
   const h = await ready(); h.emit(created(), buffer("started"));
   h.emit(event("response.done", { response: { id: "resp_A", status: "incomplete",

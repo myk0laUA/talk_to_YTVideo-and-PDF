@@ -92,7 +92,17 @@ export class VoiceResponseController {
     if (!this.open() || this.pending !== p) return;
     p.writes++;
     try {
-      const result = this.transport.send(JSON.stringify(event));
+      const result = this.transport.send(JSON.stringify(event), () => {
+        if (this.stopped || this.pending !== p) return false;
+        // Native backpressure can outlive the enqueue-time check in interrupt().
+        if (this.status.generation.responseId !== p.responseId ||
+          event.type === "output_audio_buffer.clear" && this.status.output.responseId
+          && this.status.output.responseId !== p.responseId
+          && ["streaming", "unknown"].includes(this.status.output.state)) {
+          this.fail(p, "superseded"); return false;
+        }
+        return true;
+      });
       Promise.resolve(result).then(() => {
         if (this.stopped || this.pending !== p) return;
         p.writes--; then(); this.confirm(p);

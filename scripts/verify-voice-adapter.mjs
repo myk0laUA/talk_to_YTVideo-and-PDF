@@ -130,7 +130,7 @@ try {
         });
         await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
         await f.page.getByText('Voice setup details', { exact: true }).click();
-        await expect(f.page.locator('.voice-session details')).toContainText('preparation_validation: invalid (ticket_future)');
+        await expect(f.page.getByText('Voice setup details', { exact: true }).locator('..')).toContainText('preparation_validation: invalid (ticket_future)');
         check('08I no credentials requested', credentials, 0);
         check('08I no native acquisitions', (await f.snap()).counts.peers + (await f.snap()).counts.media, 0);
         check('08I no synthetic provider calls', (await ipc('snapshot')).calls, 0);
@@ -197,6 +197,19 @@ try {
           await expect(page.locator('.transcript')).toContainText('Speech could not be transcribed.');
           check('09C ordered speakers and one bubble per item', await page.locator('.transcript-turn h4').allTextContents(), ['You', 'Assistant', 'You']);
           check('09C late delta and private errors absent', !/late words ignored|PRIVATE09C/.test(await page.locator('.transcript').textContent()));
+          await page.getByText('Voice setup details', { exact: true }).click();
+          const chronology = JSON.parse(await page.locator('.voice-session details pre').innerText());
+          check('08N one explicit lifecycle, native acquisition and priming batch',
+            ['session_start', 'peer_created', 'channel_created', 'media_acquired', 'microphone_attached', 'priming_start', 'playback_bound'].map(k => chronology.counts[k]), [1, 1, 1, 1, 1, 1, 1]);
+          check('08N actual command sends distinct from enqueue', chronology.counts.send > 0 && chronology.counts.send === chronology.counts.enqueue);
+          check('08N no client automatic response.create', !chronology.rows.some(r => r.event === 'response.create'));
+          check('08N safe details omit provider/source/transcript identifiers',
+            !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|question09c|answer08d|Synthetic08D|Synthetic09C/.test(JSON.stringify(chronology)));
+          check('08N unsupported capture is explicitly unknown', chronology.capture.effective.echoCancellation, 'unknown');
+          check('08N details remain within viewport', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+          const evidence08n = path.resolve('artifacts/local/08n'); await mkdir(evidence08n, { recursive: true });
+          await page.screenshot({ path: path.join(evidence08n, `${kind.toLowerCase()}-${width}-safe-details.png`), fullPage: true });
+          await page.getByText('Voice setup details', { exact: true }).click();
           await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-ready.png`), fullPage: true });
           const retained = await page.locator('.transcript-text').allTextContents();
           await page.getByRole('button', { name: 'Stop session', exact: true }).click(); await f.clean(kind + ' Stop');
@@ -209,6 +222,10 @@ try {
           await page.getByRole('button', { name: 'Close text and return', exact: true }).first().click();
           await f.control({ hold: '' }); await f.start(); await f.ready();
           check('09C new voice session clears transcript', await page.locator('.transcript-turn').count(), 0);
+          await page.getByText('Voice setup details', { exact: true }).click();
+          const freshChronology = JSON.parse(await page.locator('.voice-session details pre').innerText());
+          check('08N explicit new session clears old chronology', freshChronology.counts.session_start === 1 && !freshChronology.rows.some(r => r.event === 'response.created'));
+          await page.getByText('Voice setup details', { exact: true }).click();
           await page.getByRole('button', { name: 'Text mode', exact: true }).click(); await f.clean(kind + ' mode switch');
           check('mode switch clears conversation', await page.locator('.transcript-turn').count(), 0);
           await page.getByRole('button', { name: 'Start text session', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
@@ -248,7 +265,7 @@ try {
           if (fault.startsWith('sdp-')) f.sdpFault(fault.slice(4)); else await f.control(fault === 'denied' ? { denied: true } : { fault });
           await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
           await f.page.getByText('Voice setup details', { exact: true }).click();
-          const details = f.page.locator('.voice-session details');
+          const details = f.page.getByText('Voice setup details', { exact: true }).locator('..');
           const stage = fault.startsWith('transcription-') || fault.startsWith('threshold-') ? 'final_settings_ack' : fault === 'settings' || fault === 'provider' || fault === 'context'
             ? 'initial_settings_ack' : fault === 'item' ? 'source_items_ack' : fault.startsWith('sdp-') ? 'sdp_validation' : fault === 'denied' ? 'microphone_request' : 'initial_settings_ack';
           await expect(details).toContainText(stage);
