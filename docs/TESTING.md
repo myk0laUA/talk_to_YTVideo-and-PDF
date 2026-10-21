@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## PM08L deployed —21October2026Toronto
+
+User requested deployment. Published2d68242db0d479c92dcce409321e575f3c30e212 (git push exit0). Render dep-dbcgd83rjlhs73bcmgug reports Deploy succeeded/Live at14:39:53Toronto; startup confirms PDF/owned voice/text enabled, YouTube/proofs disabled. No configuration/secret change. HTTP readiness at18:40:05UTC PASS/exit0: root200 and same-origin unauthenticated preparation401/no-store. First probe omitted Origin and received expected origin-protection403, causing its401 assertion to fail; corrected probe supplied Origin. Both results retained in artifacts/local/08l-hosted alongside deployed.png. No provider call.
+
+Next physical iPhone check: reload/import PDF, enable mic and speaker playback, ask a concise summary and listen silently at ordinary/close-held distance; deliberately interrupt with a clear follow-up, then Stop. Report any false cancellation with safe completion details. Recheck Chrome summary/follow-up. Deployed preferences do not establish acoustic improvement; physical acceptance pending. Voice stays enabled. No active worker task.
+
+
 ## PM08L offline acceptance —21October2026Toronto
 
 Accepted the bounded optional capture-processing change for deployment/testing, not a proven acoustic fix. All6 delivery SHA256 hashes match. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/voice-interruption.test.ts tests/unit/voice-lifecycle.test.ts` PASS234/234 exit0; artifacts/local/08l/pm-focused.log. Reviewed production factory, unsupported-processing fixture, original-build red assertion and final built-browser evidence on iEysEoBvbhE38zkwpQ85x. No blocking scoped finding. Worker full1572units and530built adapter checks remain separate offline evidence.
