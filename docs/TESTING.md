@@ -1,5 +1,13 @@
 # Testing and evidence — Talk to a Document
 
+## PM08H hosted preparation-only test —21October2026Toronto
+
+Published8887a4e22017da3ebb904b5a3aa2fc98df2c67c9 (git push exit0). Diagnostics deploy dep-dbc4ipss728c73e00vtg Live01:12:46Toronto, initially voice disabled. User explicitly instructed **keep the voice enabled at all times** in response to action-time public activation confirmation; this supersedes prior automatic voice rollback plan. Saved voice=true/text=true/PDF=true, retained stable secrets and YouTube/proofs off; activation dep-dbc4jpuq1p3s73c9i6rg Live on same commit. Hosting stays free. No credentials changed.
+
+One pinned Node24 HTTPS preparation-only authored3page PDF test05:13:47.141–05:13:53.456UTC exit0: visitor401, upload201/4978ms, prepare201/502ms, cancel200, owned test-source removal200; all no-store. Harness allowlists preparation/cancel/source paths and never calls credentials/provider; no paid PM call. Evidence artifacts/local/08h-hosted/{prepare-only.mjs,result.json,server-trace.txt,server-trace.png,deployed.png}. Server instance r2zg2/sample1 at01:13:53Toronto: entry0ms, body1ms, registry3ms, first repository5–179ms, context180ms, remaining reads complete291ms, response381ms, exit382ms/status201. All19 expected safe stage rows observed.
+
+Assigned hosted backend preparation check PASS; original Chrome25002ms timeout NOT_REPRODUCED. Node HTTPS is not Chrome/browser/microphone/WebRTC/audio proof. No root-cause fix claimed. Voice remains enabled per latest user instruction even while functional acceptance is open. Next is one affected-Chrome normal attempt on this release: reload, upload a small non-private PDF, Start once; if it fails capture expanded setup details and exact time, otherwise allow mic and stop after one short answer. No new worker implementation task until a failing boundary is observed.
+
 ## PM08H partial acceptance —21October2026Toronto
 
 Accepted bounded server preparation diagnostics and offline boundary analysis, not a root-cause fix. All8delivery SHA256 hashes matched before PM tracker edits. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/owned-voice.test.ts` PASS116/116 exit0; artifacts/local/08h/pm-focused.log. Reviewed handler/registry/runtime diff, closed diagnostic fields, four-traces-per60s sampling/32rows, late-event suppression, sink failure isolation and controlled stall tests. Existing authorization/deadlines/provider policy preserved; no blocking scoped review finding. Worker1512unit/built results and build8J0VB5pnQHv_7xf5I8eC5 remain local/offline evidence only.

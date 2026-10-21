@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08H hosted result:**8887a4e live; preparation-only HTTPS test PASS502ms/server382ms, no credentials/provider calls. Original Chrome timeout unresolved. User explicitly requests voice stay enabled; this supersedes prior containment instructions. PDF/text enabled. Next affected-Chrome single check, no worker task.
+
 **Current PM08H partial acceptance:**8delivery hashes match; fresh116focused tests pass. Server diagnostics accepted, hosted timeout cause unresolved. Next is PM controlled diagnostic deployment/preparation-only observation; no active worker task or user retry. Voice stays contained, PDF/text enabled. Latest PROJECT_STATE supersedes historical summaries.
 
 **Current PM08H:** hosted Chrome preparation request timed out at25002ms before credentials/microphone. Voice contained again; PDF/text remain enabled. Sole worker assignment [08H](docs/WORKER_TASK_08H.md), offline isolation/safe server diagnostics. Root cause unresolved; latest PROJECT_STATE supersedes historical summaries below.
