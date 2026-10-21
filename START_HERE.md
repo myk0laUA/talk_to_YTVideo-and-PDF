@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM21October:** user reports Chrome voice setup failure with no microphone prompt. Exact cause unknown; sole worker assignment [08G](docs/WORKER_TASK_08G.md) diagnoses and narrowly corrects it. PM contains public voice only; working PDF/text remain. Earlier voice-availability evidence was not functional verification. Resume latest PROJECT_STATE.
+
 **Current PM hosted result:** a416652 is live on free Render with owned voice/text enabled and stable visitor secret. Real hosted PDF/text (two answers), Stop, source access after restart and fixture removal pass. Voice controls available; actual hosted voice/physical iPhone audio remains NOT_RUN. Next: human iPhone voice check; no active worker task. See HOSTED_RELEASE_CHECK and latest PROJECT_STATE. Prior deployment/task summaries below are historical.
 
 **Current PM08F correction acceptance:** local native-browser playback accepted on YhkhD73NHaU1gpomogsBg; three delivery hashes matched and playback/Stop evidence reviewed. No active worker implementation task. Next is PM-owned hosted configuration/deployment and verification, then physical-phone voice/text checks. Render still serves03eb7d8; only DATABASE_URL/NODE_VERSION/PORT are configured and startup regenerates the visitor secret. See the latest PROJECT_STATE entry. Earlier next-task statements below are historical.

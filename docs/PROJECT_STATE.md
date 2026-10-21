@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM user-reported Chrome voice failure —21October2026Toronto
+
+User supplied screenshot of an imported one-page PDF and generic Voice setup or connection failed / Microphone Not in use. User confirms Chrome, no microphone prompt; OS/device/version unspecified, not a verified iPhone test. Hosted voice functional gate is FAILED by user report; precise stage/cause unknown. Code inspection confirms generic UI covers multiple failures, whereas microphone and connection have separate messages. No root-cause claim, private-document access or new paid call by PM. Existing hosted text/restart successes remain valid.
+
+PM completed voice-only containment: OWNED_SOURCE_VOICE_ENABLED=false, OWNED_SOURCE_TEXT_ENABLED=true, retained stable secret/PDF/proof-off settings, same application commit a416652. Render dep-dbc3jeon74is73f8l0g0 Live21October00:04:34Toronto. Fresh pinned Node HTTP verification exit0: voice preparation503/no-store; unauthenticated text start401/no-store. Next sole worker task [08G](WORKER_TASK_08G.md): exact-stage diagnosis and one regression-backed correction, offline first; bounded new local US$0.50/max2attempts/2responses, no worker deployment/public activation. Hosted/physical voice remains open.
+
 ## PM hosted activation accepted; text/restart verified —21October2026UTC /20OctoberToronto
 
 User saved both secrets and explicitly approved public voice/text activation. PM saved reviewed startup command using retained VISITOR_COOKIE_SECRET; owned voice/text true, PDF true, all synthetic proofs and YouTube false. Free Ohio deployment dep-dbc2ilss728c73dpba10 Live at a416652f0177f58460de6f6fc4552e4fc202851b. Native in-app browser: authored3page PDF/full preview, one real hosted text session/two correct answers spanning all pages, normal Stop/four retained turns PASS. Voice control availability PASS only; **hosted spoken voice/WebRTC/audio NOT_RUN**, no microphone capture or voice mint. One actual dashboard restart (Events20October22:57Toronto), same source/browser ownership remains readable; normal fixture removal clears source/conversation. Fresh Node24.22.0 HTTP boundary checks exit0: owned unauthenticated routes401/no-store, old synthetic credential503/no-store. No application edits/migrations/paid hosting.
