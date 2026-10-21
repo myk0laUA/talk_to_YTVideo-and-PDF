@@ -1,5 +1,13 @@
 # Project state — Talk to a Document
 
+## PM delivery reassessment — 21 October 2026 Toronto
+
+Current evidence supersedes older status summaries (including the original Steps table and README claims that uploaded-source voice/text are not connected). Live52ba0a0: PDF import/full preview/storage, hosted grounded text, native voice/transcription and human Chrome/phone interactions have scoped evidence; user confirms spoken Stop on08O. Do not infer universal acoustic acceptance or completion of all original Step gates.
+
+Remaining delivery priorities: (1) complete current local uncached YouTube import/preview/grounded conversation under the assessment local exception; hosted direct is historically blocked, public YouTube disabled, managed key readiness unconfirmed; (2) final coherent mobile UI/controls/status polish and physical end-to-end voice/text switching plus failure/recovery check; (3) validate cleanup on a PM-selected disposable PostgreSQL target and decide documented operation/scheduling, reconcile dependency advisory and current-build release checks; (4) refresh README/reviewer instructions and record the10–15minute walkthrough with working repo/demo links and explicit limits. Existing earlier clean-copy/mobile tests are historical evidence, not final-build signoff.
+
+Next ask is a bounded YouTube end-to-end closure task, starting with current free local direct extraction and actual app preview, then grounded conversation if extraction succeeds. Do not buy hosting or promise hosted YouTube. If extraction is blocked, return exact provider/error evidence and choose the documented fallback instead of another unbounded investigation. No new implementation task dispatched in this status-only reassessment. Old Tuesday20October target has passed; no reliable hour estimate until the YouTube result. Voice stays enabled; no code/provider/deployment changes.
+
 ## PM08O user-confirmed spoken Stop — 21 October 2026 Toronto
 
 User explicitly confirms the assistant stopped speaking when asked, and reports testing silence, Continue and deliberate gibberish. Accept spoken Stop in this reported test on deployed52ba0a0. Screenshots show a stop acknowledgement and subsequent continuation; deliberate gibberish means unusual transcription is not by itself evidence of spontaneous input or self-interruption. Do not request the same clarification again. Exact quiet-interval timing, word-level resume and physical device/audio route remain unmeasured; do not generalize this result to all iPhone speaker conditions or claim the earlier acoustic issue universally fixed.
