@@ -24,7 +24,7 @@ const evidence: unknown[] = [];
 
 test("08K finite voice output headroom agrees across issuance and both priming stages", async () => {
   assert.equal(policy.maxOutputTokens, 2048);
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v4");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v5");
   assert.equal(initialVoiceSession.max_output_tokens, 2048);
   const h = await input();
   for (const event of [h.projection.manifest.configure, h.projection.manifest.finalize]) {
@@ -33,6 +33,69 @@ test("08K finite voice output headroom agrees across issuance and both priming s
   }
   assert.equal(PROVIDER_TEXT_POLICY.maxOutputTokens, 512);
   assert.equal(PROVIDER_TEXT_POLICY.policyVersion, "provider-text-full-source-2026-10-20-v1");
+});
+
+test("08M candidate keeps credential/initial VAD disabled and enables exact final threshold only after full ACKs", async () => {
+  assert.equal(policy.activationThreshold, 0.6);
+  assert.deepEqual(initialVoiceSession.audio.input, { turn_detection: null, transcription: null });
+  const h = await lifecycle(); await h.begin();
+  const m = h.projection().manifest;
+  assert.deepEqual(m.configure.session.audio.input, { turn_detection: null, transcription: null });
+  assert.deepEqual(m.finalize.session.audio.input.turn_detection, { type: "server_vad", create_response: true,
+    interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600, threshold: policy.activationThreshold });
+  assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false);
+  await h.initial(); assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false);
+  await h.items(); assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false);
+  await h.final(); assert.equal(h.mediaCalls(), 1); assert.equal(h.controller.canSendQuestions, true);
+  assert.equal(h.transport.outbound.some(e => /response.create|input_audio/.test(e.type)), false);
+  h.clean(); h.trace("08M exact threshold and ACK barriers");
+});
+
+for (const value of [undefined, null, 0.5, 0.61, "0.6", -1, 2]) {
+  test(`08M final effective threshold ${JSON.stringify(value)} fails closed without microphone`, async () => {
+    const h = await lifecycle(); await h.begin(); await h.initial(); await h.items();
+    const e = h.transport.config(); Object.assign(e.session.audio.input.turn_detection!, { threshold: value });
+    h.transport.emit(e); await flush();
+    assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.controller.snapshot.failure, "priming");
+    assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false);
+    h.transport.stale?.(h.transport.config(h.projection().manifest.finalize)); await flush();
+    assert.equal(h.mediaCalls(), 0); h.clean(); h.trace(`08M threshold ${JSON.stringify(value)}`);
+  });
+}
+
+for (const stage of ["initial", "items", "final"] as const) {
+  test(`08M enabled VAD in stale initial ACK at ${stage} rejects even with candidate threshold`, async () => {
+    const h = await lifecycle(); await h.begin(); const m = h.projection().manifest;
+    const e = h.transport.config(m.configure);
+    if (stage !== "initial") await h.initial();
+    if (stage === "final") await h.items();
+    Object.assign(e.session.audio.input, { turn_detection: structuredClone(m.finalize.session.audio.input.turn_detection) });
+    h.transport.emit(e); await flush();
+    assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0); h.clean();
+  });
+}
+
+for (const value of [undefined, 0.5, 0.7]) {
+  test(`08M missing/wrong policy or manifest threshold ${value} rejects before transport`, async () => {
+    const s = await input();
+    for (const target of ["policy", "manifest"] as const) {
+      const p = structuredClone(s.projection);
+      if (target === "policy") Object.assign(p.policy, { activationThreshold: value });
+      else Object.assign(p.manifest.finalize.session.audio.input.turn_detection!, { threshold: value });
+      assert.equal(validateProviderAdmission(p), false);
+      const h = prime(p); assert.equal(h.begin(), false); assert.equal(h.transport.outbound.length, 0);
+    }
+  });
+}
+
+test("08M stale v4 preparation and projection reject before source read/connection", async () => {
+  const s = await source();
+  assert.equal((await s.prepare({ ...s.args, policyVersion: "provider-voice-full-source-2026-10-21-v4" })).status, "unavailable");
+  assert.equal(s.db.reads, 0);
+  const p = structuredClone((await input()).projection);
+  Object.assign(p.policy, { policyVersion: "provider-voice-full-source-2026-10-21-v4" });
+  assert.equal(validateProviderAdmission(p), false);
+  const h = prime(p); assert.equal(h.begin(), false); assert.equal(h.transport.outbound.length, 0);
 });
 
 test("08K stale v3 preparation rejects before source access; altered concise instruction fails admission", async () => {
@@ -322,10 +385,10 @@ test("09C provider empty transcription defaults preserve the exact model barrier
 
 test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
   const h = await lifecycle(); await h.begin();
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v4");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v5");
   assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
   assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
-    { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600 });
+    { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600, threshold: policy.activationThreshold });
   await h.initial(); await h.items(); assert.equal(h.mediaCalls(), 0);
   await h.final(); assert.equal(h.mediaCalls(), 1); h.clean();
 });

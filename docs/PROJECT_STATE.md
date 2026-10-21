@@ -1,5 +1,20 @@
 # Project state — Talk to a Document
 
+## PM08M offline acceptance —21October2026Toronto
+
+Accepted one explicit0.6 speech-activation candidate for deployment/device comparison, not a proven acoustic improvement. All11 delivery SHA256 hashes match. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/provider-voice-admission.test.ts tests/unit/owned-voice.test.ts tests/unit/priming.test.ts tests/unit/voice-interruption.test.ts` PASS407/407 exit0; artifacts/local/08m/pm-focused.log. Reviewed v5 policy, final manifest/exact threshold ACK checks, initial disabled VAD, stale-policy and wrong/missing-threshold rejection plus built-browser evidence. No blocking scoped finding. Worker1590units/557built adapter checks remain separate offline evidence on3-El-Z-klqlvRbPgJxn3X.
+
+No live provider acceptance or acoustic comparison yet. Next PM deployment preserving voice enabled, then same-iPhone quiet listening and ordinary-volume deliberate interruption/follow-up/Stop, plus Chrome regression. Quiet speech tradeoff remains open; do not claim sensitivity fixed. No active worker task. This review made no paid/provider call or host change. Last verified hosted application2d68242.
+
+
+## Worker08M — proposed READY_FOR_REVIEW —21October2026Toronto
+
+[Candidate rationale, exact settings, acceptance map and command table](VOICE_ACTIVATION_08M.md). Implemented one conservative server_vad activation candidate: voice policy v5 explicitly0.6 versus v4's omitted/documented-default0.5. Quiet/distant speech may be missed; acoustic benefit unproven. Credential/initial VAD remains null with source loading and microphone blocked; final threshold ACK must match exactly. Automatic response/interruption,600ms silence,2048 cap,08L capture preferences, transcription, provider noise defaults, ownership/expiry/08J timing and text policy preserved.
+
+Clean arrival main HEAD **ac6759ab3ec321fa352cd747c2e896cb2b206ad5** (newer than brief ee5b5d4); final identity is HEAD plus dirty/uncommitted11-file delivery. Local build **3-El-Z-klqlvRbPgJxn3X**, pinned Node24.22.0/npm11.19.1, established .env-free/network-denied harness under `artifacts/local/08m/`. Lint/typecheck/full1590units/build PASS/exit0; focused provider admission143, priming75/interruption64/lifecycle63, adapter107units+557built, owned-voice125units+392built, owned-text417built PASS/exit0. Exact commands/UTC/counts/exits,11-file SHA256 manifest and final audit retained there. No test/build failures; an incorrect evidence-inspection path was corrected, as recorded in the report. Official documentation supports null disabled VAD and explicit final threshold; no live contract claim.
+
+PM iPhone same-source/volume/position silent listening at normal/close-held distance, deliberate ordinary-volume interruption/follow-up/complete reply/Stop and Chrome summary/follow-up remain **NOT_RUN**. Record false cancellations and missed deliberate speech separately; stop on first unexpected failure, optional single headset comparison if needed, revert if deliberate speech unreliable. No acoustic improvement accepted by worker. No paid/provider call, environment/host edit, sharedDB access, dependency change, commit/push/deployment or next task; prior ledgers preserved. PM-recorded host remains2d68242/dep-dbcgd83rjlhs73bcmgug, voice enabled. PM owns review/deployment/completion; full Step08/12 remains open.
+
 ## PM08M assignment and physical08L follow-up —21October2026Toronto
 
 User tested deployed08L on iPhone: works but microphone still sensitive. Screenshots show speech-trigger cancellations and short unexpected-language transcripts. Accept basic physical functionality by user report, not successful false-interruption correction or every control check. Acoustic cause remains unproven. The supplied assessment explicitly tests natural interruption/follow-up; keep hands-free voice as default.

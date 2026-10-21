@@ -1,5 +1,20 @@
 # Testing and evidence — Talk to a Document
 
+## PM08M offline acceptance —21October2026Toronto
+
+Accepted one explicit0.6 speech-activation candidate for deployment/device comparison, not a proven acoustic improvement. All11 delivery SHA256 hashes match. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/provider-voice-admission.test.ts tests/unit/owned-voice.test.ts tests/unit/priming.test.ts tests/unit/voice-interruption.test.ts` PASS407/407 exit0; artifacts/local/08m/pm-focused.log. Reviewed v5 policy, final manifest/exact threshold ACK checks, initial disabled VAD, stale-policy and wrong/missing-threshold rejection plus built-browser evidence. No blocking scoped finding. Worker1590units/557built adapter checks remain separate offline evidence on3-El-Z-klqlvRbPgJxn3X.
+
+No live provider acceptance or acoustic comparison yet. Next PM deployment preserving voice enabled, then same-iPhone quiet listening and ordinary-volume deliberate interruption/follow-up/Stop, plus Chrome regression. Quiet speech tradeoff remains open; do not claim sensitivity fixed. No active worker task. This review made no paid/provider call or host change. Last verified hosted application2d68242.
+
+
+## Worker08M offline candidate —21October2026Toronto
+
+[Full verification table, policy rationale, acceptance map and pending device protocol](VOICE_ACTIVATION_08M.md). Local build **3-El-Z-klqlvRbPgJxn3X**, main HEADac6759ab3ec321fa352cd747c2e896cb2b206ad5 plus dirty delivery. Node24.22.0/npm11.19.1, `artifacts/local/08m/verify.mjs`, .env-free checkout, empty real keys, unusable loopback DB and existing outbound-denied/synthetic browser harnesses. All required commands exit0: lint, typecheck,1590unit tests, build, priming75, interruption64, lifecycle63, adapter107units/557built checks, owned-voice125units/392built checks and owned-text417built checks. Provider-admission143 units also pass;15 new admission and3 new issuance cases cover08M. Build precedes built tests. Exact UTC/logs/exits in `artifacts/local/08m/commands.jsonl`;11-file hashes/audit alongside it.
+
+Candidate v5 uses0.6 only after full-source ACKs, compared with v4's documented-default0.5. Issuance/initial VAD stays null. Missing/wrong final threshold, enabled initial VAD, altered manifest/policy and stale v4 reject closed; late corrected ACK cannot acquire microphone. Existing automatic/manual interruption, mute/unmute/follow-up/Stop, expiry and08J tests retained. Browser failure injections prove zero microphone/attachment on threshold mismatch, not physical sensitivity. Text settings remain unchanged and owned text passes.
+
+Physical iPhone/Chrome comparison and live provider acceptance **NOT_RUN**. PM uses the brief/report's fixed source/volume/position silent-listening and deliberate interruption/follow-up/Stop protocol; record false cancellation and missed quiet speech separately, stop after first unexpected failure and revert if deliberate speech is unreliable. No deployment/provider spend/environment/sharedDB change. No acoustic improvement or full Step08/12 completion claimed.
+
 ## PM08M assignment and physical08L follow-up —21October2026Toronto
 
 User tested deployed08L on iPhone: works but microphone still sensitive. Screenshots show speech-trigger cancellations and short unexpected-language transcripts. Accept basic physical functionality by user report, not successful false-interruption correction or every control check. Acoustic cause remains unproven. The supplied assessment explicitly tests natural interruption/follow-up; keep hands-free voice as default.

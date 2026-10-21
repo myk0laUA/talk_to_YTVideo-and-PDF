@@ -12,6 +12,7 @@ import { createVisitor } from '../src/server/proof/visitor.ts';
 import { uploadedRecord, captionRecord, sourceDto } from '../src/server/sources/service.ts';
 import { pdfFixture, captionFixture } from '../tests/context/fixtures.ts';
 import { fakeBrowserVoice } from '../tests/voice-adapter/fakes.mjs';
+import { PROVIDER_VOICE_POLICY } from '../src/shared/priming-provider-policy.ts';
 
 const directory = path.resolve('artifacts/local/08d'); await mkdir(directory, { recursive: true });
 const port = 3129, origin = `http://127.0.0.1:${port}`;
@@ -24,7 +25,7 @@ await new Promise((resolve, reject) => { const p = net.createServer(); p.once('e
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ['clock-skew', 'preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
+  for (const group of ['clock-skew', 'preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings', 'activation-settings']) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };
     const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic',
@@ -152,6 +153,7 @@ try {
           check(kind + ' final ACK withheld: no media', (await f.snap()).counts.media, 0);
           await page.evaluate(() => window.__voice08d.release('final')); await f.ready();
           const s = await f.snap(); check(kind + ' one peer/channel/media/attach', [s.counts.peers, s.counts.channels, s.counts.media, s.counts.attached], [1, 1, 1, 1]);
+          check(kind + ' 08M initial VAD disabled then shared candidate threshold', s.activationThresholds, [null, PROVIDER_VOICE_POLICY.activationThreshold]);
           check(kind + ' 08L factory requests optional echo/noise processing', s.captureRequest,
             { audio: { echoCancellation: { ideal: true }, noiseSuppression: { ideal: true } } });
           check(kind + ' 08L capture succeeds without processing support or retry',
@@ -239,20 +241,21 @@ try {
           await f.context.close();
         }
       }
-      if (group === 'failures' || group === 'transcription-settings') {
+      if (group === 'failures' || group === 'transcription-settings' || group === 'activation-settings') {
         // Separate injected process keeps each scenario group within real issuance limits.
-        for (const fault of group === 'transcription-settings' ? ['transcription-missing', 'transcription-wrong'] : ['settings', 'item', 'provider', 'context', 'malformed', 'oversized', 'sdp-mime', 'sdp-body', 'denied']) {
+        for (const fault of group === 'activation-settings' ? ['threshold-missing', 'threshold-wrong'] : group === 'transcription-settings' ? ['transcription-missing', 'transcription-wrong'] : ['settings', 'item', 'provider', 'context', 'malformed', 'oversized', 'sdp-mime', 'sdp-body', 'denied']) {
           const f = await open('PDF', fault === 'denied' ? 390 : 1440);
           if (fault.startsWith('sdp-')) f.sdpFault(fault.slice(4)); else await f.control(fault === 'denied' ? { denied: true } : { fault });
           await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
           await f.page.getByText('Voice setup details', { exact: true }).click();
           const details = f.page.locator('.voice-session details');
-          const stage = fault.startsWith('transcription-') ? 'final_settings_ack' : fault === 'settings' || fault === 'provider' || fault === 'context'
+          const stage = fault.startsWith('transcription-') || fault.startsWith('threshold-') ? 'final_settings_ack' : fault === 'settings' || fault === 'provider' || fault === 'context'
             ? 'initial_settings_ack' : fault === 'item' ? 'source_items_ack' : fault.startsWith('sdp-') ? 'sdp_validation' : fault === 'denied' ? 'microphone_request' : 'initial_settings_ack';
           await expect(details).toContainText(stage);
           check(fault + ' diagnostics exclude raw or private fields', !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|input_text|v=0/.test(await details.innerText()));
           if (fault === 'settings') await f.page.screenshot({ path: path.join(directory, 'setup-details-08g.png'), fullPage: true });
           check(fault + ' no audio attachment', (await f.snap()).counts.attached, 0);
+          if (fault.startsWith('threshold-')) check(fault + ' 08M rejects before microphone', (await f.snap()).counts.media, 0);
           await f.clean(fault);
           if (fault === 'denied') {
             await expect(f.page.locator('#voice-session-guidance')).toContainText('Text mode is a separate next step');

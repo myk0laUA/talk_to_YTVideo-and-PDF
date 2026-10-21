@@ -8,6 +8,7 @@ export const VOICE_SECRET_TTL_SECONDS = 60;
 export const VOICE_PROVIDER_DEADLINE_MS = 8000;
 export const VOICE_PROVIDER_BODY_BYTES = 32_768;
 // Matches 07G's initial barrier. Source data enters only through acknowledged full-source priming.
+// VAD stays null here: 08M's threshold applies only when final priming enables server_vad.
 export const initialVoiceSession = freeze({ type: "realtime", model: policy.model,
   instructions: "Context is loading; do not answer questions.", output_modalities: ["text"],
   max_output_tokens: policy.maxOutputTokens, tools: [], tool_choice: "none", truncation: "disabled",

@@ -257,6 +257,15 @@ for (const cap of [512, 2047, 2049, "inf"]) test(`08K issuance rejects stale/wro
   const mint = createVoiceMint(async () => upstream({ ...initialVoiceSession, max_output_tokens: cap }));
   await assert.rejects(mint({ apiKey: config.apiKey, safetyIdentifier: "x", signal: new AbortController().signal }), /^Error: Voice provider unavailable$/);
 });
+for (const threshold of [undefined, 0.5, 0.6]) test(`08M issuance rejects enabled VAD even with threshold ${threshold}`, async () => {
+  let calls = 0;
+  const session = structuredClone(initialVoiceSession);
+  Object.assign(session.audio.input, { turn_detection: { type: "server_vad", threshold, create_response: false, interrupt_response: false } });
+  const mint = createVoiceMint(async () => { calls++; return upstream(session); });
+  await assert.rejects(mint({ apiKey: config.apiKey, safetyIdentifier: "x", signal: new AbortController().signal }), /^Error: Voice provider unavailable$/);
+  assert.equal(calls, 1);
+});
+
 test("02D provider exact official request; source-free initial barrier and safe DTO", async () => {
   let count = 0;
   const mint = createVoiceMint(async (url, init) => {

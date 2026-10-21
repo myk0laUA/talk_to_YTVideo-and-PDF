@@ -122,7 +122,7 @@ export class PrimingController {
       && JSON.stringify(e.session.output_modalities) === JSON.stringify([final && m.mode === "voice" ? "audio" : "text"])
       && JSON.stringify(e.session.audio?.input.turn_detection) === JSON.stringify(final && m.mode === "voice"
         ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null,
-          ...(providerVoice ? { silence_duration_ms: PROVIDER_VOICE_POLICY.silenceDurationMs } : {}) } : null);
+          ...(providerVoice ? { silence_duration_ms: PROVIDER_VOICE_POLICY.silenceDurationMs, threshold: PROVIDER_VOICE_POLICY.activationThreshold } : {}) } : null);
     return config(m.configure, false) && config(m.finalize, true) && m.configure.session.instructions !== m.finalize.session.instructions
       && m.items.every((e, i) => e.type === "conversation.item.create" && e.event_id === `${m.runId}_create_${i}`
         && e.item.id === sourceItemId(m.runId, i) && e.item.type === "message" && e.item.role === "user"
@@ -177,7 +177,7 @@ export class PrimingController {
         output_modalities: session.output_modalities, turn_detection: record(effectiveTurn) ? {
           type: effectiveTurn.type, create_response: effectiveTurn.create_response,
           interrupt_response: effectiveTurn.interrupt_response, idle_timeout_ms: effectiveTurn.idle_timeout_ms,
-          silence_duration_ms: effectiveTurn.silence_duration_ms,
+          silence_duration_ms: effectiveTurn.silence_duration_ms, threshold: effectiveTurn.threshold,
         } : effectiveTurn, ...(isProviderInput(r.input) ? { max_output_tokens: session.max_output_tokens,
           tool_choice: session.tool_choice, reasoning: session.reasoning, transcription: effectiveInput?.transcription,
           audio_output: record(session.audio) && record(session.audio.output) ? { voice: session.audio.output.voice } : undefined } : {}) });
@@ -188,7 +188,8 @@ export class PrimingController {
       const turn = audio?.turn_detection, desiredTurn = desired.audio.input.turn_detection;
       const turnMatches = desiredTurn === null ? turn === null : record(turn) && turn.type === desiredTurn.type
         && turn.create_response === true && turn.interrupt_response === true && turn.idle_timeout_ms === null
-        && (desiredTurn.silence_duration_ms === undefined || turn.silence_duration_ms === desiredTurn.silence_duration_ms);
+        && (desiredTurn.silence_duration_ms === undefined || turn.silence_duration_ms === desiredTurn.silence_duration_ms)
+        && (desiredTurn.threshold === undefined || turn.threshold === desiredTurn.threshold);
       const model = isProviderInput(r.input) ? r.input.policy.model : r.input.wireBudget.model;
       if (session.type !== "realtime" || session.model !== model || session.instructions !== desired.instructions || session.truncation !== "disabled"
         || JSON.stringify(session.tools) !== "[]" || JSON.stringify(session.output_modalities) !== JSON.stringify(desired.output_modalities) || !turnMatches) {

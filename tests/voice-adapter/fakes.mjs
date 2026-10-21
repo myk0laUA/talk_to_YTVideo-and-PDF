@@ -1,6 +1,7 @@
 // Injected offline browser/native fixtures ONLY. Never imported by application code.
 export function fakeBrowserVoice(target = globalThis, install = false) {
   let captureRequest;
+  const activationThresholds = [];
   const counts = { peers: 0, peerCloses: 0, channels: 0, channelCloses: 0, listeners: 0,
     media: 0, attached: 0, trackStops: 0, remoteStops: 0, audio: 0, releases: 0, plays: 0,
     offers: 0, local: 0, remote: 0, sends: 0, finalAck: 0, items: 0, violations: 0 };
@@ -42,10 +43,13 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
         if (control.fault === 'context') { this.emit({ type: 'error', error: { code: 'context_length_exceeded' } }); return; }
         if (e.type === 'session.update') {
           const s = structuredClone(e.session);
+          activationThresholds.push(s.audio.input.turn_detection === null ? null : s.audio.input.turn_detection.threshold);
           if (control.fault === 'settings') s.model = 'wrong-model';
           else s.model = 'gpt-realtime-2.1-mini';
           if (phase === 'final' && control.fault === 'transcription-missing') delete s.audio.input.transcription;
           if (phase === 'final' && control.fault === 'transcription-wrong') s.audio.input.transcription = { model: 'whisper-1' };
+          if (phase === 'final' && control.fault === 'threshold-missing') delete s.audio.input.turn_detection.threshold;
+          if (phase === 'final' && control.fault === 'threshold-wrong') s.audio.input.turn_detection.threshold = 0.5;
           if (phase === 'final') { counts.finalAck++; trace.push('ack-final'); }
           this.emit({ type: 'session.updated', event_id: 'ack_' + counts.sends, session: { ...s, id: 'session08d', object: 'realtime.session' } });
         } else if (e.type === 'conversation.item.create') {
@@ -92,7 +96,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
   const api = { counts, control, trace, deps, peers, channels, tracks, sourceParts,
     release: phase => { const work = pending.splice(0); for (const p of work) if (!phase || p.phase === phase) p.release(); else pending.push(p); },
     emit: event => channels.at(-1).emit(event),
-    snapshot: () => ({ captureRequest, counts: { ...counts }, trace: [...trace], pending: pending.length, liveTracks: tracks.filter(t => t.readyState === 'live').length,
+    snapshot: () => ({ captureRequest, activationThresholds: [...activationThresholds], counts: { ...counts }, trace: [...trace], pending: pending.length, liveTracks: tracks.filter(t => t.readyState === 'live').length,
       enabledTracks: tracks.filter(t => t.enabled && t.readyState === 'live' && !t.remote).length }),
   };
   if (install) {

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08M acceptance:** v5/0.6 activation candidate accepted offline;11hashes/fresh407checks pass. Next PM deployment and iPhone/Chrome comparison; acoustic improvement and live ACK unverified. No active worker task. Voice stays enabled.
+
 **Current PM08M:**08L is deployed; iPhone works by user report but sensitivity persists. Sole worker task [08M](docs/WORKER_TASK_08M.md) prepares one conservative activation-threshold candidate and offline checks; physical comparison pending. Finish-today target, no completion promise. Voice stays enabled.
 
 **Current PM08L acceptance:** optional microphone echo/noise preferences accepted offline;6hashes and fresh234checks pass. Acoustic improvement unproven. Next PM deployment then affected-iPhone/Chrome verification; no active worker task. Voice stays enabled. Latest PROJECT_STATE supersedes historical summaries.
