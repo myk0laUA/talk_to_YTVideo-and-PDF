@@ -1,5 +1,12 @@
 # Testing and evidence — Talk to a Document
 
+## PM08M physical user result —21October2026Toronto
+
+User reports deployed08M is better, but bringing the iPhone close to the body still triggers interruption followed by continuation; user attributes it to speaker playback entering the microphone. Record improved behavior and continuing defect by user report, not complete acoustic acceptance. Speaker feedback is a plausible hypothesis; effective processing, audio/event trace and intentional-versus-false interruption comparison are not independently observed. A working conversation supports live setup by user report, not a captured exact provider ACK.
+
+Next bounded check is one headset comparison with the same source: quiet listening, then ordinary-volume deliberate interruption/follow-up and Stop. A clean headset result would support speaker-feedback involvement but is not proof of a sole cause because the input route may also change. Do not keep raising the threshold or disable automatic interruption without evidence. No new worker task until this comparison; voice remains enabled. No code/host/provider action this turn. Full Step08/12 acceptance remains open.
+
+
 ## PM08M deployed —21October2026Toronto
 
 User requested deployment with voice enabled. Published74ec316bfcae7929eaab94905f163672c3b567a4 (push exit0). Render dep-dbch03vavr4c73ckqibg reports Deploy succeeded/Live at15:19:55Toronto; startup confirms owned voice/text/PDF enabled, YouTube/proofs disabled. No configuration/secret changes. Pinned Node HTTP check at19:20:20UTC PASS/exit0: root200, same-origin unauthenticated preparation401/no-store. Evidence artifacts/local/08m-hosted/readiness.json and deployed.png. No PM provider call.
