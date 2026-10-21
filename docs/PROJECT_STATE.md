@@ -1,5 +1,12 @@
 # Project state — Talk to a Document
 
+## PM post08M interruption-follow-up report —21October2026Toronto
+
+User reports the suggested comparison worked, but interruption is followed by the assistant starting its summary again. Four screenshots show an interrupted summary, a similar new summary after an empty displayed user turn, then a transcribed Stop with an acknowledgement and a later unexpected-language transcript followed by continuation. Exact spoken interruption, headset use and event sequence are awaiting clarification. Do not infer a session reset, replay, transcription-caused response or proof of acoustic root cause from screenshots.
+
+Initial PM read: voice-response.ts manual interrupt sends cancel/buffer-clear and does not create a new response; final manifest enables provider automatic responses. This narrows inspection but does not establish the cause. No code/host/provider change or new worker task. Next clarify intended interruption (stop, continue or a new question) and distinguish repeated generation from old audio playback before assigning correction. Voice remains enabled; full natural follow-up acceptance remains open.
+
+
 ## PM08M physical user result —21October2026Toronto
 
 User reports deployed08M is better, but bringing the iPhone close to the body still triggers interruption followed by continuation; user attributes it to speaker playback entering the microphone. Record improved behavior and continuing defect by user report, not complete acoustic acceptance. Speaker feedback is a plausible hypothesis; effective processing, audio/event trace and intentional-versus-false interruption comparison are not independently observed. A working conversation supports live setup by user report, not a captured exact provider ACK.
