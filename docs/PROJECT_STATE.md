@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08J assignment —21October2026Toronto
+
+Latest user Chrome screenshot on5242dfb: preparation_http ok201/298ms; preparation_validation invalid(ticket_future)/298ms. Exact rejected predicate now identified: server ticket expiry exceeds client wall time plus30000ms.08I reproduced this under client-behind offsets. Actual offset/which clock is inaccurate not measured; do not claim API-key or microphone failure. Earlier25002ms timeout remains separate.
+
+Sole worker assignment [08J](WORKER_TASK_08J.md): correct owned-voice timing contract for browser/server skew, including downstream credential/source checks, preserving server-authoritative expiry and all security/content barriers. Offline regressions first; no worker paid calls/deploy. Voice remains enabled per user. No application or host change by PM this turn.
+
 ## PM08I diagnostics deployed —21October2026Toronto
 
 User requested deployment with voice kept enabled. Published5242dfba5f2f7dbe595b6d4c67f0155383e3238d (push exit0); Render dep-dbc4shrrjlhs73ari9eg Live01:33:45Toronto. Startup visibly retains owned voice/text/PDF=true, YouTube/proofs=false; no secret/configuration changes. Fresh pinned Node HTTP check exit0: root200, unauthenticated voice preparation401/no-store. No paid/provider call or source upload. Evidence artifacts/local/08i-hosted/readiness.json and deployed.png.

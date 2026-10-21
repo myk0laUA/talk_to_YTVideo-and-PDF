@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08J:** user trace identifies ticket_future at298ms after201. Sole worker task [08J](docs/WORKER_TASK_08J.md) corrects clock-sensitive owned-voice timing without weakening server expiry. Voice stays enabled; hosted audio remains unverified.
+
 **Current PM08I partial acceptance:**13hashes/fresh164focused checks pass. Safe validation categories accepted; user cause unresolved. Next PM deployment and one Chrome category observation; no active worker task. Voice remains enabled per user.
 
 **Current PM08I:** Chrome gets201 in204ms, then rejects preparation validation at206ms. Sole worker task [08I](docs/WORKER_TASK_08I.md). Cause unknown; previous status-only backend test did not exercise browser validation. Voice stays enabled per user.
