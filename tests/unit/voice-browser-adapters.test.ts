@@ -79,6 +79,88 @@ function fixture(kind = "PDF", fault = "", hold = "") {
     preparation: () => preparation, hold: (s: string) => { httpHold = s; }, release: () => releaseHttp?.() };
 }
 
+for (const [name, mutate] of [
+  ["legacy", (d: Record<string, unknown>) => { delete d.issuedAt; delete d.timingVersion; }],
+  ["version", (d: Record<string, unknown>) => { d.timingVersion = "wrong"; }],
+  ...[null, "1000", -1, 1.5, Infinity].map(v => [String(v), (d: Record<string, unknown>) => { d.issuedAt = v; }] as const),
+] as const) {
+  test(`08J invalid preparation timing ${name} acquires no credentials/media`, async () => {
+    const f = fixture(), base = f.deps.fetch;
+    f.deps.fetch = async (url, init) => {
+      const response = await base(url, init);
+      if (url !== "/api/voice-preparations") return response;
+      const data = await response.json(); mutate(data); return Response.json(data);
+    };
+    f.start(); await until(() => f.controller.snapshot.phase === "failed");
+    assert.equal(f.calls(), 0); assert.equal(f.native.counts.peers + f.native.counts.media, 0); await f.stopped();
+  });
+}
+
+for (const phase of ["prepare-body", "before-credential", "credential-body", "sdp", "source-sdp", "source-before-media", "source-media"]) {
+  test(`08J monotonic elapsed time expires ${phase} and releases resources`, async () => {
+    const f = fixture("PDF", "", phase === "source-media" ? "media" : phase === "source-before-media" ? "final" : ""), base = f.deps.fetch;
+    let mono = 100;
+    f.deps.now = () => mono;
+    if (phase.startsWith("source-")) f.row.expiresAt = new Date(Date.now() + 2000);
+    f.deps.fetch = async (url, init) => {
+      const response = await base(url, init);
+      if (url === "/api/voice-preparations" && phase === "prepare-body") {
+        const text = await response.text();
+        return new Response(new ReadableStream({ start(c) { mono += 30_001; c.enqueue(new TextEncoder().encode(text)); c.close(); } }),
+          { headers: { "content-type": "application/json" } });
+      }
+      if (url === "/api/voice-preparations/credential" && phase === "credential-body") {
+        const data = await response.json(); data.expiresAt = Math.floor(data.issuedAt / 1000) + 1;
+        mono += 1500; return Response.json(data);
+      }
+      if (String(url).startsWith("https://api.openai.com")) {
+        if (phase === "sdp") mono += 65_001;
+        if (phase === "source-sdp") mono += 2001;
+      }
+      return response;
+    };
+    if (phase === "before-credential") {
+      const abort = new AbortController(), identity = { sourceId: f.row.id, connectionId: "08j", runId: "pending" };
+      const p = await f.adapters.prepare(identity, abort.signal);
+      assert.ok("serverRunId" in p);
+      mono += 30_001;
+      await assert.rejects(f.adapters.connect({ ...identity, runId: p.serverRunId! }, abort.signal));
+      assert.equal(f.calls(), 0); abort.abort();
+    } else {
+      f.start();
+      if (phase === "source-before-media") {
+        await until(() => f.native.snapshot().pending > 0); mono += 2001; f.native.release("final");
+      }
+      if (phase === "source-media") {
+        await until(() => f.native.counts.media === 1); mono += 2001; f.native.release("media");
+      }
+      await until(() => f.controller.snapshot.phase === "failed");
+      if (phase === "prepare-body") assert.equal(f.calls(), 0);
+      if (phase !== "source-media") assert.equal(f.native.counts.media, 0);
+    }
+    await f.stopped();
+  });
+}
+
+for (const mutation of ["legacy", "version", "issued", "milliseconds", "too-long", "expired"]) {
+  test(`08J malformed credential timing ${mutation} never constructs a peer`, async () => {
+    const f = fixture(), base = f.deps.fetch;
+    f.deps.fetch = async (url, init) => {
+      const r = await base(url, init); if (url !== "/api/voice-preparations/credential") return r;
+      const d = await r.json();
+      if (mutation === "legacy") { delete d.issuedAt; delete d.timingVersion; }
+      if (mutation === "version") d.timingVersion = "wrong";
+      if (mutation === "issued") d.issuedAt = "bad";
+      if (mutation === "milliseconds") d.expiresAt *= 1000;
+      if (mutation === "too-long") d.expiresAt += 60;
+      if (mutation === "expired") d.expiresAt = Math.floor(d.issuedAt / 1000);
+      return Response.json(d);
+    };
+    f.start(); await until(() => f.controller.snapshot.phase === "failed");
+    assert.equal(f.native.counts.peers + f.native.counts.media, 0); await f.stopped();
+  });
+}
+
 for (const [fault, reason] of [["expired", "ticket_expired"], ["correlation", "request_identity"], ["policy", "policy"],
   ["source", "source_serialization"], ["mode", "admission_shape"], ["manifest", "manifest_fidelity"]]) {
   test(`08I lifecycle preserves first rejection category ${fault} without credentials/media`, async () => {
@@ -293,7 +375,7 @@ for (const event of ["disconnect", "channel-close", "channel-error", "track-ende
 });
 test("08D credential expiry while offer is pending forbids SDP exchange and releases peer", async () => {
   const f = fixture("PDF", "", "offer"); f.start(); await until(() => f.native.snapshot().pending > 0);
-  f.deps.now = () => Date.now() + 70_000; f.native.release(); await until(() => f.controller.snapshot.phase === "failed");
+  f.deps.now = () => performance.now() + 70_000; f.native.release(); await until(() => f.controller.snapshot.phase === "failed");
   assert.equal(f.native.counts.remote, 0); assert.equal(f.native.counts.media, 0); await f.stopped();
 });
 for (const body of ["oversized", "stalled", "wrong-mime", "redirect"]) test(`08D ${body} preparation body is bounded/cancelled`, async () => {

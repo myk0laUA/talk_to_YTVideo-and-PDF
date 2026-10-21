@@ -9,7 +9,9 @@ import type { PreparationRejection, VoiceSetupReporter, VoiceSetupStage } from "
 
 export type BrowserVoiceDependencies = {
   fetch: typeof fetch; peer: () => RTCPeerConnection; audio: () => HTMLAudioElement;
-  stream: () => MediaStream; media: () => Promise<MediaStream>; uuid: () => string; now: () => number;
+  stream: () => MediaStream; media: () => Promise<MediaStream>; uuid: () => string;
+  /** Monotonic milliseconds, never the browser's calendar clock. */
+  now: () => number;
 };
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: unknown): v is string => typeof v === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(v);
@@ -138,8 +140,10 @@ type Prepared = { sourceId: string; connectionId: string; requestId: string; pre
  * The dedicated routes reauthorize their own stored immutable preparation. */
 export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapters {
   let prepared: Prepared | undefined;
+  const mediaAttempts = new WeakMap<AbortSignal, { identity: VoiceIdentity; live: () => boolean }>();
   let cancellation: Promise<void> = Promise.resolve();
   const send = async (suffix: string, body: object, signal: AbortSignal, report: VoiceSetupReporter) => {
+    const started = deps.now();
     const stage = suffix ? "credential_http" : "preparation_http", validation = suffix ? "credential_validation" : "preparation_validation";
     report(stage, "pending");
     const response = await wait(deps.fetch(`/api/voice-preparations${suffix}`, { method: "POST", credentials: "same-origin", cache: "no-store",
@@ -148,7 +152,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
     if (response.ok) report(validation, "pending");
     try {
       const text = await read(response, "application/json", suffix ? 2048 : 24_500_000, signal);
-      try { return JSON.parse(text) as unknown; } catch { throw new ReadFailure("response_json"); }
+      try { return { result: JSON.parse(text) as unknown, started }; } catch { throw new ReadFailure("response_json"); }
     } catch (error) {
       if (response.ok && !signal.aborted) report(validation, "invalid", undefined,
         suffix ? undefined : error instanceof ReadFailure ? error.reason : "unknown");
@@ -182,16 +186,22 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           .then(cancelBody, () => {}).finally(() => clearTimeout(timer));
       };
       prepared = p; signal.addEventListener("abort", p.cancel, { once: true });
-      const result = await send("", { sourceId: identity.sourceId, requestId }, signal, report);
+      const { result, started } = await send("", { sourceId: identity.sourceId, requestId }, signal, report);
       const reject = (reason: PreparationRejection): never => { report("preparation_validation", "invalid", undefined, reason); throw unavailable(); };
       if (prepared !== p || signal.aborted) throw unavailable();
-      if (!record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,preparationId,providerConfirmed,requestId"
+      if (!record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,issuedAt,preparationId,providerConfirmed,requestId,timingVersion"
+        || result.timingVersion !== "owned-voice-time-v1"
         || result.conversationReady !== false || result.providerConfirmed !== false) return reject("envelope");
       if (result.requestId !== requestId) return reject("request_identity");
       if (typeof result.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(result.preparationId)) return reject("ticket_identity");
-      if (typeof result.expiresAt !== "number" || !Number.isSafeInteger(result.expiresAt)) return reject("ticket_time");
-      if (result.expiresAt <= deps.now()) return reject("ticket_expired");
-      if (result.expiresAt > deps.now() + 30_000) return reject("ticket_future");
+      if (typeof result.expiresAt !== "number" || !Number.isSafeInteger(result.expiresAt)
+        || typeof result.issuedAt !== "number" || !Number.isSafeInteger(result.issuedAt) || result.issuedAt <= 0
+        || !Number.isFinite(started) || started < 0 || deps.now() < started) return reject("ticket_time");
+      // Anchor at request START: charging the entire round trip (including body
+      // decoding and validation) deliberately underestimates remaining validity.
+      const ticketMs = result.expiresAt - result.issuedAt, ticketDeadline = started + ticketMs;
+      if (ticketMs <= 0 || ticketDeadline <= deps.now()) return reject("ticket_expired");
+      if (ticketMs > 30_000) return reject("ticket_future");
       const input = result.input as ProviderPrimingInput;
       const admission = providerAdmissionRejection(input);
       if (admission) return reject(admission);
@@ -201,9 +211,11 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       if (input.variant.source.id !== identity.sourceId) return reject("source_identity");
       if (!["PDF", "YOUTUBE"].includes(input.variant.source.kind)) return reject("source_kind");
       const expires = Date.parse(input.variant.source.expiresAt);
-      if (!Number.isFinite(expires) || expires <= deps.now()) return reject("source_expiry");
+      const sourceMs = expires - result.issuedAt, sourceDeadline = started + sourceMs;
+      if (!Number.isFinite(expires) || sourceMs <= 0 || sourceMs > 3600_000 || sourceDeadline <= deps.now()) return reject("source_expiry");
       if (result.expiresAt > expires) return reject("ticket_source_expiry");
-      Object.assign(p, { preparationId: result.preparationId, runId: input.manifest.runId, expires: result.expiresAt, sourceExpires: expires });
+      if (ticketDeadline <= deps.now()) return reject("ticket_expired");
+      Object.assign(p, { preparationId: result.preparationId, runId: input.manifest.runId, expires: ticketDeadline, sourceExpires: sourceDeadline });
       report("preparation_validation", "ok");
       return { input, serverRunId: input.manifest.runId };
     },
@@ -231,17 +243,20 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         safely(() => { if (audio) { audio.pause(); audio.srcObject = null; audio.removeAttribute("src"); audio.load(); } }); };
       const fail = () => { if (closed) return; transport?.connectionLost(); close(); if (!transferred) stop(); };
       try {
-        const result = await send("/credential", { sourceId: p.sourceId, requestId: p.requestId, preparationId: p.preparationId }, abort.signal, report);
+        const { result, started } = await send("/credential", { sourceId: p.sourceId, requestId: p.requestId, preparationId: p.preparationId }, abort.signal, report);
         // No retained token on the adapter or connection; erase parsed DTO after fetch invocation.
         current(identity, signal);
-        if (!record(result) || Object.keys(result).sort().join() !== "clientSecret,expiresAt,preparationId" || result.preparationId !== p.preparationId
+        if (!record(result) || Object.keys(result).sort().join() !== "clientSecret,expiresAt,issuedAt,preparationId,timingVersion" || result.preparationId !== p.preparationId
+          || result.timingVersion !== "owned-voice-time-v1" || typeof result.issuedAt !== "number" || !Number.isSafeInteger(result.issuedAt) || result.issuedAt <= 0
           || typeof result.clientSecret !== "string" || !/^ek_[A-Za-z0-9_-]{1,500}$/.test(result.clientSecret)
-          || typeof result.expiresAt !== "number" || !Number.isInteger(result.expiresAt)
-          || result.expiresAt * 1000 <= deps.now() || result.expiresAt * 1000 > deps.now() + 65_000) throw unavailable();
+          || typeof result.expiresAt !== "number" || !Number.isSafeInteger(result.expiresAt * 1000)
+          || !Number.isInteger(result.expiresAt) || !Number.isFinite(started) || started < 0 || deps.now() < started
+          || result.expiresAt * 1000 <= result.issuedAt || result.expiresAt * 1000 > result.issuedAt + 65_000) throw unavailable();
+        const credentialExpiry = started + (result.expiresAt * 1000 - result.issuedAt);
+        if (credentialExpiry <= deps.now()) throw unavailable();
         p.claimed = true; signal.removeEventListener("abort", p.cancel); prepared = undefined;
         clientSecret = result.clientSecret; result.clientSecret = undefined;
         report("credential_validation", "ok");
-        const credentialExpiry = result.expiresAt * 1000;
         report("peer_creation", "pending");
         peer = deps.peer(); audio = deps.audio(); audio.autoplay = false;
         const remote = deps.stream();
@@ -268,7 +283,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           const offer = await wait(pc.createOffer(), abort.signal);
           await wait(pc.setLocalDescription(offer), abort.signal);
           if (!offer.sdp || bytes(offer.sdp) > 100_000 || !/^v=0\r?\n/.test(offer.sdp) || !/^m=audio /m.test(offer.sdp) || !/^m=application /m.test(offer.sdp)
-            || credentialExpiry <= deps.now() || signal.aborted) throw unavailable();
+            || credentialExpiry <= deps.now() || p.sourceExpires! <= deps.now() || signal.aborted) throw unavailable();
           report("local_description", "ok");
           report("sdp_http", "pending");
           const pending = deps.fetch("https://api.openai.com/v1/realtime/calls", { method: "POST", body: offer.sdp, signal: abort.signal,
@@ -280,7 +295,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           // The real calls endpoint can return SDP as text/plain. Keep the
           // bounded reader and SDP structure/native parser checks for both types.
           const sdp = await read(response, ["application/sdp", "text/plain"], 100_000, abort.signal);
-          if (credentialExpiry <= deps.now() || !/^v=0\r?\n/.test(sdp) || !/^m=audio /m.test(sdp) || !/^m=application /m.test(sdp)) throw unavailable();
+          if (credentialExpiry <= deps.now() || p.sourceExpires! <= deps.now() || !/^v=0\r?\n/.test(sdp) || !/^m=audio /m.test(sdp) || !/^m=application /m.test(sdp)) throw unavailable();
           report("sdp_validation", "ok");
           report("remote_description", "pending");
           await wait(pc.setRemoteDescription({ type: "answer", sdp }), abort.signal);
@@ -301,15 +316,20 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         // Source expiry ends this local session; credential expiry only bounds negotiation.
         expiry = setTimeout(fail, Math.min(2_147_483_647, p.sourceExpires - deps.now()));
         const connection: VoiceConnection = { transport, close, playback: {
-          play: () => closed ? Promise.reject(unavailable()) : speaker.play(), release: releaseAudio,
+          play: () => closed || p.sourceExpires! <= deps.now() ? Promise.reject(unavailable()) : speaker.play(), release: releaseAudio,
         } };
-        bindings.set(connection, { sender: transceiver.sender, signal, live: () => !closed });
-        remove.push(() => bindings.delete(connection));
+        const live = () => !closed && p.sourceExpires! > deps.now();
+        bindings.set(connection, { sender: transceiver.sender, signal, live });
+        mediaAttempts.set(signal, { identity, live });
+        remove.push(() => { bindings.delete(connection); mediaAttempts.delete(signal); });
         transferred = true; return connection;
       } catch { close(); throw unavailable(); }
       finally { clientSecret = undefined; clearTimeout(timer); signal.removeEventListener("abort", stop); }
     },
-    async acquireMedia(_identity, signal, report = () => {}) {
+    async acquireMedia(identity, signal, report = () => {}) {
+      const attempt = mediaAttempts.get(signal);
+      if (!attempt || signal.aborted || !attempt.live() || attempt.identity.sourceId !== identity.sourceId
+        || attempt.identity.runId !== identity.runId || attempt.identity.connectionId !== identity.connectionId) throw unavailable();
       report("microphone_request", "pending");
       const stopTracks = (s: MediaStream) => { for (const t of new Set(s.getTracks())) { t.enabled = false; safely(() => t.stop()); } };
       const stream = await wait(deps.media().then(stream => { for (const t of stream.getTracks()) t.enabled = false; return stream; }), signal, stopTracks);
@@ -329,9 +349,9 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
   };
 }
 const bindings = new WeakMap<VoiceConnection, { sender: RTCRtpSender; signal: AbortSignal; live: () => boolean }>();
-const clock = { now: Date.now, setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimeout: (id: unknown) => clearTimeout(id as ReturnType<typeof setTimeout>) };
+const clock = { now: () => performance.now(), setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimeout: (id: unknown) => clearTimeout(id as ReturnType<typeof setTimeout>) };
 // Stable function. Constructing/mounting/selecting a source acquires no provider/media resources.
 export const createBrowserVoiceController = (notify: (status: VoiceStatus) => void) => new VoiceLifecycle(clock, browserVoiceAdapters({
   fetch: (...args) => fetch(...args), peer: () => new RTCPeerConnection(), audio: () => document.createElement("audio"),
-  stream: () => new MediaStream(), media: () => navigator.mediaDevices.getUserMedia({ audio: true }), uuid: () => crypto.randomUUID(), now: Date.now,
+  stream: () => new MediaStream(), media: () => navigator.mediaDevices.getUserMedia({ audio: true }), uuid: () => crypto.randomUUID(), now: clock.now,
 }), notify);

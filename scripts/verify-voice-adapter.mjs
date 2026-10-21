@@ -24,7 +24,7 @@ await new Promise((resolve, reject) => { const p = net.createServer(); p.once('e
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ['preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
+  for (const group of ['clock-skew', 'preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };
     const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic',
@@ -94,6 +94,30 @@ try {
     };
     try {
       await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } });
+      if (group === 'clock-skew') {
+        for (const offset of [-300_000, -60_000, -1000, 1000, 60_000, 300_000]) {
+          const f = await open('PDF');
+          await f.page.evaluate(offset => { const wall = Date.now.bind(Date); Date.now = () => wall() + offset; }, offset);
+          await f.control({ hold: 'offer' }); await f.start();
+          await until(async () => (await f.snap()).pending > 0);
+          check('08J skew passed preparation and credential ' + offset, (await f.snap()).counts.peers, 1);
+          // Jump the calendar clock in the opposite direction DURING negotiation.
+          await f.page.evaluate(offset => { const wall = Date.now.bind(Date); Date.now = () => wall() - offset * 2; }, offset);
+          await f.page.evaluate(() => window.__voice08d.release('offer')); await f.ready();
+          check('08J skew reaches ACK-gated microphone ' + offset, (await f.snap()).counts.media, 1);
+          await f.page.getByRole('button', { name: 'Stop session', exact: true }).click();
+          await f.clean('08J skew and wall jump ' + offset); await f.context.close();
+        }
+        const f = await open('PDF', 1440, 1800), exchanges = report.sdpExchanges;
+        await f.control({ hold: 'offer' }); await f.start();
+        await until(async () => (await f.snap()).pending > 0);
+        await f.page.evaluate(() => { const wall = Date.now.bind(Date); Date.now = () => wall() - 3600_000; });
+        await delay(1850); await f.page.evaluate(() => window.__voice08d.release('offer'));
+        await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
+        check('08J backward clock jump cannot extend source validity: no SDP', report.sdpExchanges, exchanges);
+        check('08J backward clock jump cannot extend source validity: no microphone', (await f.snap()).counts.media, 0);
+        await f.clean('08J expired source after backward wall jump'); await f.context.close();
+      }
       if (group === 'preparation-rejection') {
         const f = await open('PDF', 390); let credentials = 0;
         await f.page.route('**/api/voice-preparations/credential', route => { credentials++; return route.abort(); });

@@ -65,7 +65,7 @@ try {
           check(`${kind} structuredB`, p.input.variant.id, "B");
           check(`${kind} full source reconstruction`, p.input.variant.source.sections.map(s => s.text).join(p.input.variant.source.separator), f.row.fullText);
           check("preparation not conversation readiness", p.conversationReady, false);
-          const result = await credential(f, p); check("minimal credential DTO", Object.keys(result).sort(), ["clientSecret", "expiresAt", "preparationId"]);
+          const result = await credential(f, p); check("minimal credential DTO", Object.keys(result).sort(), ["clientSecret", "expiresAt", "issuedAt", "preparationId", "timingVersion"]);
           await credential(f, p, 404); check("exactly one acquisition", (await ipc("snapshot")).calls, before.calls + 1);
         }
         const f = await seed(), other = await seed(), before = await ipc("snapshot");
@@ -96,7 +96,7 @@ try {
             const p = await send("", { sourceId, requestId }); const c = await send("/credential", { sourceId, requestId, preparationId: p.data.preparationId });
             return { prepareStatus: p.status, credentialStatus: c.status, cache: c.cache, credentialShape: Object.keys(c.data).sort() };
           }, { sourceId: f.row.id, requestId: randomUUID() });
-          check("dedicated browser harness owned route success", result, { prepareStatus: 201, credentialStatus: 200, cache: "no-store", credentialShape: ["clientSecret", "expiresAt", "preparationId"] });
+          check("dedicated browser harness owned route success", result, { prepareStatus: 201, credentialStatus: 200, cache: "no-store", credentialShape: ["clientSecret", "expiresAt", "issuedAt", "preparationId", "timingVersion"] });
           const denied = await page.evaluate(async sourceId => { const r = await fetch("/api/voice-preparations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sourceId, requestId: crypto.randomUUID() }) }); return r.status; }, other.row.id);
           check("dedicated browser harness foreign denial", denied, 404); check("browser success plus denial acquisition count", (await ipc("snapshot")).calls, before.calls + 1);
         } finally { await context.close(); }

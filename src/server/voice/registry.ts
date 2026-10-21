@@ -95,7 +95,8 @@ export class VoiceRegistry {
       await this.authorize(e, freshVisitor, repository); this.guard(e, freshVisitor);
       this.deadline(e, Math.min(this.now() + this.limits.ticketMs, visitor.expiresAt * 1000, Date.parse(e.input.variant.source.expiresAt)));
       this.guard(e, freshVisitor);
-      return { preparationId: e.id, requestId, expiresAt: e.expires, conversationReady: false, providerConfirmed: false, input: e.input };
+      return { timingVersion: "owned-voice-time-v1", issuedAt: this.now(), preparationId: e.id, requestId,
+        expiresAt: e.expires, conversationReady: false, providerConfirmed: false, input: e.input };
     } catch { this.close(e); throw new VoiceError(); }
     finally { signal.removeEventListener("abort", cancel); release(); }
   }
@@ -122,7 +123,8 @@ export class VoiceRegistry {
       await this.authorize(e, freshVisitor); this.guard(e, freshVisitor);
       if (signal.aborted || !validVoiceCredential(result, this.now())) throw new VoiceError();
       // Explicit projection: a provider injection cannot append raw session fields to the response.
-      return { preparationId, clientSecret: result.clientSecret, expiresAt: result.expiresAt };
+      return { timingVersion: "owned-voice-time-v1", issuedAt: this.now(), preparationId,
+        clientSecret: result.clientSecret, expiresAt: result.expiresAt };
     } catch (error) { throw error instanceof VoiceError ? error : new VoiceError(); }
     finally { signal.removeEventListener("abort", cancel); release?.(); this.close(e); }
   }

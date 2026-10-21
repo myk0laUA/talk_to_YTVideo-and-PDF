@@ -80,7 +80,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     }); }
     close() { counts.peerCloses++; this.connectionState = 'closed'; }
   }
-  const deps = { peer: () => new Peer(), stream: () => new Stream(), now: Date.now,
+  const deps = { peer: () => new Peer(), stream: () => new Stream(), now: () => performance.now(),
     uuid: () => crypto.randomUUID(), fetch: (...args) => fetch(...args),
     media: () => { counts.media++; trace.push('media'); if (!counts.finalAck) counts.violations++;
       return step('media', () => { if (control.denied) throw new Error('denied'); const s = new Stream(); s.addTrack(new Track()); return s; }); },

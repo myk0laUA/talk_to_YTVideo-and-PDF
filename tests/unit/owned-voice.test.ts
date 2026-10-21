@@ -48,6 +48,23 @@ async function until(fn: () => boolean) { for (let i = 0; i < 100; i++) { if (fn
 function clean(f: ReturnType<typeof fixture>, pendingMints = 0) { assert.deepEqual(f.registry.resources,
   { entries: 0, timers: 0, replayEntries: 1, pendingMints }); }
 
+test("08J server timing is versioned, source-clipped, and reauthorization still expires the ticket", async () => {
+  const f = fixture(); f.row.expiresAt = new Date(f.now() + 1500);
+  const p = await f.start();
+  assert.equal(p.timingVersion, "owned-voice-time-v1"); assert.equal(p.issuedAt, f.now());
+  assert.equal(p.expiresAt - p.issuedAt, 1500);
+  assert.equal(Date.parse(p.input.variant.source.expiresAt), p.expiresAt);
+  f.advance(1500);
+  assert.equal((await f.credential(p)).status, 404); assert.equal(f.calls, 0); clean(f);
+});
+test("08J credential timestamp shares server milliseconds; provider expiry remains seconds", async () => {
+  const f = fixture(), p = await f.start();
+  assert.equal(p.expiresAt - p.issuedAt, 30_000);
+  f.advance(1234); const r = await f.credential(p); assert.equal(r.status, 200);
+  const d = await r.json(); assert.equal(d.timingVersion, "owned-voice-time-v1"); assert.equal(d.issuedAt, f.now());
+  assert.ok(d.expiresAt * 1000 - d.issuedAt > 59_000); assert.ok(d.expiresAt * 1000 - d.issuedAt <= 60_000); clean(f);
+});
+
 const env = { NODE_ENV: "production", OWNED_SOURCE_VOICE_ENABLED: "true", PDF_INGESTION_ENABLED: "true", APP_ORIGIN: config.origin,
   VISITOR_COOKIE_SECRET: config.cookieSecret, OPENAI_API_KEY: config.apiKey, DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic" };
 for (const field of ["OWNED_SOURCE_VOICE_ENABLED", "PDF_INGESTION_ENABLED", "APP_ORIGIN", "VISITOR_COOKIE_SECRET", "OPENAI_API_KEY", "DATABASE_URL"])
@@ -104,7 +121,7 @@ for (const kind of ["PDF", "YOUTUBE"]) test(`02D ${kind} complete structuredB; o
   assert.equal(p.providerConfirmed, false); assert.equal(validateProviderAdmission(p.input), true);
   assert.equal(p.input.variant.source.sections.map((s: { text: string }) => s.text).join(p.input.variant.source.separator), f.row.fullText);
   assert.equal(f.calls, 0); const r = await f.credential(p); assert.equal(r.status, 200); assert.equal(r.headers.get("cache-control"), "no-store");
-  const output = await r.json(); assert.deepEqual(Object.keys(output).sort(), ["clientSecret", "expiresAt", "preparationId"]);
+  const output = await r.json(); assert.deepEqual(Object.keys(output).sort(), ["clientSecret", "expiresAt", "issuedAt", "preparationId", "timingVersion"]);
   assert.equal(f.calls, 1); assert.equal((await f.credential(p)).status, 404); clean(f);
   const safe = JSON.stringify({ p, output });
   for (const secret of [config.apiKey, config.cookieSecret, f.visitor.owner, "ownerSessionHash", "activeSourceOwner"]) assert.equal(safe.includes(secret), false);

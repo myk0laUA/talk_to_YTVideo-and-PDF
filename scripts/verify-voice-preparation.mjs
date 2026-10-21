@@ -1,4 +1,4 @@
-// 08I: native Chromium reader + REAL adapter + JSON-serialized server projection.
+// 08J: native Chromium reader + REAL adapter + JSON-serialized server projection.
 // Only authored sources, synthetic repository and denied credentials/media/provider.
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -14,7 +14,7 @@ import { parsePdf } from '../src/server/pdf/worker.ts';
 import { pdfFixture } from '../tests/context/fixtures.ts';
 import { encodeManifest, serializeData } from '../src/shared/priming-manifest.ts';
 
-const out = path.resolve('artifacts/local/08i'); await mkdir(out, { recursive: true });
+const out = path.resolve('artifacts/local/08j'); await mkdir(out, { recursive: true });
 const report = { startedUtc: new Date().toISOString(), runtime: process.version,
   environment: 'local native Chromium; transpiled real adapter; actual handlers/registry; synthetic repository; no provider/media',
   scenarios: [], forbidden: 0, credentials: 0, provider: 0, cancels: 0 };
@@ -77,7 +77,7 @@ const repair = d => {
 };
 const cases = [
   ...extractions.map((extraction, i) => ({ name: `serialized-source-${i}`, extraction })),
-  ...[-60_000, -1000, 1000, 31_000, 60_000].map(offset => ({ name: `client-offset-${offset}`, offset, expected: offset < 0 ? 'ticket_future' : offset >= 30_000 ? 'ticket_expired' : undefined })),
+  ...[-300_000, -60_000, -1000, 1000, 60_000, 300_000].map(offset => ({ name: `client-offset-${offset}`, offset, expected: undefined })),
   ...['mime', 'json', 'utf8', 'size'].map(fault => ({ name: fault, fault, expected: `response_${fault}` })),
   { name: 'envelope', mutate: d => { d.extra = 'PRIVATE_SENTINEL'; }, expected: 'envelope' },
   { name: 'request', mutate: d => { d.requestId = 'PRIVATE_SENTINEL'; }, expected: 'request_identity' },
@@ -85,6 +85,9 @@ const cases = [
   { name: 'time', mutate: d => { d.expiresAt = 'PRIVATE_SENTINEL'; }, expected: 'ticket_time' },
   { name: 'expired', mutate: d => { d.expiresAt = 1; }, expected: 'ticket_expired' },
   { name: 'future', mutate: d => { d.expiresAt += 60_000; }, expected: 'ticket_future' },
+  { name: 'legacy-envelope', mutate: d => { delete d.issuedAt; delete d.timingVersion; }, expected: 'envelope' },
+  { name: 'version', mutate: d => { d.timingVersion = 'future-version'; }, expected: 'envelope' },
+  ...[null, 'bad', 1.5, -1].map(value => ({ name: `issued-${value}`, mutate: d => { d.issuedAt = value; }, expected: 'ticket_time' })),
   { name: 'shape', mutate: d => { d.input.basis = 'PRIVATE_SENTINEL'; }, expected: 'admission_shape' },
   { name: 'policy', mutate: d => { d.input.policy.model = 'PRIVATE_SENTINEL'; }, expected: 'policy' },
   { name: 'serialization', mutate: d => { d.input.variant.serialized += 'PRIVATE_SENTINEL'; }, expected: 'source_serialization' },
@@ -116,12 +119,13 @@ try {
       mint: async () => { report.provider++; throw new Error('Forbidden provider'); } });
     handlers = createVoiceHandlers({ config: () => config, registry, now: () => at });
     const result = await page.evaluate(async ({ sourceId, at, offset }) => {
+      Date.now = () => at + offset;
       const { browserVoiceAdapters } = await import('/src/app/voice-browser-adapters.ts');
       const { VoiceSetupDiagnostics } = await import('/src/shared/voice-diagnostics.ts');
       let forbidden = 0, cancels = 0; const cancelWork = [], abort = new AbortController();
       const deny = () => { forbidden++; throw new Error('Forbidden acquisition'); };
       const diagnostics = new VoiceSetupDiagnostics(() => performance.now());
-      const adapters = browserVoiceAdapters({ now: () => at + offset, uuid: () => crypto.randomUUID(), peer: deny, audio: deny, stream: deny, media: deny,
+      const adapters = browserVoiceAdapters({ now: () => performance.now(), uuid: () => crypto.randomUUID(), peer: deny, audio: deny, stream: deny, media: deny,
         fetch: (url, init) => {
           if (!['/api/voice-preparations', '/api/voice-preparations/cancel'].includes(url)) return deny();
           const promise = fetch(url, init);

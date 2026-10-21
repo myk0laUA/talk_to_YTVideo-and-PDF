@@ -1,5 +1,22 @@
 # Project state — Talk to a Document
 
+## PM08J offline correction accepted —21October2026Toronto
+
+Accepted bounded clock-skew correction after code/evidence review. All11delivery hashes verified (manifest uses path; initial PM hash command incorrectly used file, corrected before acceptance). Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/owned-voice.test.ts tests/unit/voice-lifecycle.test.ts` PASS288/288 exit0, artifacts/local/08j/pm-focused.log. Reviewed versioned issuedAt contract, request-start monotonic deadlines, lifetime bounds, source clipping, downstream credential/SDP/media/playback checks and server reauthorization. No blocking scoped finding. Worker35native/526built and1546unit results remain offline evidence on T2F-_Ar9QGcez-Ya4FExN; no fresh paid call or redundant full build by PM.
+
+No active worker task. Next PM deployment of accepted correction, preserving voice enabled per user; human must reload Chrome for the new versioned envelope, upload a small PDF, Start once and report stage or one short answer then Stop. Old tabs intentionally fail closed; no compatibility bypass. Last verified public application remains5242dfb. Hosted correction/audio not yet verified; historical25002ms timeout not claimed fixed.
+
+## Worker08J — proposed READY_FOR_REVIEW —21October2026Toronto
+
+[Timing design, acceptance map, exact command table and handoff](VOICE_TIMING_08J.md). Implemented one bounded owned-voice clock correction: versioned server issuedAt plus validated expiry differences become conservative request-start monotonic browser deadlines. Preparation, credentials, SDP, source expiry, microphone and playback admission no longer depend on browser/server calendar alignment. Server ownership/30s ticket/source expiry, provider credential bounds and full-source/pre-microphone ACK barriers remain enforced. Old/new envelope combinations fail closed and require reload; no legacy fallback.
+
+Clean arrival main HEAD5729bef807fb83aafae59075af56372ff2907baa; dirty/uncommitted delivery. Local build **T2F-_Ar9QGcez-Ya4FExN**, pinned Node24.22.0/npm11.19.1 in .env-free/network-denied artifacts/local/08j/offline-checkout. Final lint/typecheck/full1546units/build PASS; preparation35native; adapter107units+526built checks/45scenarios; owned-voice118units+392built; lifecycle63; priming75; owned-text417; sourceUI75 PASS/exit0. Exact UTC/commands/exits and retained development failures: artifacts/local/08j/commands.jsonl; delivery hashes/audit alongside it.
+
+Original HEAD native all-offset assertion intentionally FAIL/1: -1s/-60s/-300s reject ticket_future; +60s/+300s reject ticket_expired; +1s passes. New adapter passes all six with real serialized server preparations. Built browser six-offset flows with mid-negotiation wall jumps reach ACK-gated synthetic microphone and clean Stop. One-hour backward wall jump cannot extend a short source: no SDP/media after expiry. Delayed/malformed/legacy timing, expiry, server denial, stale identities, cancellation/late results and source clipping fail closed. Native preparation credential/media/provider counts0; built external network0. All sources/provider/native media are synthetic; no physical audio proof. Original08I ledgers preserved.
+
+Initial new-test typecheck failed union narrowing and was corrected. Optional sourceUI first run lacked ignored authored fixtures (72pass/3fail); copied existing authored fixture set into isolated checkout and reran75/75. No product workaround. No realDB/provider call, paid action, .env/public flag change, commit/push/deploy or next task. Public voice stays enabled per standing user instruction; hosted state not changed/inspected. PM reviews/deploys, then human reloads affected Chrome and tries once, reporting exact stage on failure or one short answer then Stop. Hosted microphone/audio, physical phone, actual user offset and prior25002ms timeout remain unverified/open. Full Step08 is not self-approved.
+
+
 ## PM08J assignment —21October2026Toronto
 
 Latest user Chrome screenshot on5242dfb: preparation_http ok201/298ms; preparation_validation invalid(ticket_future)/298ms. Exact rejected predicate now identified: server ticket expiry exceeds client wall time plus30000ms.08I reproduced this under client-behind offsets. Actual offset/which clock is inaccurate not measured; do not claim API-key or microphone failure. Earlier25002ms timeout remains separate.
