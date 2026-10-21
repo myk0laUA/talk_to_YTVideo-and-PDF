@@ -23,6 +23,8 @@ function setup(s: VoiceStatus | null, available: boolean) {
     if (s.failure === "microphone") return "Microphone access was denied, unavailable, or timed out. Check your browser microphone permission before starting again. Text mode is a separate next step and is not started here.";
     if (s.failure === "track_ended") return "The microphone ended. Check your microphone before starting again. Text mode is a separate next step and is not started here.";
     if (s.failure === "connection") return "The voice connection failed or closed. This does not establish network loss. Received text stays below. Start a fresh session to retry.";
+    if (s.failure === "preparation") return "Voice source preparation failed before microphone access. Setup details are below. You can select Text mode.";
+    if (s.failure === "priming") return "Voice source or settings acknowledgment failed before microphone access. Setup details are below. You can select Text mode.";
     return "Voice setup or connection failed. Received text stays below. Start a fresh session to retry; nothing restarts automatically.";
   }
   return s.microphone === "pending" ? "Source setup complete. Waiting for microphone access. You can still stop." : "Voice session ready. Microphone and speaker playback have separate controls.";
@@ -98,6 +100,10 @@ class OwnedVoiceSession extends Component<Props, State> {
     return <div className="voice-session">
       {source ? <p className="text-source">Using source: {source.title}</p> : null}
       <p id="voice-session-guidance" className="voice-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : setup(status, available)}</p>
+      {status?.phase === "failed" && status.diagnostics?.length ? <details className="note">
+        <summary>Voice setup details</summary>
+        <ol>{status.diagnostics.map((row, i) => <li key={i}>{row.stage}: {row.outcome}{row.httpStatus ? ` (HTTP ${row.httpStatus})` : ""}, {row.elapsedMs} ms</li>)}</ol>
+      </details> : null}
       <div className="source-actions voice-session-actions" aria-describedby="voice-session-guidance">
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || active} onClick={this.start}>{status?.phase === "ended" || status?.phase === "failed" ? "Start a fresh voice session" : "Start voice session"}</button>
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !active} onClick={() => this.controller?.stop()}>Stop session</button>

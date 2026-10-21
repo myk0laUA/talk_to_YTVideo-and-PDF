@@ -198,6 +198,13 @@ try {
           const f = await open('PDF', fault === 'denied' ? 390 : 1440);
           if (fault.startsWith('sdp-')) f.sdpFault(fault.slice(4)); else await f.control(fault === 'denied' ? { denied: true } : { fault });
           await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
+          await f.page.getByText('Voice setup details', { exact: true }).click();
+          const details = f.page.locator('.voice-session details');
+          const stage = fault.startsWith('transcription-') ? 'final_settings_ack' : fault === 'settings' || fault === 'provider' || fault === 'context'
+            ? 'initial_settings_ack' : fault === 'item' ? 'source_items_ack' : fault.startsWith('sdp-') ? 'sdp_validation' : fault === 'denied' ? 'microphone_request' : 'initial_settings_ack';
+          await expect(details).toContainText(stage);
+          check(fault + ' diagnostics exclude raw or private fields', !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|input_text|v=0/.test(await details.innerText()));
+          if (fault === 'settings') await f.page.screenshot({ path: path.join(directory, 'setup-details-08g.png'), fullPage: true });
           check(fault + ' no audio attachment', (await f.snap()).counts.attached, 0);
           await f.clean(fault);
           if (fault === 'denied') {

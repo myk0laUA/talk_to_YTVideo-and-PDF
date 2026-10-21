@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08G partial acceptance:** safe setup diagnostics accepted;11hashes match/fresh140focused tests pass. Hosted Chrome failure remains NOT_REPRODUCED locally, no root-cause fix claimed. Next is PM-controlled diagnostic deployment and one affected-Chrome observation; no active worker implementation task. Public voice remains contained, PDF/text available. Latest PROJECT_STATE supersedes older task summaries.
+
 **Current PM21October:** user reports Chrome voice setup failure with no microphone prompt. Exact cause unknown; sole worker assignment [08G](docs/WORKER_TASK_08G.md) diagnoses and narrowly corrects it. PM contains public voice only; working PDF/text remain. Earlier voice-availability evidence was not functional verification. Resume latest PROJECT_STATE.
 
 **Current PM hosted result:** a416652 is live on free Render with owned voice/text enabled and stable visitor secret. Real hosted PDF/text (two answers), Stop, source access after restart and fixture removal pass. Voice controls available; actual hosted voice/physical iPhone audio remains NOT_RUN. Next: human iPhone voice check; no active worker task. See HOSTED_RELEASE_CHECK and latest PROJECT_STATE. Prior deployment/task summaries below are historical.

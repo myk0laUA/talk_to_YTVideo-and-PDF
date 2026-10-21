@@ -1,5 +1,35 @@
 # Project state — Talk to a Document
 
+## PM08G partial acceptance —21October2026Toronto
+
+Accepted bounded diagnostic instrumentation only; hosted root cause/fix remains unproven and full08G outcome unfinished. All11delivery SHA256 hashes matched. Reviewed closed stage/outcome/numeric projection, immutable bounded memory, stale reporter guards, failure-only UI and unchanged authorization/policy/media barriers. PM visually inspected synthetic setup-details-08g.png: safe initial-settings failure trace, not the user's reproduced failure. Fresh pinned Node24.22.0 command `node --conditions=react-server --test tests/unit/voice-diagnostics.test.ts tests/unit/voice-browser-adapters.test.ts tests/unit/voice-lifecycle.test.ts` PASS140/140 exit0, artifacts/local/08g/pm-focused.log; no live call or rebuild. Worker1490units/built coverage retained; diagnostic build BKAaUrr5lV6vuNI-D3rud remains offline verified, separate from baseline live YhkhD73NHaU1gpomogsBg.
+
+No active worker implementation task. Next PM action is controlled publication/deployment of accepted diagnostics, initially retaining voice containment/text availability, followed by coordinated one-attempt affected-Chrome observation with action-time reactivation confirmation. Use an authored small one-page PDF, capture only Voice setup details plus device/OS/Chrome version, no HAR/credentials/private PDF. New hosted allocation, if activated: max1credential/session attempt,1short response,120seconds, US$0.50 estimated including ASR; verify pricing fit and record separately before spending. Stop on first failed contract and restore voice containment. Feed the first failing stage into one focused worker correction. No inference that the API key is wrong; local baseline voice and hosted text passed, while hosted voice still lacks the decisive trace. Existing08G local allocation closed1session/1response; no unused-attempt recycling. Public deployment/configuration unchanged during this review.
+
+## Worker08G — proposed READY_FOR_REVIEW, partial diagnosis —21October2026Toronto
+
+[08G report, evidence/acceptance map and PM-only procedure](VOICE_SETUP_08G.md). Clean arrival main **806b32970b5d1a6298f1321c2025ef48f653a63b**; dirty/uncommitted delivery. **Reported hosted failure NOT_REPRODUCED locally; no speculative root-cause fix.** Existing evidence lacks a failing hosted HTTP/native/ACK trace and device/OS/Chrome version. Before edits, all114application inputs matched retained baseline **YhkhD73NHaU1gpomogsBg**. One real local authored3page PDF/PostgreSQL/native Chromium156.0.8078.4/OpenAI/synthetic-input run **04:10:02.070–04:10:36.998UTC exit0**: prepare201/credential200/SDP201, native connection/channel, all3source ACKs/exact11initial and11final settings/v3-600ms before microphone, grounded answer, normal HTML playback clock9.693209→21.225939s, active Stop/two retained turns/preview/removal404/default3routes503-no-store/zero native resources PASS. No human prompt/audibility or hosted/phone claim.
+
+Narrow diagnostic seam exposes only bounded fixed stage/outcome/status/elapsed rows in failure details; no raw error/response/source/credential logging, storage or debug endpoint. Original-HEAD visibility assertion failed; new safe-projection/timeout/Stop/late/stale tests and built failure UI pass. No policy/validation/timeout/ownership/server/text behavior change. New .env-free/network-denied build **BKAaUrr5lV6vuNI-D3rud** passes pinned Node24.22.0/npm11.19.1 lint/typecheck/units/build, priming75/lifecycle63, adapter444built, owned-voice94+392 and owned-text417; final commands/counts/hashes/audit under ignored **artifacts/local/08g/**. Baseline live result stays distinct from new offline-tested diagnostic build. Initial strip-only constructor syntax failure preserved/corrected.
+
+Separate08G allowance closed at **1session/1response**, optional second unused; preflightUS$0.39448 fits0.50, known numeric response+ASR **US$0.00580455**, actual billed/prior/cumulative unknown. Existing allocations/private files preserved; no .env/migration/shared cleanup/config/deploy/push/commit. PM reviews partial handoff and may arrange one controlled deployed observation; user should not keep retrying the contained build. Exact hosted cause/fix, real microphone prompt/human audio/phone and broader release gates remain open. PM owns completion/next task.
+
+Final08G command results below are **local, pinned, .env-free/network-denied**, exit0/PASS unless explicitly labelled. Exact start/end/exits including failures: artifacts/local/08g/commands.jsonl. Built scripts all use **BKAaUrr5lV6vuNI-D3rud**; no hosted check or provider call in these ordinary commands.
+
+| Actual command | Observed result |
+|---|---|
+| `node --conditions=react-server --test --test-name-pattern=08G tests/unit/voice-browser-adapters.test.ts` |18/18; final04:20:49.512–04:20:50.398UTC |
+| `npm run test:lifecycle`; `npm run test:priming` |63/63;75/75 |
+| `npm run lint`; `npm run typecheck`; `npm run test` |All clean;1490/1490 final units,04:20:50.400–04:21:02.680UTC |
+| `npm run build` |Production build04:15:02.980–04:15:10.820UTC; unchanged115application inputs after final test-only/docs edits |
+| `npm run test:voice-adapter` |75units+444built checks; final added stale reporter regression included in1490units |
+| `npm run test:owned-voice`; `npm run test:owned-text` |94units+392built;417built checks |
+| `npm run test:voice-session`; `npm run test:mode-switch`; `npm run test:recovery` |208/156/248 browser checks, no flaky/skipped |
+| Original-HEAD complete-trace assertion |Expected FAIL/1 (missing diagnostics), diagnostic-red.log; initial post-edit strip-only syntax FAIL/1 separately retained and corrected |
+| `node artifacts/local/08g/audit.mjs` |115inputs match;490protected/429prior-evidence/4prior-ledger/private-file hashes unchanged;11delivery hashes;bothlivePIDs exited/10ports released/diffcheck0 |
+
+The separate live command `node artifacts/local/08g/live.mjs 1` used real local services on retained baseline build, not the ordinary harness; its exit0 and UTC are recorded above. Hosted exact-stage reproduction, new-build live voice, physical microphone/prompt/human audibility/phone remain NOT_RUN. No acceptance decision or new task by worker.
+
 ## PM user-reported Chrome voice failure —21October2026Toronto
 
 User supplied screenshot of an imported one-page PDF and generic Voice setup or connection failed / Microphone Not in use. User confirms Chrome, no microphone prompt; OS/device/version unspecified, not a verified iPhone test. Hosted voice functional gate is FAILED by user report; precise stage/cause unknown. Code inspection confirms generic UI covers multiple failures, whereas microphone and connection have separate messages. No root-cause claim, private-document access or new paid call by PM. Existing hosted text/restart successes remain valid.

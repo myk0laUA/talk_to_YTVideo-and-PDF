@@ -50,6 +50,9 @@ for (const barrier of ["configuration", "item", "final"] as const) test(`withhel
   if (barrier === "final") await h.items();
   h.clock.tick(1000); await flush();
   assert.equal(h.controller.snapshot.failure, "priming"); assert.equal(h.calls.media, 0); assert.equal(h.controller.canSendQuestions, false);
+  assert.equal(h.controller.snapshot.diagnostics!.at(-1)!.stage,
+    barrier === "configuration" ? "initial_settings_ack" : barrier === "item" ? "source_items_ack" : "final_settings_ack");
+  assert.equal(h.controller.snapshot.diagnostics!.at(-1)!.outcome, "timeout");
   h.clean(); traces.push(h.trace(`withheld-${barrier}`));
 });
 

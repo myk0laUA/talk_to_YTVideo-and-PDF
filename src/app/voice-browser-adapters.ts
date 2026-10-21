@@ -5,6 +5,7 @@ import { validateProviderAdmission, type ProviderPrimingInput } from "../shared/
 import { matchesProviderVoicePolicy } from "../shared/priming-provider-policy.ts";
 import { bytes, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES } from "../shared/priming-manifest.ts";
 import type { PrimingTransport } from "../shared/priming-controller.ts";
+import type { VoiceSetupReporter, VoiceSetupStage } from "../shared/voice-diagnostics.ts";
 
 export type BrowserVoiceDependencies = {
   fetch: typeof fetch; peer: () => RTCPeerConnection; audio: () => HTMLAudioElement;
@@ -129,10 +130,15 @@ type Prepared = { sourceId: string; connectionId: string; requestId: string; pre
 export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapters {
   let prepared: Prepared | undefined;
   let cancellation: Promise<void> = Promise.resolve();
-  const send = async (suffix: string, body: object, signal: AbortSignal) => {
+  const send = async (suffix: string, body: object, signal: AbortSignal, report: VoiceSetupReporter) => {
+    const stage = suffix ? "credential_http" : "preparation_http", validation = suffix ? "credential_validation" : "preparation_validation";
+    report(stage, "pending");
     const response = await wait(deps.fetch(`/api/voice-preparations${suffix}`, { method: "POST", credentials: "same-origin", cache: "no-store",
       redirect: "error", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal }), signal, cancelBody);
-    return JSON.parse(await read(response, "application/json", suffix ? 2048 : 24_500_000, signal)) as unknown;
+    report(stage, response.ok ? "ok" : "http_error", response.status);
+    if (response.ok) report(validation, "pending");
+    try { return JSON.parse(await read(response, "application/json", suffix ? 2048 : 24_500_000, signal)) as unknown; }
+    catch { if (response.ok && !signal.aborted) report(validation, "invalid"); throw unavailable(); }
   };
   const current = (identity: VoiceIdentity, signal: AbortSignal) => {
     const p = prepared;
@@ -141,7 +147,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
     return p;
   };
   return {
-    async prepare(identity, signal) {
+    async prepare(identity, signal, report = () => {}) {
       if (!uuid(identity.sourceId) || signal.aborted) throw unavailable();
       // Explicit restart waits for the previous best-effort cancellation's bounded
       // completion, rather than racing its known unclaimed ticket on the server.
@@ -161,7 +167,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           .then(cancelBody, () => {}).finally(() => clearTimeout(timer));
       };
       prepared = p; signal.addEventListener("abort", p.cancel, { once: true });
-      const result = await send("", { sourceId: identity.sourceId, requestId }, signal);
+      const result = await send("", { sourceId: identity.sourceId, requestId }, signal, report);
       if (prepared !== p || signal.aborted || !record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,preparationId,providerConfirmed,requestId"
         || result.requestId !== requestId || result.conversationReady !== false || result.providerConfirmed !== false
         || typeof result.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(result.preparationId)
@@ -173,13 +179,16 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       const expires = Date.parse(input.variant.source.expiresAt);
       if (!Number.isFinite(expires) || expires <= deps.now() || result.expiresAt > expires) throw unavailable();
       Object.assign(p, { preparationId: result.preparationId, runId: input.manifest.runId, expires: result.expiresAt, sourceExpires: expires });
+      report("preparation_validation", "ok");
       return { input, serverRunId: input.manifest.runId };
     },
-    async connect(identity, signal) {
+    async connect(identity, signal, observe = () => {}) {
+      let stage: VoiceSetupStage = "credential_http", pending = false;
+      const report: VoiceSetupReporter = (next, outcome, status) => { stage = next; pending = outcome === "pending"; observe(next, outcome, status); };
       const p = current(identity, signal);
       const abort = new AbortController(), stop = () => abort.abort();
       signal.addEventListener("abort", stop, { once: true });
-      const timer = setTimeout(stop, 15_000);
+      const timer = setTimeout(() => { if (pending) report(stage, "timeout"); stop(); }, 15_000);
       let peer: RTCPeerConnection | undefined, channel: RTCDataChannel | undefined, audio: HTMLAudioElement | undefined;
       let transport: BrowserVoiceTransport | undefined, expiry: ReturnType<typeof setTimeout> | undefined;
       let clientSecret: string | undefined;
@@ -197,7 +206,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         safely(() => { if (audio) { audio.pause(); audio.srcObject = null; audio.removeAttribute("src"); audio.load(); } }); };
       const fail = () => { if (closed) return; transport?.connectionLost(); close(); if (!transferred) stop(); };
       try {
-        const result = await send("/credential", { sourceId: p.sourceId, requestId: p.requestId, preparationId: p.preparationId }, abort.signal);
+        const result = await send("/credential", { sourceId: p.sourceId, requestId: p.requestId, preparationId: p.preparationId }, abort.signal, report);
         // No retained token on the adapter or connection; erase parsed DTO after fetch invocation.
         current(identity, signal);
         if (!record(result) || Object.keys(result).sort().join() !== "clientSecret,expiresAt,preparationId" || result.preparationId !== p.preparationId
@@ -206,7 +215,9 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           || result.expiresAt * 1000 <= deps.now() || result.expiresAt * 1000 > deps.now() + 65_000) throw unavailable();
         p.claimed = true; signal.removeEventListener("abort", p.cancel); prepared = undefined;
         clientSecret = result.clientSecret; result.clientSecret = undefined;
+        report("credential_validation", "ok");
         const credentialExpiry = result.expiresAt * 1000;
+        report("peer_creation", "pending");
         peer = deps.peer(); audio = deps.audio(); audio.autoplay = false;
         const remote = deps.stream();
         const pc = peer, speaker = audio;
@@ -226,21 +237,31 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         transport = new BrowserVoiceTransport(pc, channel, fail);
         const onstate = () => { if (["failed", "closed", "disconnected"].includes(pc.connectionState)) fail(); };
         pc.addEventListener("connectionstatechange", onstate); remove.push(() => pc.removeEventListener("connectionstatechange", onstate));
+        report("peer_creation", "ok");
         try {
+          report("local_description", "pending");
           const offer = await wait(pc.createOffer(), abort.signal);
           await wait(pc.setLocalDescription(offer), abort.signal);
           if (!offer.sdp || bytes(offer.sdp) > 100_000 || !/^v=0\r?\n/.test(offer.sdp) || !/^m=audio /m.test(offer.sdp) || !/^m=application /m.test(offer.sdp)
             || credentialExpiry <= deps.now() || signal.aborted) throw unavailable();
+          report("local_description", "ok");
+          report("sdp_http", "pending");
           const pending = deps.fetch("https://api.openai.com/v1/realtime/calls", { method: "POST", body: offer.sdp, signal: abort.signal,
             credentials: "omit", cache: "no-store", redirect: "error", headers: { Authorization: `Bearer ${clientSecret}`, "Content-Type": "application/sdp" } });
           clientSecret = undefined;
           const response = await wait(pending, abort.signal, cancelBody);
+          report("sdp_http", response.ok ? "ok" : "http_error", response.status);
+          if (response.ok) report("sdp_validation", "pending");
           // The real calls endpoint can return SDP as text/plain. Keep the
           // bounded reader and SDP structure/native parser checks for both types.
           const sdp = await read(response, ["application/sdp", "text/plain"], 100_000, abort.signal);
           if (credentialExpiry <= deps.now() || !/^v=0\r?\n/.test(sdp) || !/^m=audio /m.test(sdp) || !/^m=application /m.test(sdp)) throw unavailable();
+          report("sdp_validation", "ok");
+          report("remote_description", "pending");
           await wait(pc.setRemoteDescription({ type: "answer", sdp }), abort.signal);
+          report("remote_description", "ok");
         } finally { clientSecret = undefined; }
+        report("peer_channel_ready", "pending");
         await wait(new Promise<void>((resolve, reject) => {
           const ready = () => {
             if (closed) { reject(unavailable()); return; }
@@ -251,6 +272,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           remove.push(off); ready();
         }), abort.signal);
         if (signal.aborted || closed || credentialExpiry <= deps.now() || !p.sourceExpires || p.sourceExpires <= deps.now()) throw unavailable();
+        report("peer_channel_ready", "ok");
         // Source expiry ends this local session; credential expiry only bounds negotiation.
         expiry = setTimeout(fail, Math.min(2_147_483_647, p.sourceExpires - deps.now()));
         const connection: VoiceConnection = { transport, close, playback: {
@@ -262,11 +284,13 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       } catch { close(); throw unavailable(); }
       finally { clientSecret = undefined; clearTimeout(timer); signal.removeEventListener("abort", stop); }
     },
-    async acquireMedia(_identity, signal) {
+    async acquireMedia(_identity, signal, report = () => {}) {
+      report("microphone_request", "pending");
       const stopTracks = (s: MediaStream) => { for (const t of new Set(s.getTracks())) { t.enabled = false; safely(() => t.stop()); } };
       const stream = await wait(deps.media().then(stream => { for (const t of stream.getTracks()) t.enabled = false; return stream; }), signal, stopTracks);
       const native = [...new Set(stream.getTracks())];
       if (signal.aborted || native.length !== 1 || native[0].kind !== "audio" || native[0].readyState !== "live") { stopTracks(stream); throw unavailable(); }
+      report("microphone_request", "ok");
       const wrappers: VoiceTrack[] = native.map(track => ({ get enabled() { return track.enabled; }, set enabled(v) { track.enabled = v; },
         get readyState() { return track.readyState; }, stop: () => track.stop(),
         subscribeEnded: callback => { track.addEventListener("ended", callback); return () => track.removeEventListener("ended", callback); } }));

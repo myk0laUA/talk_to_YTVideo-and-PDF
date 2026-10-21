@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { getEventListeners } from "node:events";
 import { browserVoiceAdapters, BrowserVoiceTransport, type BrowserVoiceDependencies } from "../../src/app/voice-browser-adapters.ts";
 import { VoiceLifecycle } from "../../src/shared/voice-lifecycle.ts";
+import type { VoiceSetupReporter } from "../../src/shared/voice-diagnostics.ts";
 import { VoiceRegistry } from "../../src/server/voice/registry.ts";
 import { createVoiceHandlers } from "../../src/server/voice/handlers.ts";
 import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
@@ -106,6 +107,83 @@ test("08F speaker stream is first bound after its remote track exists", async ()
   assert.equal(binds, 1); assert.equal(f.native.counts.plays, 0);
   await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "available");
   await f.stopped(); assert.equal(f.native.counts.plays, 1);
+});
+
+test("08G complete setup trace confirms source/settings before microphone with data-free rows", async () => {
+  const f = fixture(); f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  const rows = f.controller.snapshot.diagnostics!;
+  assert.deepEqual(rows.map(r => r.stage), ["preparation_http", "preparation_validation", "credential_http", "credential_validation",
+    "peer_creation", "local_description", "sdp_http", "sdp_validation", "remote_description", "peer_channel_ready",
+    "initial_settings_ack", "source_items_ack", "final_settings_ack", "microphone_request", "microphone_attach"]);
+  assert.ok(rows.every((r, i) => r.outcome === "ok" && Number.isSafeInteger(r.elapsedMs) && (!i || r.elapsedMs >= rows[i - 1].elapsedMs)));
+  assert.ok(Object.isFrozen(rows) && rows.every(Object.isFrozen));
+  assert.doesNotMatch(JSON.stringify(rows), /ek_|sk-|td-visitor|sourceId|owner|instructions|input_text|v=0|clientSecret/);
+  await f.stopped(); assert.deepEqual(f.controller.snapshot.diagnostics, rows);
+});
+
+for (const [fault, stage, outcome] of [
+  ["correlation", "preparation_validation", "invalid"], ["credential", "credential_validation", "invalid"],
+  ["sdp-mime", "sdp_validation", "invalid"], ["settings", "initial_settings_ack", "invalid"],
+  ["item", "source_items_ack", "invalid"], ["transcription-wrong", "final_settings_ack", "invalid"],
+  ["provider", "initial_settings_ack", "provider"], ["context", "initial_settings_ack", "context_limit"],
+]) test(`08G first failed stage ${fault}: ${stage}/${outcome}, no premature microphone`, async () => {
+  const f = fixture("PDF", fault); f.start(); await until(() => f.controller.snapshot.phase === "failed");
+  assert.equal(f.controller.snapshot.diagnostics!.at(-1)!.stage, stage);
+  assert.equal(f.controller.snapshot.diagnostics!.at(-1)!.outcome, outcome);
+  assert.equal(f.native.counts.media, 0); await f.stopped();
+});
+
+test("08G HTTP status is projected while response body and thrown errors never leak", async () => {
+  const f = fixture(), base = f.deps.fetch;
+  const forbidden = "sk-secret ek-secret td-visitor=private owner-hash private-document v=0 raw-provider-body";
+  f.deps.fetch = async (url, init) => String(url) === "/api/voice-preparations"
+    ? new Response(forbidden, { status: 503, headers: { "content-type": "application/json", "set-cookie": forbidden } }) : base(url, init);
+  f.start(); await until(() => f.controller.snapshot.phase === "failed");
+  assert.deepEqual(f.controller.snapshot.diagnostics!.map(r => ({ stage: r.stage, outcome: r.outcome, httpStatus: r.httpStatus })),
+    [{ stage: "preparation_http", outcome: "http_error", httpStatus: 503 }]);
+  assert.ok(!JSON.stringify(f.controller.snapshot.diagnostics).includes(forbidden));
+  assert.equal(f.native.counts.peers + f.native.counts.media + f.calls(), 0); await f.stopped();
+});
+
+for (const hold of ["prepare", "credential", "sdp", "final", "media", "attach"]) test(`08G Stop at ${hold} freezes diagnostics across late native/HTTP results`, async () => {
+  const f = fixture("PDF", "", ["final", "media", "attach"].includes(hold) ? hold : "");
+  if (["prepare", "credential", "sdp"].includes(hold)) f.hold(hold);
+  f.start();
+  const stages: Record<string, string> = { prepare: "preparation_http", credential: "credential_http", sdp: "sdp_http",
+    final: "final_settings_ack", media: "microphone_request", attach: "microphone_attach" };
+  await until(() => f.controller.snapshot.diagnostics?.at(-1)?.stage === stages[hold]);
+  f.controller.stop(); const rows = f.controller.snapshot.diagnostics!;
+  assert.equal(rows.at(-1)!.outcome, "cancelled");
+  await f.stopped(); assert.deepEqual(f.controller.snapshot.diagnostics, rows);
+});
+
+test("08G malformed JSON and network exceptions have safe distinct stage outcomes", async () => {
+  for (const network of [false, true]) {
+    const f = fixture(), base = f.deps.fetch;
+    f.deps.fetch = async (url, init) => {
+      if (String(url) !== "/api/voice-preparations") return base(url, init);
+      if (network) throw new Error("ek-private private-document provider-body");
+      return new Response("{ek-private", { headers: { "content-type": "application/json" } });
+    };
+    f.start(); await until(() => f.controller.snapshot.phase === "failed");
+    const row = f.controller.snapshot.diagnostics!.at(-1)!;
+    assert.equal(row.stage, network ? "preparation_http" : "preparation_validation");
+    assert.equal(row.outcome, network ? "unavailable" : "invalid");
+    assert.doesNotMatch(JSON.stringify(f.controller.snapshot.diagnostics), /ek-private|private-document|provider-body/);
+    await f.stopped();
+  }
+});
+
+test("08G a stale diagnostic reporter cannot overwrite an explicit fresh attempt", async () => {
+  const f = fixture(), prepare = f.adapters.prepare;
+  const reports: VoiceSetupReporter[] = [];
+  f.adapters.prepare = (identity, signal, report) => { reports.push(report!); return prepare(identity, signal, report); };
+  f.start(); await until(() => f.controller.snapshot.microphone === "available"); await f.stopped();
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  const current = f.controller.snapshot;
+  reports[0]("credential_http", "http_error", 403);
+  assert.equal(f.controller.snapshot, current); assert.equal(f.calls(), 2);
+  assert.equal(f.native.counts.violations, 0); await f.stopped();
 });
 
 for (const mime of ["application/sdp", "text/plain; charset=utf-8"]) test(`08E SDP201 ${mime} retains full ACK-before-media and Stop cleanup`, async () => {

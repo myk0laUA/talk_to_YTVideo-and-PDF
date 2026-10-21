@@ -3,6 +3,7 @@ import { isProviderInput, validateProviderAdmission, type AdmissionInput, type P
 import { isContextLimit, matchesProviderVoicePolicy } from "./priming-provider-policy.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 import { TranscriptStore } from "./transcript.ts";
+import { VoiceSetupDiagnostics, type VoiceSetupDiagnostic, type VoiceSetupReporter } from "./voice-diagnostics.ts";
 
 export type VoiceIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 export type VoiceStatus = Readonly<{
@@ -12,6 +13,7 @@ export type VoiceStatus = Readonly<{
   playback: "none" | "pending" | "available" | "blocked";
   response: ResponseState;
   basis?: PrimingStatus["basis"]; failure?: VoiceFailure; message: string;
+  diagnostics?: readonly VoiceSetupDiagnostic[];
 }>;
 export type VoiceFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider";
 export interface VoiceTrack {
@@ -35,10 +37,10 @@ export interface VoiceMedia {
 }
 export interface VoiceAdapters {
   // Read-only preparation. No media/transport acquisition or retained credentials.
-  prepare(identity: VoiceIdentity, signal: AbortSignal): Promise<AdmissionInput | { status: "budget_unavailable" }
+  prepare(identity: VoiceIdentity, signal: AbortSignal, report?: VoiceSetupReporter): Promise<AdmissionInput | { status: "budget_unavailable" }
     | { input: ProviderPrimingInput; serverRunId: string }>;
-  connect(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceConnection>;
-  acquireMedia(identity: VoiceIdentity, signal: AbortSignal): Promise<VoiceMedia>;
+  connect(identity: VoiceIdentity, signal: AbortSignal, report?: VoiceSetupReporter): Promise<VoiceConnection>;
+  acquireMedia(identity: VoiceIdentity, signal: AbortSignal, report?: VoiceSetupReporter): Promise<VoiceMedia>;
 }
 export type VoiceDeadlines = { preparationMs: number; connectionMs: number; primingMs: number; mediaMs: number; interruptionMs: number };
 const defaults: VoiceDeadlines = { preparationMs: 25_000, connectionMs: 15_000, primingMs: 25_000, mediaMs: 30_000, interruptionMs: 5_000 };
@@ -58,6 +60,7 @@ type Attempt = {
   identity: VoiceIdentity; abort: AbortController; priming?: PrimingController;
   connection?: VoiceConnection; media?: VoiceMedia; listeners: (() => void)[];
   response?: VoiceResponseController;
+  diagnostics: VoiceSetupDiagnostics;
 };
 
 /** A data-only bridge permits 07B admission BEFORE any connection acquisition.
@@ -141,6 +144,15 @@ export class VoiceLifecycle {
     return new PrimingController(this.clock, notify, primed, this.deadlines.primingMs);
   }
   private current(a: Attempt) { return this.attempt === a && !a.abort.signal.aborted && !this.disposed; }
+  private report(a: Attempt): VoiceSetupReporter {
+    return (stage, outcome, status) => {
+      if (!this.current(a)) return;
+      a.diagnostics.report(stage, outcome, status);
+      // Progress is read with the next lifecycle notification; observing it cannot
+      // synchronously Stop between a native resource acquisition and its cleanup.
+      this.status = Object.freeze({ ...this.status, diagnostics: a.diagnostics.snapshot });
+    };
+  }
   private update(patch: Partial<VoiceStatus>) {
     this.status = Object.freeze({ ...this.status, ...patch });
     safely(() => this.notify(this.status));
@@ -154,6 +166,7 @@ export class VoiceLifecycle {
   }
   private finish(a: Attempt, failure?: VoiceFailure) {
     if (!this.current(a)) return;
+    a.diagnostics.finish(failure ? a.diagnostics.snapshot.at(-1)?.stage.endsWith("_validation") ? "invalid" : "unavailable" : "cancelled");
     // Invalidate first: abort/close/track callbacks and observers cannot revive this run.
     this.attempt = undefined;
     this.transcriptStore.stop();
@@ -169,6 +182,7 @@ export class VoiceLifecycle {
     this.cleaning = false;
     this.update({ phase: failure ? "failed" : "ended", identity: undefined, basis: undefined, failure,
       muted: false, protocolReady: false, microphone: "none", playback: "none", response: emptyResponse(),
+      diagnostics: a.diagnostics.snapshot,
       message: failure ? messages[failure] : "Ended. Microphone and connection released." });
   }
   /** Interruptible and bounded even when an adapter ignores AbortSignal. */
@@ -177,7 +191,7 @@ export class VoiceLifecycle {
       let settled = false;
       const clear = () => { a.abort.signal.removeEventListener("abort", cancel); this.clock.clearTimeout(timer); };
       const cancel = () => { if (!settled) { settled = true; clear(); reject(new Error("Cancelled")); } };
-      const timer = this.clock.setTimeout(cancel, ms);
+      const timer = this.clock.setTimeout(() => { if (!settled && this.current(a)) a.diagnostics.finish("timeout"); cancel(); }, ms);
       a.abort.signal.addEventListener("abort", cancel, { once: true });
       pending.then(value => {
         if (settled || !this.current(a)) { safely(() => late(value)); cancel(); return; }
@@ -193,18 +207,18 @@ export class VoiceLifecycle {
     if (this.disposed || this.disposing || this.cleaning || this.resetting || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;
     const n = ++this.sequence;
     const a: Attempt = { identity: Object.freeze({ sourceId, runId: `voice_${n}`, connectionId: `connection_${n}` }),
-      abort: new AbortController(), listeners: [] };
+      abort: new AbortController(), listeners: [], diagnostics: new VoiceSetupDiagnostics(this.clock.now.bind(this.clock)) };
     this.attempt = a;
     this.transcriptStore.reset();
     this.update({ phase: "connecting", identity: a.identity, muted: false, protocolReady: false, productionReady: false,
-      microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, message: "Preparing voice setup; questions are disabled." });
+      microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, diagnostics: a.diagnostics.snapshot, message: "Preparing voice setup; questions are disabled." });
     if (this.current(a)) void this.setup(a);
     return true;
   }
   private async setup(a: Attempt) {
     let failure: VoiceFailure = "preparation";
     try {
-      const prepared = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal), this.deadlines.preparationMs);
+      const prepared = await this.wait(a, this.adapters.prepare(a.identity, a.abort.signal, this.report(a)), this.deadlines.preparationMs);
       if (!this.current(a)) return;
       // The owned HTTP boundary selects the immutable manifest identity. Keep the local
       // connection identity for stale-work ownership; never rewrite server source/events.
@@ -262,6 +276,15 @@ export class VoiceLifecycle {
       }, () => this.finish(a, "connection"), this.deadlines.interruptionMs);
       a.priming = this.createPriming(s => {
         if (!this.current(a)) return;
+        const report = this.report(a);
+        if (s.state === "priming") {
+          if (a.diagnostics.snapshot.at(-1)?.stage === "initial_settings_ack") report("initial_settings_ack", "ok");
+          if (s.acknowledged < s.expected) report("source_items_ack", "pending");
+          else { report("source_items_ack", "ok"); report("final_settings_ack", "pending"); }
+        } else if (s.state === "primed") report("final_settings_ack", "ok");
+        else if (s.state === "failed") a.diagnostics.finish(s.failure === "timeout" ? "timeout"
+          : s.failure === "provider" ? "provider" : s.failure === "context_limit" ? "context_limit"
+          : s.failure === "configuration" || s.failure === "protocol" || s.failure === "invalid_input" ? "invalid" : "unavailable");
         if (s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable"
           : s.failure === "transport" ? "connection" : providerVoice && s.failure === "context_limit" ? "context_limit"
           : providerVoice && s.failure === "provider" ? "provider" : "priming");
@@ -269,10 +292,11 @@ export class VoiceLifecycle {
       // Actual 07B validates admission and manifest against an inert bridge first.
       if (!a.priming.start(a.identity, input, bridge) || !this.current(a)) return;
       failure = "connection";
-      const connection = await this.wait(a, this.adapters.connect(a.identity, a.abort.signal), this.deadlines.connectionMs,
+      const connection = await this.wait(a, this.adapters.connect(a.identity, a.abort.signal, this.report(a)), this.deadlines.connectionMs,
         value => this.releaseConnection(value));
       if (!this.current(a)) { this.releaseConnection(connection); return; }
       a.connection = connection;
+      this.report(a)("initial_settings_ack", "pending");
       this.update({ phase: "priming", basis: a.priming.snapshot.basis, message: "Waiting for complete source acknowledgment; questions are disabled." });
       if (this.current(a)) bridge.bind(connection);
     } catch { if (this.current(a)) this.finish(a, failure); }
@@ -282,7 +306,7 @@ export class VoiceLifecycle {
       this.update({ phase: "ready", protocolReady: true, microphone: "pending",
         message: "Source protocol acknowledged. Waiting for microphone; voice questions are disabled." });
       if (!this.current(a)) return;
-      const media = await this.wait(a, this.adapters.acquireMedia(a.identity, a.abort.signal), this.deadlines.mediaMs,
+      const media = await this.wait(a, this.adapters.acquireMedia(a.identity, a.abort.signal, this.report(a)), this.deadlines.mediaMs,
         value => this.releaseMedia(value));
       if (!this.current(a)) { this.releaseMedia(media); return; }
       a.media = media;
@@ -293,8 +317,10 @@ export class VoiceLifecycle {
         if (!this.current(a)) { safely(remove); return; }
         a.listeners.push(remove);
       }
+      this.report(a)("microphone_attach", "pending");
       await this.wait(a, Promise.resolve(media.attach(a.connection!)), this.deadlines.mediaMs);
       if (!this.current(a)) return;
+      this.report(a)("microphone_attach", "ok");
       this.update({ microphone: "available", message: "Lifecycle ready. Audio and provider behavior require separate verification." });
       if (this.current(a)) this.applyMute(a);
     } catch { if (this.current(a)) this.finish(a, "microphone"); }
