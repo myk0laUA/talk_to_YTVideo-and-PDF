@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08M:**08L is deployed; iPhone works by user report but sensitivity persists. Sole worker task [08M](docs/WORKER_TASK_08M.md) prepares one conservative activation-threshold candidate and offline checks; physical comparison pending. Finish-today target, no completion promise. Voice stays enabled.
+
 **Current PM08L acceptance:** optional microphone echo/noise preferences accepted offline;6hashes and fresh234checks pass. Acoustic improvement unproven. Next PM deployment then affected-iPhone/Chrome verification; no active worker task. Voice stays enabled. Latest PROJECT_STATE supersedes historical summaries.
 
 **Current PM08L:** iPhone voice works by user report, but unintended speech-trigger interruptions remain. Sole worker task [08L](docs/WORKER_TASK_08L.md) addresses capture/VAD behavior while preserving deliberate interruption. Physical acceptance pending; Chrome08K success retained. Voice stays enabled. Older summaries below are historical.

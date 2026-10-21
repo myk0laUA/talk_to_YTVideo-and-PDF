@@ -1,5 +1,14 @@
 # Project state — Talk to a Document
 
+## PM08M assignment and physical08L follow-up —21October2026Toronto
+
+User tested deployed08L on iPhone: works but microphone still sensitive. Screenshots show speech-trigger cancellations and short unexpected-language transcripts. Accept basic physical functionality by user report, not successful false-interruption correction or every control check. Acoustic cause remains unproven. The supplied assessment explicitly tests natural interruption/follow-up; keep hands-free voice as default.
+
+User sent a Slack progress update themselves and now targets completion today. This is a working target, not an established delivery guarantee; earlier internal dates have elapsed. Remaining release work includes bounded voice tuning/device validation, YouTube demonstration/hosted limitation resolution, mobile/recovery checks and final documentation/video. Hosted YouTube bonus remains a target, with the brief's local-demo contingency available; no silent waiver of existing gates.
+
+Sole worker assignment08M (WORKER_TASK_08M.md): one conservative explicit speech-activation candidate, strict policy/ACK consistency, offline regressions then PM physical comparison. No worker paid calls or deployment. Voice stays enabled. Current host2d68242; starting HEAD ee5b5d4. No application changes or tests this PM documentation turn.
+
+
 ## PM08L deployed —21October2026Toronto
 
 User requested deployment. Published2d68242db0d479c92dcce409321e575f3c30e212 (git push exit0). Render dep-dbcgd83rjlhs73bcmgug reports Deploy succeeded/Live at14:39:53Toronto; startup confirms PDF/owned voice/text enabled, YouTube/proofs disabled. No configuration/secret change. HTTP readiness at18:40:05UTC PASS/exit0: root200 and same-origin unauthenticated preparation401/no-store. First probe omitted Origin and received expected origin-protection403, causing its401 assertion to fail; corrected probe supplied Origin. Both results retained in artifacts/local/08l-hosted alongside deployed.png. No provider call.
