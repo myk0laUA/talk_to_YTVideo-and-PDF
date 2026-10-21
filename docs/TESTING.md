@@ -1,5 +1,18 @@
 # Testing and evidence — Talk to a Document
 
+**PM08F correction1 acceptance:** three delivery hashes matched; actual native playback/currentTime progression and Stop screenshots/audit reviewed on YhkhD73NHaU1gpomogsBg. Assigned local synthetic-input playback gate passes. No redundant unchanged suite or new paid call. Next verification is PM-owned hosted release/configuration and exact-build voice/text/Stop/restart ownership, followed by real iPhone microphone/audibility/interruption checks. No active worker task; prior next-task statements are historical. Public Render remains03eb7d8 as freshly inspected; local evidence does not establish public readiness.
+
+## Task08F correction1 — actual HTML playback, proposed READY_FOR_REVIEW
+
+[Correction playback report](VOICE_PAUSES_INTERRUPTION_08F.md#correction-1--21-october-2026-utc--20-october-toronto) preserves all original failures and distinguishes provider-buffer events from actual browser media. Reused unchanged build **YhkhD73NHaU1gpomogsBg** after114input hashes match; no code correction/rebuild or full unchanged suites repeated. New observer is passive: no play calls, srcObject assignment, added sink/element or native replacement; offline native fixture/function-identity checks pass.
+
+One actual fresh local PDF/parser/PostgreSQL/OpenAI/native Chromium/file-backed-mic run02:09:01.719–02:09:37.098UTC exit0: full source/v3-ASR600ms ACKs before media; ordinary playback button produces application available UI, native play/playing, readyState4 and HTML currentTime9.954813→21.397787s through matching completed response/output-buffer stop. Exact complete ASR0/11words wrong, requested factual names correct; incidental wrong “image” medium descriptor retained. No packet-only or human-audibility claim.
+
+Active Stop/two retained turns/full preview/normal owned removal404/default unavailable3routes503-no-store/zero native/external resources/private/prior/port/process cleanup pass. Screenshots playback-complete.png and stopped-390.png inspected. Native offline fixture and all timing/usage/identity evidence are separate from real-service evidence under ignored artifacts/local/08f/correction-1.
+
+Correction ledger COMPLETE at1session/1response start; optional second unused, no further live work. New known estimateUS$0.00575335, actual bill unknown; old exhausted ledgers preserved. Human listening/physical microphone/phone/real-person usability/hosted/YouTube/full evaluation remain NOT_RUN. No next task/public activation; PM owns acceptance.
+
+
 **PM08F review:**10hashes matched; fresh239admission/adapter/interruption tests PASS/0. Controlled live interruption and pause scope accepted, speaker playback remains unverified on final corrected build. Next WORKER_TASK_08F_CORRECTION.md has a separate bounded allocation; original08F remains exhausted.
 
 ## Task08F — natural pauses/interruption, proposed READY_FOR_REVIEW (partial live)

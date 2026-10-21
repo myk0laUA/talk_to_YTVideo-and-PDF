@@ -160,3 +160,96 @@ Pinned executable `.tools/node-v24.22.0-win-x64/node.exe` and its bundled npm-cl
 | `npm run test:mode-switch` | 2026-10-21T01:56:03.890Z | 2026-10-21T01:57:00.149Z | 0 | test-mode-switch-2026-10-21T01-56-03-890Z.log |
 | `npm run test:boundaries` | 2026-10-21T01:57:00.150Z | 2026-10-21T01:57:03.534Z | 0 | test-boundaries-2026-10-21T01-57-00-150Z.log |
 | `node artifacts/local/08f/write-report.mjs (first invocation)` | UTC not retained | UTC not retained | 1 | safe JSON/report in 08f |
+
+
+## Correction 1 — 21 October 2026 UTC / 20 October Toronto
+
+Proposed **READY_FOR_REVIEW for the bounded browser-playback correction**. The first attempt passed on the unchanged corrected application build. The ordinary Enable speaker playback button led to resolved application playback status, native play/playing events and an advancing HTMLAudioElement timeline through a real provider response. The matching provider output buffer subsequently stopped, followed by explicit active Stop and complete cleanup. This supersedes the earlier “final build not live verified” limitation for this specific controlled local browser check. It does not establish human audibility, physical microphone/phone behavior or full Step08 completion. PM owns acceptance.
+
+### Identity and changes
+
+Clean arrival `main`, HEAD **a79bb0796b477522a2ffe5751ab092f9d7a5f3f8**. Reused build **YhkhD73NHaU1gpomogsBg** from `artifacts/local/08f/offline-checkout`; all **114 application/build inputs** match the current repository and retained build copy. No application, test, policy, model, prompt, VAD, transcription, ownership, dependency or configuration change; no rebuild or unchanged full-suite repetition. Pinned Node **24.22.0**, npm **11.19.1** verified again.
+
+Delivery changes only this appended report, `PROJECT_STATE.md` and `TESTING.md`; dirty/uncommitted, no commit/push/deploy. Safe evidence is in ignored **artifacts/local/08f/correction-1/**. `baseline.json` binds actual tracked/private/prior-artifact hashes, `changed-files.sha256.json` contains the three delivery hashes, and `audit.json` records the final preservation checks. Earlier report sections, failures, WAVs and exhausted08F/09C/08E ledgers remain unchanged.
+
+### Preparation, observer and budget
+
+Current official [pricing](https://developers.openai.com/api/docs/pricing), [exact realtime model](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini), [exact ASR model](https://developers.openai.com/api/docs/models/gpt-4o-mini-transcribe) and [server events](https://developers.openai.com/api/reference/resources/realtime/server-events) were retrieved before acquisition. The HTML server-reference fetch exceeded the browser tool's size limit; the official Markdown retrieval succeeded and is retained with the other `official-*.md` copies. Rates remain realtime text input/cache/output $0.60/$0.06/$2.40 and audio $10/$0.30/$20 per million tokens; ASR input/output $1.25/$5, estimated $0.003/minute. No model substitution or billing action.
+
+New exclusive correction allowance: **US$0.50 estimated incremental ceiling**, at most **2 credential/session attempts, 2 response starts total, 1 response per attempt, 120 seconds per attempt**. Preflight **US$0.39448** comprises two conservative responses with 10,000 text/5,000 audio input tokens and 512 all-audio output tokens each ($0.13248), four full minutes estimated ASR ($0.012), $0.05 ASR uncertainty and $0.20 reserve. These estimates are not a hard billing cap. Source wire was again checked below10,000 bytes and effective output cap512. Previous actual costs remain unknown.
+
+The native microphone WAV contains only the predetermined question, “What is the project codename, and who is the trial recorder?” Original PCM5.00–8.54s is byte-identical, including its **340ms internal pause**. All other speech, including the old extra trailing prompt, is replaced with silence; no voiced samples/gap compression. Duration **191.2395s**,48kHz/16bit/mono, so no loop or second utterance within120s. No paid TTS/private microphone recording.
+
+| Artifact | SHA256 |
+| --- | --- |
+| Preserved original questions.wav |43eaadac4a3fca007b71be26710f9584ea8f0a7a23a4a99c49023f5c7e889798|
+| New correction question.wav |66c79f69056853fa435f899b6cd985fb152b4247d3fdaf74fd12505016cfc022|
+| Preserved main-question PCM |db94b63b77a03ff8c0a61d27fbd9f9d5b3869d47d78626735fc4486d1a628648|
+
+The observer was reviewed offline and checked against native peer/oscillator fixture playback. It only subscribes to events and reads UI/native state/stats. Static checks exclude direct play calls, srcObject assignments, element creation/appending and native replacement in observer code; native API/function/setter identities remain unchanged. The offline fixture's ordinary button produced play/playing, readyState4/currentTime1.011333s, peer-receiver track binding and terminal pause/detach. This fixture result is separate from the real-service result below; the live application had no oscillator or extra sink. No observer mutation “fixed” the live audio.
+
+### Actual local application result
+
+Command **node artifacts/local/08f/correction-1/live.mjs 1**, **02:09:01.719–02:09:37.098 UTC**,21October2026, **exit0**. Fresh native Chromium profile/visitor; actual authored three-page PDF upload, parser, PostgreSQL owned routes and OpenAI WebRTC. No native API replacement, provider interception, seeded source, protocol injection, direct observer play/rebinding/appending or private audio capture. Only temporary process-local loopback/PDF/voice flags. Permanent settings/deployment unchanged.
+
+Normal Start produced one owned preparation, one credential request and one native peer/open ordered channel. Initial effective VAD/transcription null, all three complete-source ACKs, and final **v3/600ms/exact gpt-4o-mini-transcribe** effective settings were confirmed before outgoing microphone attachment. Normal Enable speaker playback was clicked once. The sole actual audio element was already bound to the live peer receiver track; it was not bound/rebound by the observer.
+
+All timestamps in the following table are the same page's performance clock in milliseconds; they are event receipts/observations, not human-audibility measurements.
+
+| Observation | Timestamp/value | Meaning |
+| --- | --- | --- |
+| loadedmetadata / canplay |7228.1 /7228.2ms|Native element readyState4, initially paused/currentTime0 |
+| Normal enable action requested / click returned |8197.0 /8374.5ms|Ordinary UI owns the play call |
+| Native play / playing |8426.0 /8426.2ms|Events from that same actual application element |
+| Application UI available observed |8480.6ms|“Playback enabled. This does not confirm what you heard.” |
+| Response created |17414.6ms|One planned generated answer |
+| Matching output buffer started |18324.3ms|Provider output begins; HTML clock observed9.954813s |
+| Matching response.done completed |19525.5ms|Generation finished; output buffer still active |
+| Matching output buffer stopped |29658.1ms|Provider reports complete buffer drain |
+| HTML clock at stop observation |21.397787s, readyState4, paused=false|Clock advanced **11.442974s** across output; multiple monotonic observations |
+
+Play-promise resolution is evidenced by the actual application’s **available** UI: the unchanged VoiceLifecycle sets this status only after awaiting connection.playback.play(), which invokes native HTMLAudioElement.play(). The observer never invoked/wrapped play. Native play/playing, readyState and clock progression independently support this UI evidence. UI available appeared **283.6ms** after the request observation. This is materially stronger than paused=false, incoming RTP or the old offline oscillator result alone.
+
+Before Stop, one bound audio track matched the actual peer receiver, was live/unmuted, and the HTML timeline continued through the response. Incoming provider RTP additionally recorded91,717bytes/1,109packets,22.56decoded-sample seconds and totalAudioEnergy0.83943208; these are supporting transport statistics, not the playback acceptance by themselves. Generation finished **10.1326seconds before buffer completion**. Full buffer drain is supported by its matching stopped event, while the HTML element remained active; a live MediaStream clock continues after speech and does not itself prove every word was heard. No physical listening claim.
+
+Actual ASR exactly matches the intended complete question: **0/11 normalized word errors**, one user turn and one completed assistant turn. Target facts **Cedar Lantern** and **Mira Solen** and their Page1 location are correct. Full received answer is retained in safe results/screenshots. The assistant incidentally called the input “source image text” although this was a parsed text PDF; that inaccurate medium descriptor is preserved, not repaired with another paid turn. Factual acceptance is for the two requested names and source location, not a claim that every incidental phrase is correct.
+
+`session-1/playback-complete.png` was visually inspected: UI explicitly enabled, generation complete/output stopped, both turns visible. `stopped-390.png` was also inspected for retained text and readable controls; viewport emulation is not a physical phone test. Existing transcript disclosure still says generated speech text/playback unconfirmed, appropriately avoiding a human-listening claim.
+
+### Stop, removal, defaults and preservation
+
+Explicit active Stop at **02:09:33.237UTC** completed **02:09:33.506UTC**. Both received texts stayed byte-for-byte, ordered You/Assistant, and full three-page preview matched before/after Stop. Mute was exercised after the sole response began and verified against the disabled outgoing native sender; no unmute/new question/session was needed.
+
+Stop closed the peer/channel, ended local and remote tracks, paused/detached the sole actual audio element (srcObject false, sourceTracks empty, readyState0/currentTime0), released its owned listeners and stopped observer timers/listeners. CDP audit reports zero listeners on the peer, channel, both tracks and audio element after observer release. The existing controller/adapter cleanup is unchanged; profile closure removes the remaining page/UI resources.
+
+Normal Remove deleted only this new source, DELETE200; owned read then404/no-store. Fresh original-default process/profile showed unavailable Start, all three voice routes503/no-store, zero peer/channel/audio/track objects and zero external requests. Profile/browser/server closure was awaited. Recorded server PIDs60328/38836 are exited; loopback3134/3136 released. Private files unchanged; no .env/SQL/migration/caption/billing/deployment action. Final audit: **493 protected tracked files,429 earlier artifacts unchanged;114 inputs/build unchanged**. No cleanup scheduler run.
+
+### Usage and allowance
+
+**1 credential/session attempt,1 response start/completed response**,31.345seconds from credential request to final cleanup, below120s. Exclusive correction lock and fsynced ledger preceded Start. Status **COMPLETE_ONE_ATTEMPT_NO_MORE_LIVE_WORK**; optional second attempt unused and no further acquisition justified. All old exhausted ledgers remain unchanged.
+
+Realtime usage1079tokens:751input (708text/43audio),328output (102text/226audio),0cached;39reasoning is a subset, not added twice. ASR59tokens:43input audio/16output text. Known response estimate **US$0.00561960**, ASR **US$0.00013375**, total **US$0.00575335**, cached/undiscounted estimates identical. Actual billing/prior project cost unknown, not zero. Numeric usage is retained in `summary.json` and `session-1/live-results.json`; no additional paid turn was needed to repair observation or wording.
+
+### Verification / acceptance / remaining gates
+
+| Check | Environment and observed result | Status |
+| --- | --- | --- |
+| Corrected build identity |Read-only114input/source hashes, exact build YhkhD73NHaU1gpomogsBg |PASS |
+| Passive observer |Offline native fixture, no app/provider/DB; play/playing/UI/time/binding/cleanup and native identity checks |PASS |
+| Single WAV |Original main PCM/gap hash equal, zero other speech, duration beyond allowance/no loop |PASS |
+| Acceptance1normal owned setup/playback |Actual local native WebRTC, full ACK-before-media, UI available + native playing/readyState/time |PASS |
+| Acceptance2question/answer/output completion |Actual one ASR/answer, target facts2/2, real HTML timeline through matching completed response/stopped buffer; incidental medium-label error disclosed |PASS for specified targets |
+| Acceptance3Stop/remove/defaults |Actual owned routes, retained turns/full preview, released native resources/listeners/profile/server, fresh default unavailable/no-store/zero resources |PASS |
+| Final preservation audit |Protected493/prior429/private unchanged,114input/build hashes match, recorded PIDs exited/ports free |PASS |
+| Unchanged full application suites/build |Not rerun, as required; no code correction. PM’s prior239focused checks and existing final suites remain historical evidence |NOT_RUN this correction |
+| Human listening, first-audible latency, physical mic/barge-in/phone, real-person/noisy-speech usability, hosted/YouTube/full evaluation |No such evidence collected |NOT_RUN |
+
+Meaningful commands used the pinned Node executable `.tools/node-v24.22.0-win-x64/node.exe`; exact UTC/exits/log context are in correction `commands.jsonl`, including final audit invocations. The inline initial preparation command's complete execution interval was not retained (baseline started02:05:47.442UTC); hashes/preflight independently verify its output. No timings are fabricated.
+
+| Exact command | UTC start | UTC end | Exit |
+| --- | --- | --- | --- |
+|node artifacts/local/08f/correction-1/observer-check.mjs|2026-10-21T02:06:33.063Z|2026-10-21T02:06:35.030Z|0|
+|node artifacts/local/08f/correction-1/preflight.mjs|2026-10-21T02:07:17.236Z|2026-10-21T02:07:17.552Z|0|
+|node artifacts/local/08f/correction-1/live.mjs 1|2026-10-21T02:09:01.719Z|2026-10-21T02:09:37.098Z|0|
+
+No code correction, second attempt, rebuild, commit/push, public activation or next task. PM reviews this bounded result; broader original Step08/09/device/release gates remain open.

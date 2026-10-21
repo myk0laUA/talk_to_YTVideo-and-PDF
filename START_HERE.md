@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08F correction acceptance:** local native-browser playback accepted on YhkhD73NHaU1gpomogsBg; three delivery hashes matched and playback/Stop evidence reviewed. No active worker implementation task. Next is PM-owned hosted configuration/deployment and verification, then physical-phone voice/text checks. Render still serves03eb7d8; only DATABASE_URL/NODE_VERSION/PORT are configured and startup regenerates the visitor secret. See the latest PROJECT_STATE entry. Earlier next-task statements below are historical.
+
 **Current PM08F partial acceptance:** controlled natural pauses/interruption/follow-up verified, but browser speaker playback failed on live build. Narrow playback fix accepted offline;10hashes/fresh239tests pass. Next sole assignment [08F correction](docs/WORKER_TASK_08F_CORRECTION.md): verify normal playback on corrected build. Human/phone/hosted gates remain open; older summaries historical.
 
 **Current PM09C acceptance:** actual user transcription/both-speaker local synthetic voice accepted;11hashes/fresh173focused tests and stopped transcript reviewed. Next sole assignment [08F](docs/WORKER_TASK_08F.md): natural pauses and real interruption/follow-up. Human phone/audio/hosted/YouTube gates remain open; public deployment unchanged. Older summaries historical.
