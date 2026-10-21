@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**PM hosted21October:** free Render a416652 voice/text activation configured. Actual native-browser3page PDF/text2grounded answers/Stop4retained turns/source-read after one dashboard restart/normal removal PASS. Unauthenticated owned endpoints401/no-store, synthetic credential503/no-store. Hosted voice controls enabled only; no hosted microphone/WebRTC/audio claim. Next physical iPhone: upload small known PDF, select Voice, Start/allow mic, enable speaker, ask one known question, hear answer, interrupt/follow up, Stop, then explicitly select Text and verify microphone-free answer. Report each actual result and device/browser version; stop on failure, no repeated starts. YouTube stays unavailable. Evidence and spending limits in HOSTED_RELEASE_CHECK.md.
+
 **PM08F correction1 acceptance:** three delivery hashes matched; actual native playback/currentTime progression and Stop screenshots/audit reviewed on YhkhD73NHaU1gpomogsBg. Assigned local synthetic-input playback gate passes. No redundant unchanged suite or new paid call. Next verification is PM-owned hosted release/configuration and exact-build voice/text/Stop/restart ownership, followed by real iPhone microphone/audibility/interruption checks. No active worker task; prior next-task statements are historical. Public Render remains03eb7d8 as freshly inspected; local evidence does not establish public readiness.
 
 ## Task08F correction1 — actual HTML playback, proposed READY_FOR_REVIEW

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM hosted result:** a416652 is live on free Render with owned voice/text enabled and stable visitor secret. Real hosted PDF/text (two answers), Stop, source access after restart and fixture removal pass. Voice controls available; actual hosted voice/physical iPhone audio remains NOT_RUN. Next: human iPhone voice check; no active worker task. See HOSTED_RELEASE_CHECK and latest PROJECT_STATE. Prior deployment/task summaries below are historical.
+
 **Current PM08F correction acceptance:** local native-browser playback accepted on YhkhD73NHaU1gpomogsBg; three delivery hashes matched and playback/Stop evidence reviewed. No active worker implementation task. Next is PM-owned hosted configuration/deployment and verification, then physical-phone voice/text checks. Render still serves03eb7d8; only DATABASE_URL/NODE_VERSION/PORT are configured and startup regenerates the visitor secret. See the latest PROJECT_STATE entry. Earlier next-task statements below are historical.
 
 **Current PM08F partial acceptance:** controlled natural pauses/interruption/follow-up verified, but browser speaker playback failed on live build. Narrow playback fix accepted offline;10hashes/fresh239tests pass. Next sole assignment [08F correction](docs/WORKER_TASK_08F_CORRECTION.md): verify normal playback on corrected build. Human/phone/hosted gates remain open; older summaries historical.
