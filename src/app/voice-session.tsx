@@ -102,7 +102,7 @@ class OwnedVoiceSession extends Component<Props, State> {
       <p id="voice-session-guidance" className="voice-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : setup(status, available)}</p>
       {status?.phase === "failed" && status.diagnostics?.length ? <details className="note">
         <summary>Voice setup details</summary>
-        <ol>{status.diagnostics.map((row, i) => <li key={i}>{row.stage}: {row.outcome}{row.httpStatus ? ` (HTTP ${row.httpStatus})` : ""}, {row.elapsedMs} ms</li>)}</ol>
+        <ol>{status.diagnostics.map((row, i) => <li key={i}>{row.stage}: {row.outcome}{row.reason ? ` (${row.reason})` : ""}{row.httpStatus ? ` (HTTP ${row.httpStatus})` : ""}, {row.elapsedMs} ms</li>)}</ol>
       </details> : null}
       <div className="source-actions voice-session-actions" aria-describedby="voice-session-guidance">
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || active} onClick={this.start}>{status?.phase === "ended" || status?.phase === "failed" ? "Start a fresh voice session" : "Start voice session"}</button>

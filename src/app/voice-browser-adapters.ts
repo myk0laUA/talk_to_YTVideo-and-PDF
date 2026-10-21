@@ -1,11 +1,11 @@
 "use client";
 
 import { VoiceLifecycle, type VoiceAdapters, type VoiceConnection, type VoiceIdentity, type VoiceStatus, type VoiceTrack } from "../shared/voice-lifecycle.ts";
-import { validateProviderAdmission, type ProviderPrimingInput } from "../shared/priming-admission.ts";
+import { providerAdmissionRejection, type ProviderPrimingInput } from "../shared/priming-admission.ts";
 import { matchesProviderVoicePolicy } from "../shared/priming-provider-policy.ts";
 import { bytes, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES } from "../shared/priming-manifest.ts";
 import type { PrimingTransport } from "../shared/priming-controller.ts";
-import type { VoiceSetupReporter, VoiceSetupStage } from "../shared/voice-diagnostics.ts";
+import type { PreparationRejection, VoiceSetupReporter, VoiceSetupStage } from "../shared/voice-diagnostics.ts";
 
 export type BrowserVoiceDependencies = {
   fetch: typeof fetch; peer: () => RTCPeerConnection; audio: () => HTMLAudioElement;
@@ -16,6 +16,10 @@ const uuid = (v: unknown): v is string => typeof v === "string" && /^[a-f0-9]{8}
 const unavailable = () => new Error("Voice connection unavailable");
 const safely = (fn: () => void) => { try { fn(); } catch { /* Release remaining resources. */ } };
 const cancelBody = (r: Response) => { void r.body?.cancel().catch(() => {}); };
+class ReadFailure extends Error {
+  readonly reason: PreparationRejection;
+  constructor(reason: PreparationRejection) { super("Voice connection unavailable"); this.reason = reason; }
+}
 
 /** Interrupt even noncooperating browser operations; consume and release late results. */
 function wait<T>(pending: Promise<T>, signal: AbortSignal, late: (v: T) => void = () => {}): Promise<T> {
@@ -33,16 +37,21 @@ function wait<T>(pending: Promise<T>, signal: AbortSignal, late: (v: T) => void 
 async function read(response: Response, mime: string | readonly string[], limit: number, signal: AbortSignal) {
   const allowed = typeof mime === "string" ? [mime] : mime;
   const contentType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
-  if (!response.ok || response.redirected || !contentType || !allowed.includes(contentType)
-    || Number(response.headers.get("content-length")) > limit || !response.body) { cancelBody(response); throw unavailable(); }
-  const reader = response.body.getReader(), decoder = new TextDecoder("utf-8", { fatal: true });
+  const reason = !response.ok || response.redirected ? "response_envelope"
+    : !contentType || !allowed.includes(contentType) ? "response_mime"
+    : Number(response.headers.get("content-length")) > limit ? "response_size" : !response.body ? "response_body" : undefined;
+  if (reason) { cancelBody(response); throw new ReadFailure(reason); }
+  const reader = response.body!.getReader(), decoder = new TextDecoder("utf-8", { fatal: true });
+  const decode = (value?: Uint8Array, stream = false) => {
+    try { return decoder.decode(value, { stream }); } catch { throw new ReadFailure("response_utf8"); }
+  };
   let size = 0, text = "";
   try {
     for (;;) {
-      const { done, value } = await wait(reader.read(), signal);
-      if (done) return text + decoder.decode();
-      size += value.byteLength; if (size > limit) throw unavailable();
-      text += decoder.decode(value, { stream: true });
+      const { done, value } = await wait(reader.read(), signal).catch(() => { throw new ReadFailure("response_body"); });
+      if (done) return text + decode();
+      size += value.byteLength; if (size > limit) throw new ReadFailure("response_size");
+      text += decode(value, true);
     }
   } finally { void reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
@@ -137,8 +146,14 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       redirect: "error", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal }), signal, cancelBody);
     report(stage, response.ok ? "ok" : "http_error", response.status);
     if (response.ok) report(validation, "pending");
-    try { return JSON.parse(await read(response, "application/json", suffix ? 2048 : 24_500_000, signal)) as unknown; }
-    catch { if (response.ok && !signal.aborted) report(validation, "invalid"); throw unavailable(); }
+    try {
+      const text = await read(response, "application/json", suffix ? 2048 : 24_500_000, signal);
+      try { return JSON.parse(text) as unknown; } catch { throw new ReadFailure("response_json"); }
+    } catch (error) {
+      if (response.ok && !signal.aborted) report(validation, "invalid", undefined,
+        suffix ? undefined : error instanceof ReadFailure ? error.reason : "unknown");
+      throw unavailable();
+    }
   };
   const current = (identity: VoiceIdentity, signal: AbortSignal) => {
     const p = prepared;
@@ -168,16 +183,26 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
       };
       prepared = p; signal.addEventListener("abort", p.cancel, { once: true });
       const result = await send("", { sourceId: identity.sourceId, requestId }, signal, report);
-      if (prepared !== p || signal.aborted || !record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,preparationId,providerConfirmed,requestId"
-        || result.requestId !== requestId || result.conversationReady !== false || result.providerConfirmed !== false
-        || typeof result.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(result.preparationId)
-        || typeof result.expiresAt !== "number" || !Number.isSafeInteger(result.expiresAt) || result.expiresAt <= deps.now() || result.expiresAt > deps.now() + 30_000) throw unavailable();
+      const reject = (reason: PreparationRejection): never => { report("preparation_validation", "invalid", undefined, reason); throw unavailable(); };
+      if (prepared !== p || signal.aborted) throw unavailable();
+      if (!record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,preparationId,providerConfirmed,requestId"
+        || result.conversationReady !== false || result.providerConfirmed !== false) return reject("envelope");
+      if (result.requestId !== requestId) return reject("request_identity");
+      if (typeof result.preparationId !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(result.preparationId)) return reject("ticket_identity");
+      if (typeof result.expiresAt !== "number" || !Number.isSafeInteger(result.expiresAt)) return reject("ticket_time");
+      if (result.expiresAt <= deps.now()) return reject("ticket_expired");
+      if (result.expiresAt > deps.now() + 30_000) return reject("ticket_future");
       const input = result.input as ProviderPrimingInput;
-      if (!validateProviderAdmission(input) || !matchesProviderVoicePolicy(input.policy) || input.manifest.variant !== "B"
-        || !uuid(input.manifest.runId) || input.variant.source.id !== identity.sourceId
-        || !["PDF", "YOUTUBE"].includes(input.variant.source.kind)) throw unavailable();
+      const admission = providerAdmissionRejection(input);
+      if (admission) return reject(admission);
+      if (!matchesProviderVoicePolicy(input.policy)) return reject("policy");
+      if (input.manifest.variant !== "B") return reject("voice_mode");
+      if (!uuid(input.manifest.runId)) return reject("run_identity");
+      if (input.variant.source.id !== identity.sourceId) return reject("source_identity");
+      if (!["PDF", "YOUTUBE"].includes(input.variant.source.kind)) return reject("source_kind");
       const expires = Date.parse(input.variant.source.expiresAt);
-      if (!Number.isFinite(expires) || expires <= deps.now() || result.expiresAt > expires) throw unavailable();
+      if (!Number.isFinite(expires) || expires <= deps.now()) return reject("source_expiry");
+      if (result.expiresAt > expires) return reject("ticket_source_expiry");
       Object.assign(p, { preparationId: result.preparationId, runId: input.manifest.runId, expires: result.expiresAt, sourceExpires: expires });
       report("preparation_validation", "ok");
       return { input, serverRunId: input.manifest.runId };

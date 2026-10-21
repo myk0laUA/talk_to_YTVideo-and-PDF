@@ -52,15 +52,21 @@ export function preparePrimingInput(prepared: PreparationResult, variant: "A" | 
 
 /** Structural fidelity only. Recompute the complete projection; never grants visitor authority. */
 export function validateProviderAdmission(input: AdmissionInput): input is ProviderPrimingInput {
+  return providerAdmissionRejection(input) === undefined;
+}
+
+/** Closed structural categories only; no payload, identifiers or thrown errors escape. */
+export function providerAdmissionRejection(input: AdmissionInput): "admission_shape" | "policy" | "source_serialization" | "manifest_fidelity" | "admission_unknown" | undefined {
   try {
-    if (!isProviderInput(input) || !(matchesProviderTextPolicy(input.policy) || matchesProviderVoicePolicy(input.policy))
-      || Object.keys(input).sort().join() !== "basis,manifest,policy,variant" || input.manifest.mode !== input.policy.mode) return false;
+    if (!isProviderInput(input)) return "admission_shape";
+    if (!(matchesProviderTextPolicy(input.policy) || matchesProviderVoicePolicy(input.policy))) return "policy";
+    if (Object.keys(input).sort().join() !== "basis,manifest,policy,variant" || input.manifest.mode !== input.policy.mode) return "admission_shape";
     const v = input.variant, m = input.manifest;
     if ([v.serialized, v.serializedSource, v.serializedInstructions].some(s => typeof s !== "string" || bytes(s) > MAX_WIRE_BYTES)
       || v.serializedSource !== serializeData(v.source) || v.serializedInstructions !== serializeData(v.instructions)
       || v.serialized !== serializeData({ contextVersion: v.contextVersion, promptVersion: v.promptVersion,
-        variant: v.id, instructions: v.instructions, source: v.source })) return false;
+        variant: v.id, instructions: v.instructions, source: v.source })) return "source_serialization";
     return JSON.stringify(m) === JSON.stringify(encodeManifest(v, m.runId, input.policy.mode, m.maxEventBytes,
-      input.policy.mode === "text" ? true : "voice"));
-  } catch { return false; }
+      input.policy.mode === "text" ? true : "voice")) ? undefined : "manifest_fidelity";
+  } catch { return "admission_unknown"; }
 }

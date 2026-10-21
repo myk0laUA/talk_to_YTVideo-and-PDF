@@ -59,7 +59,8 @@
     "test:mode-switch": "node scripts/verify-mode-switch.mjs",
     "test:owned-text": "node --conditions=react-server scripts/verify-owned-text.mjs",
     "test:owned-voice": "node --conditions=react-server --test tests/unit/owned-voice.test.ts && node --conditions=react-server scripts/verify-owned-voice.mjs",
-    "test:voice-adapter": "node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts && node --conditions=react-server scripts/verify-voice-adapter.mjs"
+    "test:voice-adapter": "node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts && node --conditions=react-server scripts/verify-voice-adapter.mjs",
+    "test:voice-preparation": "node --conditions=react-server scripts/verify-voice-preparation.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

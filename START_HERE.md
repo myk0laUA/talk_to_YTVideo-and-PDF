@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08I partial acceptance:**13hashes/fresh164focused checks pass. Safe validation categories accepted; user cause unresolved. Next PM deployment and one Chrome category observation; no active worker task. Voice remains enabled per user.
+
 **Current PM08I:** Chrome gets201 in204ms, then rejects preparation validation at206ms. Sole worker task [08I](docs/WORKER_TASK_08I.md). Cause unknown; previous status-only backend test did not exercise browser validation. Voice stays enabled per user.
 
 **Current PM08H hosted result:**8887a4e live; preparation-only HTTPS test PASS502ms/server382ms, no credentials/provider calls. Original Chrome timeout unresolved. User explicitly requests voice stay enabled; this supersedes prior containment instructions. PDF/text enabled. Next affected-Chrome single check, no worker task.

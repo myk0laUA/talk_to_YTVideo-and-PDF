@@ -145,9 +145,9 @@ export class VoiceLifecycle {
   }
   private current(a: Attempt) { return this.attempt === a && !a.abort.signal.aborted && !this.disposed; }
   private report(a: Attempt): VoiceSetupReporter {
-    return (stage, outcome, status) => {
+    return (stage, outcome, status, reason) => {
       if (!this.current(a)) return;
-      a.diagnostics.report(stage, outcome, status);
+      a.diagnostics.report(stage, outcome, status, reason);
       // Progress is read with the next lifecycle notification; observing it cannot
       // synchronously Stop between a native resource acquisition and its cleanup.
       this.status = Object.freeze({ ...this.status, diagnostics: a.diagnostics.snapshot });

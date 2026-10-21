@@ -24,7 +24,7 @@ await new Promise((resolve, reject) => { const p = net.createServer(); p.once('e
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ['flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
+  for (const group of ['preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };
     const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic',
@@ -94,6 +94,25 @@ try {
     };
     try {
       await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } });
+      if (group === 'preparation-rejection') {
+        const f = await open('PDF', 390); let credentials = 0;
+        await f.page.route('**/api/voice-preparations/credential', route => { credentials++; return route.abort(); });
+        await f.page.route('**/api/voice-preparations', async route => {
+          const response = await route.fetch(), data = await response.json();
+          check('08I actual preparation succeeds before injected failure', response.status(), 201);
+          data.expiresAt += 60_000;
+          await route.fulfill({ response, body: JSON.stringify(data) });
+        });
+        await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
+        await f.page.getByText('Voice setup details', { exact: true }).click();
+        await expect(f.page.locator('.voice-session details')).toContainText('preparation_validation: invalid (ticket_future)');
+        check('08I no credentials requested', credentials, 0);
+        check('08I no native acquisitions', (await f.snap()).counts.peers + (await f.snap()).counts.media, 0);
+        check('08I no synthetic provider calls', (await ipc('snapshot')).calls, 0);
+        const target = path.resolve('artifacts/local/08i'); await mkdir(target, { recursive: true });
+        await f.page.screenshot({ path: path.join(target, 'preparation-rejection.png'), fullPage: true });
+        await f.clean('08I preparation rejection'); await f.context.close();
+      }
       if (group === 'flow') {
         await ipc('gate', { field: 'OWNED_SOURCE_VOICE_ENABLED', value: 'false' });
         const off = await open('PDF', 390); const before = await ipc('snapshot');

@@ -1,5 +1,19 @@
 # Testing and evidence — Talk to a Document
 
+## PM08I partial acceptance —21October2026Toronto
+
+Accepted safe validation categories and serialized browser-contract coverage, not a root-cause repair. All13delivery SHA256 hashes match before PM documentation edits. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/voice-diagnostics.test.ts tests/unit/priming.test.ts` PASS164/164 exit0, artifacts/local/08i/pm-focused.log. Reviewed adapter/admission equivalence, allowlisted category projection, lifecycle forwarding and synthetic390px ticket_future screenshot. No blocking scoped finding. Worker28native scenarios/1524units/built checks remain offline evidence on dqG5-FSyISEEOCazYPUxD.
+
+Controlled clock skew reproduces rejection; actual user clock relationship and rejected predicate remain unknown. No inference that clock adjustment is the repair. No active worker implementation task. Next PM action: deploy accepted diagnostics while preserving user-requested voice enabled, then one affected-Chrome observation of the exact safe rejection category. This review made no deployment/configuration/provider call. Last verified hosted application8887a4e; full voice/physical-device gates remain open.
+
+## Worker08I — proposed READY_FOR_REVIEW (diagnostic fallback) —21October2026Toronto
+
+[08I report, acceptance map and PM follow-up](VOICE_VALIDATION_08I.md). Hosted HTTP201 followed by preparation_validation invalid remains **NOT_REPRODUCED** with aligned-clock authored fixtures; no root-cause repair claimed. Native Chromium real adapter/JSON-over-HTTP checks pass one-/three-page parsed PDFs and an eight-page Unicode extraction fixture. Controlled relative clock offsets reproduce ticket_future/ticket_expired, but the user's clock relationship is unknown. Existing validation/expiry/policy/full-source/ACK gates remain unchanged. Added bounded closed failure categories through the existing diagnostics/details UI; unknowns reject, no private payload logging.
+
+Clean arrival main HEAD374d2b152dc750dd4c0db30a914acca9cbd6b900; dirty/uncommitted delivery. Local build **dqG5-FSyISEEOCazYPUxD**, Node24.22.0/npm11.19.1, .env-free/network-denied artifacts/local/08i/offline-checkout. Final lint/typecheck/1524units/build PASS; priming75/lifecycle63, adapter87units+456built, owned-voice116units+392built, owned-text417built PASS. Focused28native-browser scenarios: zero credentials/peer/media/provider,28cancels/zero retained entries. Original-HEAD diagnostic assertion expected FAIL/1 (missing reason); original28scenario decisions agree with changed code. Build UI category screenshot visually checked at390px, not physical-phone proof. Exact UTC/commands/exits and before/after evidence: artifacts/local/08i/commands.jsonl; delivery hashes/source/port checks: changed-files.sha256.json and audit.json.
+
+No deployment/public flag/secret/lockfile/schema change, realDB mutation or paid/provider call. Public voice remains enabled per explicit user instruction; worker did not inspect or change host. PM reviews/deploys diagnostics and correlates one affected-Chrome attempt with server trace/safe category; ordinary Start may proceed to paid credentials and is not a preparation-only test. Hosted cause, human microphone/audio and physical-device gates remain open. No next task started; original Step01–14 and prior evidence preserved.
+
 ## PM08I assignment —21October2026Toronto
 
 User affected-Chrome screenshot on latest diagnostic deployment: preparation_http ok HTTP201/204ms, then preparation_validation invalid/206ms. No credential/microphone stage. This attempt clears the server-response timeout boundary but fails browser response validation; exact rejected predicate unknown. Prior Node preparation-only PASS discarded body and did not validate the browser contract, so is not contradictory proof. No invalid-key or root-cause claim.

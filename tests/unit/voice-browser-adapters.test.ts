@@ -79,6 +79,36 @@ function fixture(kind = "PDF", fault = "", hold = "") {
     preparation: () => preparation, hold: (s: string) => { httpHold = s; }, release: () => releaseHttp?.() };
 }
 
+for (const [fault, reason] of [["expired", "ticket_expired"], ["correlation", "request_identity"], ["policy", "policy"],
+  ["source", "source_serialization"], ["mode", "admission_shape"], ["manifest", "manifest_fidelity"]]) {
+  test(`08I lifecycle preserves first rejection category ${fault} without credentials/media`, async () => {
+    const f = fixture("PDF", fault); f.start(); await until(() => f.controller.snapshot.phase === "failed");
+    assert.equal(f.controller.snapshot.diagnostics!.at(-1)!.reason, reason);
+    assert.equal(f.calls(), 0); assert.equal(f.native.counts.peers + f.native.counts.media, 0);
+    await f.stopped();
+  });
+}
+
+for (const [fault, reason] of [["no-body", "response_body"], ["broken-body", "response_body"], ["redirected", "response_envelope"],
+  ["length", "response_size"], ["incomplete-utf8", "response_utf8"]]) {
+  test(`08I bounded reader ${fault} reports only closed reason`, async () => {
+    const f = fixture(), base = f.deps.fetch;
+    f.deps.fetch = async (url, init) => {
+      if (url !== "/api/voice-preparations") return base(url, init);
+      if (fault === "no-body") return new Response(null, { headers: { "content-type": "application/json" } });
+      if (fault === "broken-body") return new Response(new ReadableStream({ start(c) { c.error(new Error("PRIVATE_SENTINEL")); } }), { headers: { "content-type": "application/json" } });
+      if (fault === "incomplete-utf8") return new Response(new Uint8Array([0xc3]), { headers: { "content-type": "application/json" } });
+      const r = new Response("{}", { headers: { "content-type": "application/json", ...(fault === "length" ? { "content-length": "24500001" } : {}) } });
+      if (fault === "redirected") Object.defineProperty(r, "redirected", { value: true });
+      return r;
+    };
+    f.start(); await until(() => f.controller.snapshot.phase === "failed");
+    assert.equal(f.controller.snapshot.diagnostics!.at(-1)!.reason, reason);
+    assert.doesNotMatch(JSON.stringify(f.controller.snapshot.diagnostics), /PRIVATE_SENTINEL/);
+    assert.equal(f.calls(), 0); assert.equal(f.native.counts.peers + f.native.counts.media, 0); await f.stopped();
+  });
+}
+
 for (const kind of ["PDF", "YOUTUBE"]) test(`08D ${kind} actual boundary → native adapter → full ACK → disabled track attach`, async () => {
   const f = fixture(kind); f.start();
   await until(() => f.controller.snapshot.microphone === "available");
