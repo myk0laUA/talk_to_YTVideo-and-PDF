@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08L:** iPhone voice works by user report, but unintended speech-trigger interruptions remain. Sole worker task [08L](docs/WORKER_TASK_08L.md) addresses capture/VAD behavior while preserving deliberate interruption. Physical acceptance pending; Chrome08K success retained. Voice stays enabled. Older summaries below are historical.
+
 **Current PM08K hosted acceptance:**user reports requested Chrome summary/follow-up test works on deployed cd48889. Accepted by user report, separate from phone/interruption/recovery/YouTube/release gates. Voice stays enabled. Latest PROJECT_STATE supersedes historical summaries.
 
 **Current PM08K acceptance:**local512-token truncation reproduced; v4/2048 correction accepted offline,18hashes/fresh267checks pass. Next PM deployment then real summary/follow-up verification. Voice stays enabled; no active worker task.

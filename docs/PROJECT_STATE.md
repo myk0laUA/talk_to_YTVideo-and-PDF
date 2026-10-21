@@ -1,5 +1,12 @@
 # Project state — Talk to a Document
 
+## PM08L assignment —21October2026Toronto
+
+Physical iPhone user report: voice works but close-held use unintentionally interrupts the assistant. Screenshot shows provider cancellation after detecting speech and short user transcript fragments. Speech-trigger cancellation is evidenced; echo/breathing/handling noise and exact device settings are not established. This is separate from 08K max-output truncation; Chrome summary/follow-up remains accepted by user report on deployed cd48889.
+
+Sole worker task [08L](WORKER_TASK_08L.md): bounded input-processing/VAD investigation and justified correction, preserving deliberate interruption. Starting main b70f042; host remains cd48889/dep-dbcfq8uea8bs73fdj49g. Offline worker checks only; physical silent-listening/intentional interruption and Chrome regression remain pending after PM review/deployment. Voice stays enabled; no host/application/provider changes by PM. Inspection commands succeeded; no tests run for this documentation-only assignment.
+
+
 ## PM08K hosted user verification —21October2026Toronto
 
 After PM deployed cd48889 and requested Chrome reload/PDF/voice with speaker playback, concise summary plus follow-up and Stop, user reports: yep, just tested everything, it works good. Accept the requested hosted Chrome summary/follow-up flow by user report; no new screenshot/provider event/usage trace or independent PM observation supplied. This closes the08K affected-Chrome completion check at user-report evidence level, not a universal no-truncation guarantee. Previous local reproduction and offline tests remain separate evidence.
