@@ -1,4 +1,4 @@
-import { bytes, freeze, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES, type Manifest, type SessionEvent, type SourceItem } from "./priming-manifest.ts";
+import { bytes, freeze, sourceItemId, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES, type Manifest, type SessionEvent, type SourceItem } from "./priming-manifest.ts";
 import { isProviderInput, validateAdmission, validateProviderAdmission, type AdmissionInput as PrimingInput } from "./priming-admission.ts";
 import { isContextLimit } from "./priming-provider-policy.ts";
 
@@ -124,7 +124,7 @@ export class PrimingController {
         ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null);
     return config(m.configure, false) && config(m.finalize, true) && m.configure.session.instructions !== m.finalize.session.instructions
       && m.items.every((e, i) => e.type === "conversation.item.create" && e.event_id === `${m.runId}_create_${i}`
-        && e.item.id === `${m.runId}_source_${i}` && e.item.type === "message" && e.item.role === "user"
+        && e.item.id === sourceItemId(m.runId, i) && e.item.type === "message" && e.item.role === "user"
         && e.item.content.length === 1 && e.item.content[0].type === "input_text" && typeof e.item.content[0].text === "string"
         && e.previous_item_id === (i ? m.items[i - 1].item.id : undefined));
   }

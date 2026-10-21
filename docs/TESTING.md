@@ -1,5 +1,14 @@
 # Testing and evidence — Talk to a Document
 
+**PM correction1 review:**6hashes matched; fresh100provider-voice-admission tests PASS/0. Native WebRTC/initial ACK accepted as live evidence; compact IDs remain offline-only on buildbfL8fNWLOziONuzc2GTon. Next WORKER_TASK_08E_CORRECTION_2.md authorizes a separate bounded continuation; previous ledgers remain exhausted.
+
+## Task08E correction1 — native connection proven, source item IDs blocked
+
+[Correction1 report](VOICE_LIVE_08E.md#correction-1--21-october-2026-utc--20-october-toronto): one new real local attempt proved accepted SDP/remote description/native connected peer/channel/initial effective settings, then provider rejected45-character source item.id. No full-source ACK/media/spoken answer/usage/active Stop pass. Normal fresh source removed/read404; default UI/routes and cleanup passed. Both original and new allowance ledgers are consumed/preserved; **no more live driver runs under these allocations**.
+
+Offline compact UUID item-ID correction retains all128bits/exact ACK binding and non-UUID text IDs. Four red length checks then6green focused; final **1450units**, lint/typecheck/build/adapter57+378/owned-voice94+392/owned-text417/mode156/recovery248/boundaries186+59 PASS/0, new build **bfL8fNWLOziONuzc2GTon**. Command: `node --conditions=react-server --test --test-name-pattern='08E correction' tests/unit/provider-voice-admission.test.ts`. Use the new retained `artifacts/local/08e/correction-1/offline-checkout`, pinned Node24.22.0/npm11.19.1, empty real keys/unusable loopback DB/network guard. Safe evidence and all actual UTC/exits under correction-1; no secret-dependent ordinary tests. Real acceptance of compact IDs, final source/voice ACK, synthetic spoken answers/usage/active Stop and physical/hosted gates remain NOT_RUN. PM owns any new allocation.
+
+
 **PM08E decision:** offline MIME fix accepted after5hashes and fresh57adapter tests PASS/0. Live success remains unproven. Only WORKER_TASK_08E_CORRECTION.md authorizes one additional corrective attempt under a separate ledger/$0.50 allocation; original08E ledger remains consumed.
 
 ## Task08E — partial live check and offline SDP MIME correction

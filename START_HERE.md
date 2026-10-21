@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM08E correction1 review:** native WebRTC/initial settings verified; compact source-ID fix accepted offline,6hashes/fresh100tests pass. Next sole assignment [08E correction2](docs/WORKER_TASK_08E_CORRECTION_2.md) starts at source ACKs on corrected build. Spoken answers/physical audio/transcription/hosted gates remain open; previous allocations preserved. Older summaries are historical.
+
 **Current PM08E review:** live voice remains blocked at SDP negotiation; narrow MIME correction accepted offline,5hashes match/fresh57tests pass. Next sole assignment [08E correction](docs/WORKER_TASK_08E_CORRECTION.md): one new bounded live attempt on corrected build. No human setup needed; prior allowance preserved, public/phone/transcription gates unchanged. Older summaries are historical.
 
 **Current PM08D review:** application voice adapter accepted offline;19hashes matched, fresh51units/378integration checks passed. Next sole assignment [08E](docs/WORKER_TASK_08E.md): bounded real local WebRTC test under standing credit authorization. Public configuration remains unchanged; transcription/physical-phone/hosted gates stay open. Older summaries below are historical.

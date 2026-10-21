@@ -13,7 +13,7 @@ import { validateAdmission, validateProviderAdmission, type ProviderPrimingInput
 import { PrimingController } from "../../src/shared/priming-controller.ts";
 import { VoiceLifecycle, type VoiceStatus, type VoiceMedia } from "../../src/shared/voice-lifecycle.ts";
 import { TextLifecycle } from "../../src/shared/text-lifecycle.ts";
-import { encodeManifest, type SessionEvent } from "../../src/shared/priming-manifest.ts";
+import { encodeManifest, sourceItemId, MAX_ITEMS, type SessionEvent } from "../../src/shared/priming-manifest.ts";
 import { SyntheticSourceDatabase } from "../sources/database.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { FakeClock, ScriptedTransport, flush, start, validateOutbound } from "../priming/harness.ts";
@@ -62,6 +62,52 @@ function prime(projection: ProviderPrimingInput) {
   const final = initial;
   return { clock, transport, controller, begin, initial, items, final, ready: () => ready };
 }
+
+for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"] as const) {
+  test(`08E correction ${kind}/${variant} UUID source item IDs fit conservative32 envelope with full ACK fidelity`, async () => {
+    const s = await source(kind), runId = "ffffffff-ffff-4fff-bfff-ffffffffffff";
+    const result = await s.prepare({ ...s.args, runId, variant });
+    assert.equal(result.status, "prepared"); if (result.status !== "prepared") throw new Error("Preparation failed");
+    const { manifest } = result.input;
+    assert.ok(manifest.items.every(e => /^[A-Za-z0-9_-]{1,32}$/.test(e.item.id)), "UUID source IDs must fit the application's conservative32-character envelope");
+    assert.equal(new Set(manifest.items.map(e => e.item.id)).size, manifest.items.length);
+    assert.equal(manifest.runId, runId);
+    for (const [i, e] of manifest.items.entries()) assert.equal(e.previous_item_id, i ? manifest.items[i - 1].item.id : undefined);
+    const p = prime(result.input); assert.equal(p.begin(), true); await p.initial();
+    assert.equal(p.ready(), 0); await p.items(); assert.equal(p.ready(), 0); await p.final();
+    assert.equal(p.ready(), 1); assert.equal(p.controller.canSendQuestions, true); p.controller.stop();
+    assert.equal(p.clock.timers.size, 0);
+  });
+}
+
+test("08E correction compact UUID namespace preserves low run bits and all4096 ordinals", () => {
+  const ids = new Set<string>();
+  for (const run of ["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "ffffffff-ffff-4fff-bfff-ffffffffffff"]) {
+    for (let i = 0; i < MAX_ITEMS; i++) {
+      const id = sourceItemId(run, i); assert.match(id, /^[A-Za-z0-9_-]{1,32}$/);
+      assert.equal(ids.has(id), false); ids.add(id);
+    }
+  }
+  assert.equal(ids.size, 3 * MAX_ITEMS);
+  assert.equal(sourceItemId("text_1", 12), "text_1_source_12");
+  for (const i of [-1, .5, MAX_ITEMS, Infinity]) assert.throws(() => sourceItemId("00000000-0000-4000-8000-000000000001", i));
+});
+
+test("08E correction compact IDs still ignore another UUID run's ACK and reject altered manifest IDs", async () => {
+  const s = await source(), prepare = async (runId: string) => {
+    const result = await s.prepare({ ...s.args, runId });
+    assert.equal(result.status, "prepared"); if (result.status !== "prepared") throw new Error("Preparation failed"); return result.input;
+  };
+  const a = await prepare("00000000-0000-4000-8000-000000000001"), b = await prepare("00000000-0000-4000-8000-000000000002");
+  const p = prime(a); assert.equal(p.begin(), true); await p.initial();
+  p.transport.emit(p.transport.item(b.manifest.items[0])); await flush();
+  assert.equal(p.controller.snapshot.acknowledged, 0); assert.equal(p.controller.canSendQuestions, false);
+  await p.items(); assert.equal(p.ready(), 0); await p.final(); assert.equal(p.ready(), 1); p.controller.stop();
+  const altered: ProviderPrimingInput = { ...a, manifest: { ...a.manifest,
+    items: a.manifest.items.map((e, i) => i ? e : { ...e, item: { ...e.item, id: b.manifest.items[0].item.id } }) } };
+  assert.equal(validateProviderAdmission(altered), false);
+  const denied = prime(altered); assert.equal(denied.begin(), false); assert.equal(denied.transport.outbound.length, 0);
+});
 async function lifecycle(kind: "PDF" | "YOUTUBE" = "PDF", variant: "A" | "B" = "B") {
   const s = await source(kind), clock = new FakeClock(), r = resources(), transport = new VoiceTransport(), states: VoiceStatus[] = [];
   r.connection.transport = transport;

@@ -22,6 +22,15 @@ export type Manifest = Readonly<{ version: typeof PRIMING_VERSION; runId: string
   variant: "A" | "B"; configure: SessionEvent; items: readonly ItemEvent[]; finalize: SessionEvent;
   representation: string; bytes: number; maxEventBytes: number }>;
 export const bytes = (value: string) => new TextEncoder().encode(value).byteLength;
+/** UUID voice runs need compact provider item IDs. Encode all 128 bits without
+ * truncating the run namespace; the ordinal remains separate and unambiguous.
+ * Non-UUID text/measured run IDs retain their existing wire representation. */
+export function sourceItemId(runId: string, index: number): string {
+  if (!Number.isSafeInteger(index) || index < 0 || index >= MAX_ITEMS) throw new Error("Invalid source item ordinal.");
+  return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId)
+    ? `s${BigInt("0x" + runId.replaceAll("-", "")).toString(36)}_${index.toString(36)}`
+    : `${runId}_source_${index}`;
+}
 export const serializeData = (value: unknown) => JSON.stringify(value).replace(/[<>&\u2028\u2029]/gu,
   c => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 export function freeze<T>(value: T): T {
@@ -63,7 +72,7 @@ export function encodeManifest(variant: ContextVariant, runId: string, mode: Mod
     let offset = 0, part = 0;
     do {
       const make = (end: number): ItemEvent => {
-        const id = `${runId}_source_${items.length}`;
+        const id = sourceItemId(runId, items.length);
         return { type: "conversation.item.create", event_id: `${runId}_create_${items.length}`,
           ...(items.length ? { previous_item_id: items[items.length - 1].item.id } : {}),
           item: { id, type: "message", role: "user", content: [{ type: "input_text", text: serializeData({
