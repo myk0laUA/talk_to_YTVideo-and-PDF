@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08K assignment —21October2026Toronto
+
+User reports audible partial answers; latest screenshot shows ready voice session/playback enabled, two incomplete assistant turns cut mid-thought. Mic muted at capture; this does not establish cancellation cause. Earlier screenshot/user report establishes first hosted response and later source-related partial text, but sustained complete response/audio gate remains open. Previous401/source expiry and ticket_future failures remain distinct.
+
+Inspection found voice maxOutputTokens512; response.done incomplete is shown generically. Cap is a concrete hypothesis, provider reason not yet captured. Sole task [08K](WORKER_TASK_08K.md): diagnose terminal reason/output accounting and correct evidenced truncation with finite policy and regression coverage. New optional local allowance max1session/2responses/120s/estimatedUS$0.50 only after pricing preflight; no prior-budget reuse. Voice remains enabled; no PM live call/config/code change this turn.
+
 ## PM08J correction deployed —21October2026Toronto
 
 User requested deployment with voice enabled. Published c1eaa38ea52f35506dd19ad340d23a7e9d12a011 (push exit0). Render dep-dbc5duei0phs73af47t0 reports Deploy succeeded/Live; startup02:10:06Toronto visibly retains voice/text/PDF=true and YouTube/proofs=false. No configuration/secret changes. Fresh pinned Node HTTP readiness exit0: root200, unauthenticated voice preparation401/no-store. Evidence artifacts/local/08j-hosted/readiness.json and deployed.png. No paid/provider call by PM.
