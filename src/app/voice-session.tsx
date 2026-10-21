@@ -106,7 +106,7 @@ class OwnedVoiceSession extends Component<Props, State> {
         <button type="button" aria-describedby="voice-session-guidance" disabled={blocked || !available || !ready || status?.playback === "pending" || status?.playback === "available"} onClick={() => { if (this.browser?.allowsAction()) void this.controller?.playAudio(); }}>{status?.playback === "blocked" ? "Try speaker playback" : "Enable speaker playback"}</button>
       </div>
       <p className="note">Starting again clears this conversation. Stop keeps received text. Changing or removing the source clears it. Nothing restarts automatically.</p>
-      <p className="note">Assistant speech text appears when received. User speech transcription is unavailable in this build.</p>
+      <p className="note">{available ? "User speech transcription is an asynchronous estimate and may differ from what the model heard. Assistant speech text appears when received." : "Assistant speech text appears when received. User speech transcription is unavailable in this build."}</p>
       <dl className="voice-device-status">
         <dt>Microphone</dt><dd>{microphone(status)}</dd>
         <dt>Speaker playback</dt><dd>{playback(status)}</dd>

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM09C acceptance:** actual user transcription/both-speaker local synthetic voice accepted;11hashes/fresh173focused tests and stopped transcript reviewed. Next sole assignment [08F](docs/WORKER_TASK_08F.md): natural pauses and real interruption/follow-up. Human phone/audio/hosted/YouTube gates remain open; public deployment unchanged. Older summaries historical.
+
 **Current PM08E correction2 acceptance:** local live source-grounded voice/active Stop accepted with synthetic input;3hashes and both answers reviewed. No phone/human-audio/full-playout claim. Next sole assignment [09C](docs/WORKER_TASK_09C.md): user speech transcription, offline then bounded live verification. Public deployment unchanged; older summaries historical.
 
 **Current PM08E correction1 review:** native WebRTC/initial settings verified; compact source-ID fix accepted offline,6hashes/fresh100tests pass. Next sole assignment [08E correction2](docs/WORKER_TASK_08E_CORRECTION_2.md) starts at source ACKs on corrected build. Spoken answers/physical audio/transcription/hosted gates remain open; previous allocations preserved. Older summaries are historical.

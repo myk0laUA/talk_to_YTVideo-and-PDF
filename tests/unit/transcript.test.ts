@@ -48,6 +48,19 @@ function exchange(overrides: Partial<TranscriptLimits> = {}) {
   const h = store(overrides); h.emit(user(), created(), output(), link()); return h;
 }
 
+test("09C real ASR shapes preserve two content identities, failure drafts and stopped/stale isolation", () => {
+  const h = exchange();
+  const delta = input("delta", "partial speech"); h.emit(delta, delta);
+  h.emit(input("completed", "second audio part", "user_A", 1), input("delta", "late ignored", "user_A", 1));
+  h.emit(text("delta", "received answer"), done("cancelled"), input("failed"));
+  assert.deepEqual(h.snap().turns.map(t => t.role), ["user", "assistant"]);
+  assert.deepEqual(h.snap().turns[0].parts.map(p => [p.index, p.text, p.state]), [[0, "partial speech", "transcription_failed"], [1, "second audio part", "final"]]);
+  assert.equal(h.snap().turns[1].generation, "cancelled");
+  h.s.stop(); const stopped = h.snap(); h.emit(input("completed", "late final")); assert.deepEqual(h.snap(), stopped);
+  const next = { ...identity, runId: "fresh09c", connectionId: "freshConnection09c" };
+  h.s.start(next, ["priming_A"]); h.s.receive(identity, input("completed", "stale"));
+  assert.equal(h.snap().turns.length, 0); h.s.reset(); assert.equal(h.snap().phase, "idle");
+});
 test("late user ASR fills its original turn across two responses and exact Unicode final", () => {
   const h = exchange(), exact = "  Café e\u0301 👩🏽‍🚀\n<script>& **plain**\t ";
   const draft = text("delta", "draft"); h.emit(draft, draft, text("done", exact), done());

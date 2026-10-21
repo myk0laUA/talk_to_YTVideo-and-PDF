@@ -1,6 +1,6 @@
 import { bytes, freeze, sourceItemId, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES, type Manifest, type SessionEvent, type SourceItem } from "./priming-manifest.ts";
 import { isProviderInput, validateAdmission, validateProviderAdmission, type AdmissionInput as PrimingInput } from "./priming-admission.ts";
-import { isContextLimit } from "./priming-provider-policy.ts";
+import { isContextLimit, matchesVoiceTranscription } from "./priming-provider-policy.ts";
 
 export type PrimingState = "idle" | "configuring" | "priming" | "primed" | "stopped" | "failed";
 export type Failure = "budget_unavailable" | "invalid_input" | "timeout" | "transport" | "protocol" | "configuration" | "provider" | "context_limit";
@@ -193,7 +193,7 @@ export class PrimingController {
       }
       const output = record(session.audio) && record(session.audio.output) ? session.audio.output : undefined;
       if (isProviderInput(r.input) && (session.max_output_tokens !== desired.max_output_tokens || session.tool_choice !== "none"
-        || audio?.transcription !== null || (r.input.policy.mode === "text"
+        || (desired.audio.input.transcription === null ? audio?.transcription !== null : !matchesVoiceTranscription(audio?.transcription)) || (r.input.policy.mode === "text"
           ? !record(session.reasoning) || session.reasoning.effort !== "minimal"
           : output?.voice !== desired.audio.output?.voice))) {
         this.fail(r, "configuration"); return;

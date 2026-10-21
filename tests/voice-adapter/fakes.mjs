@@ -43,6 +43,8 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
           const s = structuredClone(e.session);
           if (control.fault === 'settings') s.model = 'wrong-model';
           else s.model = 'gpt-realtime-2.1-mini';
+          if (phase === 'final' && control.fault === 'transcription-missing') delete s.audio.input.transcription;
+          if (phase === 'final' && control.fault === 'transcription-wrong') s.audio.input.transcription = { model: 'whisper-1' };
           if (phase === 'final') { counts.finalAck++; trace.push('ack-final'); }
           this.emit({ type: 'session.updated', event_id: 'ack_' + counts.sends, session: { ...s, id: 'session08d', object: 'realtime.session' } });
         } else if (e.type === 'conversation.item.create') {

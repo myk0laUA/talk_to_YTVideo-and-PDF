@@ -1,5 +1,17 @@
 # Testing and evidence — Talk to a Document
 
+**PM09C acceptance:**11hashes matched; fresh173admission/transcript tests PASS/0 and actual stopped four-turn screenshot reviewed. Local synthetic-input ASR/answers/Stop accepted, not physical audio. Next08F addresses natural pauses and interruption under its separate bounded allocation;09C ledger remains exhausted.
+
+## Task09C — actual user speech transcription (proposed READY_FOR_REVIEW)
+
+[09C report](USER_TRANSCRIPTION_09C.md) records exact commands/UTC/exits, official schema/pricing, policy/model, two live ledgers and remaining gates. Policy provider-voice-full-source-2026-10-21-v2 requires initial transcription null and final exact gpt-4o-mini-transcribe after full source ACKs; old/missing/wrong/hinted settings fail closed. Existing transcript adapter/order/failure/Stop/reset semantics are reused. Available UI describes ASR as an asynchronous estimate; default-disabled UI retains unavailable disclosure.
+
+All required offline commands passed on the .env-free, empty-real-key, unusable-loopback-DB, network-denied copy under ignored artifacts/local/09c/verify.mjs using Node24.22.0/npm11.19.1. Commands: npm run test:transcript; npm run test:priming; npm run lint; npm run typecheck; npm test; npm run build; npm run test:voice-adapter; npm run test:owned-voice; npm run test:owned-text; npm run test:transcript-view; npm run test:mode-switch; npm run test:boundaries. Build first for built tests. New built assertions cover both speakers, partial/failure states, delayed final after cancelled assistant, retained Stop, cleared restart/mode and missing/wrong ASR ACKs. Desktop/390px screenshots inspected; viewport emulation is not phone proof. No lifecycle/departure code changed.
+
+Final build **EBv0wdPqgWwrUXxwS9SvQ**;114inputs match. Live attempt1 observer timeout preserved; corrected bounded observer/two regressions/rebuild precede successful attempt2. Two actual transcriptions plus grounded answers,0/30word errors, both provider buffers drained, active Stop/four retained turns/complete preview/removal404/default503/resources/private preservation passed. Synthetic input proves neither human microphone/audio nor natural-pause/interruption usability; earlier200ms VAD sensitivity remains open. No live delayed-final-after-response event occurred; offline tests cover it.
+
+**Do not rerun a live driver:09C is exhausted at2credential/session attempts and4response starts.** All08E allocations remain exhausted/preserved. Current09C locks/ledger live under artifacts/local/09c. Public/phone/hosted/full-step gates remain open; PM owns any next assignment.
+
 **PM08E correction2 acceptance:**3delivery hashes and factual stopped transcript reviewed; bounded real local voice with synthetic input accepted on bfL8fNWLOziONuzc2GTon. No additional live call. Human audio/phone/full second playout and natural-pause VAD usability remain open. Next09C adds/verifies actual user transcription under its separate allocation.
 
 ## Task08E correction2 — real local source ACKs and two generated voice answers

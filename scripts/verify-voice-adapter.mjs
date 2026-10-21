@@ -24,7 +24,7 @@ await new Promise((resolve, reject) => { const p = net.createServer(); p.once('e
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ['flow', 'setup-races', 'active-races', 'failures']) {
+  for (const group of ['flow', 'setup-races', 'active-races', 'failures', 'transcription-settings']) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };
     const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic',
@@ -122,21 +122,44 @@ try {
           await f.control({ blockedPlayback: false }); await page.getByRole('button', { name: 'Try speaker playback', exact: true }).click();
           await page.getByText('Playback enabled. This does not confirm what you heard.', { exact: true }).waitFor();
           await page.evaluate(() => { const f = window.__voice08d;
+            // Real documented event shapes through the application's sole transcript store.
+            f.emit({ type: 'input_audio_buffer.committed', item_id: 'question09c', previous_item_id: null });
+            f.emit({ type: 'conversation.item.added', previous_item_id: null, item: { id: 'question09c', type: 'message', role: 'user', content: [{ type: 'input_audio' }] } });
+            const delta = { type: 'conversation.item.input_audio_transcription.delta', event_id: 'delta09c', item_id: 'question09c', content_index: 0, delta: 'Synthetic09C partial question.' };
+            f.emit(delta); f.emit(delta);
             f.emit({ type: 'response.created', response: { id: 'response08d', conversation_id: 'conversation08d', status: 'in_progress' } });
             f.emit({ type: 'response.output_item.added', response_id: 'response08d', output_index: 0, item: { id: 'answer08d', type: 'message', role: 'assistant', status: 'in_progress', content: [] } });
+            f.emit({ type: 'conversation.item.added', previous_item_id: 'question09c', item: { id: 'answer08d', type: 'message', role: 'assistant', content: [] } });
             f.emit({ type: 'response.output_audio_transcript.delta', response_id: 'response08d', item_id: 'answer08d', output_index: 0, content_index: 0, delta: 'Synthetic08D assistant speech text.' });
             f.emit({ type: 'output_audio_buffer.started', response_id: 'response08d' });
           });
+          await expect(page.locator('.transcript')).toContainText('Synthetic09C partial question.');
+          await expect(page.locator('.transcript')).toContainText('Text updating…');
+          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-partial.png`), fullPage: true });
           await page.getByRole('button', { name: 'Interrupt answer', exact: true }).click();
           await expect(page.locator('.voice-media-announcement')).toContainText('Interruption confirmed');
+          await page.evaluate(() => { const f = window.__voice08d;
+            f.emit({ type: 'conversation.item.input_audio_transcription.completed', item_id: 'question09c', content_index: 0, transcript: 'Synthetic09C final question.' });
+            f.emit({ type: 'conversation.item.input_audio_transcription.delta', item_id: 'question09c', content_index: 0, delta: 'late words ignored' });
+            f.emit({ type: 'input_audio_buffer.committed', item_id: 'failed09c', previous_item_id: 'answer08d' });
+            f.emit({ type: 'conversation.item.input_audio_transcription.delta', item_id: 'failed09c', content_index: 0, delta: 'Synthetic09C unfinished words.' });
+            f.emit({ type: 'conversation.item.input_audio_transcription.failed', item_id: 'failed09c', content_index: 0, error: { code: 'transcription_failed', message: 'PRIVATE09C' } });
+          });
+          await expect(page.locator('.transcript')).toContainText('Speech could not be transcribed.');
+          check('09C ordered speakers and one bubble per item', await page.locator('.transcript-turn h4').allTextContents(), ['You', 'Assistant', 'You']);
+          check('09C late delta and private errors absent', !/late words ignored|PRIVATE09C/.test(await page.locator('.transcript').textContent()));
           await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-ready.png`), fullPage: true });
+          const retained = await page.locator('.transcript-text').allTextContents();
           await page.getByRole('button', { name: 'Stop session', exact: true }).click(); await f.clean(kind + ' Stop');
+          check('09C both speakers retained on Stop', await page.locator('.transcript-text').allTextContents(), retained);
+          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-stopped.png`), fullPage: true });
           check('assistant speech transcript retained on Stop', (await page.locator('.transcript').textContent()).includes('Synthetic08D assistant speech text.'));
-          check('no fabricated user speech transcript', await page.locator('.transcript-turn').count(), 1);
+          check('only injected provider words rendered', await page.locator('.transcript-turn').count(), 3);
           await page.getByRole('button', { name: 'Inspect extracted text', exact: true }).click();
           check('source preview retained after Stop', await page.locator('.source-reader .page-text').count(), kind === 'PDF' ? pdfFixture.sections.length : captionFixture.segments.length);
           await page.getByRole('button', { name: 'Close text and return', exact: true }).first().click();
           await f.control({ hold: '' }); await f.start(); await f.ready();
+          check('09C new voice session clears transcript', await page.locator('.transcript-turn').count(), 0);
           await page.getByRole('button', { name: 'Text mode', exact: true }).click(); await f.clean(kind + ' mode switch');
           check('mode switch clears conversation', await page.locator('.transcript-turn').count(), 0);
           await page.getByRole('button', { name: 'Start text session', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
@@ -169,8 +192,9 @@ try {
           await f.context.close();
         }
       }
-      if (group === 'failures') {
-        for (const fault of ['settings', 'item', 'provider', 'context', 'malformed', 'oversized', 'sdp-mime', 'sdp-body', 'denied']) {
+      if (group === 'failures' || group === 'transcription-settings') {
+        // Separate injected process keeps each scenario group within real issuance limits.
+        for (const fault of group === 'transcription-settings' ? ['transcription-missing', 'transcription-wrong'] : ['settings', 'item', 'provider', 'context', 'malformed', 'oversized', 'sdp-mime', 'sdp-body', 'denied']) {
           const f = await open('PDF', fault === 'denied' ? 390 : 1440);
           if (fault.startsWith('sdp-')) f.sdpFault(fault.slice(4)); else await f.control(fault === 'denied' ? { denied: true } : { fault });
           await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
@@ -199,7 +223,7 @@ try {
       const p = path.join(dir, e.name); if (e.isDirectory()) await audit(p, client);
       else if (client && e.name.endsWith('.js')) {
         chunks++; const s = await readFile(p, 'utf8');
-        for (const marker of ['fakeBrowserVoice', '__voice08d', 'sk-synthetic', 'SyntheticSourceDatabase', 'ownerSessionHash', 'VoiceRegistry', 'OWNED_SOURCE_VOICE_ENABLED']) check('client excludes ' + marker, !s.includes(marker));
+        for (const marker of ['Synthetic09C', 'PRIVATE09C', 'fakeBrowserVoice', '__voice08d', 'sk-synthetic', 'SyntheticSourceDatabase', 'ownerSessionHash', 'VoiceRegistry', 'OWNED_SOURCE_VOICE_ENABLED']) check('client excludes ' + marker, !s.includes(marker));
       } else if (!client && e.name.endsWith('.nft.json')) check('production trace excludes fixtures', JSON.parse(await readFile(p, 'utf8')).files.every(f => !/(?:^|[/\\])(tests|scripts|artifacts)(?:[/\\])/.test(f)));
     }
   };

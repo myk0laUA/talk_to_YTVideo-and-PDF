@@ -46,7 +46,7 @@ class VoiceTransport extends ScriptedTransport {
     if (e.type === "session.update") {
       assert.equal(e.session.max_output_tokens, 512); assert.equal(e.session.tool_choice, "none");
       assert.equal(e.session.truncation, "disabled"); assert.deepEqual(e.session.tools, []);
-      assert.equal(e.session.audio.input.transcription, null); assert.deepEqual(e.session.audio.output, { voice: "marin" });
+      assert.deepEqual(e.session.audio.input.transcription, e.event_id.endsWith("_final") ? policy.transcription : null); assert.deepEqual(e.session.audio.output, { voice: "marin" });
       assert.equal("reasoning" in e.session, false);
     } else validateOutbound(e);
     this.outbound.push(e); return this.sendAction?.(e);
@@ -175,7 +175,7 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
       fullSourceSha256Utf16: createHash("sha256").update(h.row.fullText, "utf16le").digest("hex"), completeSource: true });
   });
 }
-for (const patch of [{ model: "gpt-realtime-2.1" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "text" as const },
+for (const patch of [{ policyVersion: "provider-voice-full-source-2026-10-20-v1" }, { model: "gpt-realtime-2.1" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "text" as const },
   { policyVersion: "future" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion }]) test(`07G unsupported ${JSON.stringify(patch)}`, async () => {
   const s = await source(), result = await s.prepare({ ...s.args, ...patch });
   assert.equal(result.status, "unavailable"); assert.equal(s.db.reads, 0);
@@ -269,6 +269,23 @@ for (const stage of ["initial", "final"] as const) for (const field of ["voice",
     h.transport.emit(e); await flush(); assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0);
     assert.equal(h.controller.canSendQuestions, false); h.clean(); h.trace(`${stage}/${field}`);
   });
+for (const transcription of [undefined, null, {}, { model: "whisper-1" }, { model: policy.transcription.model, language: "en" },
+  { model: policy.transcription.model, prompt: "Invent words" }, { model: policy.transcription.model, delay: "low" }]) {
+  test(`09C final transcription ${JSON.stringify(transcription)} cannot acquire media`, async () => {
+    const h = await lifecycle(); await h.begin(); await h.initial(); await h.items();
+    const e = h.transport.config(); Object.assign(e.session.audio.input, { transcription });
+    h.transport.emit(e); await flush(); assert.equal(h.controller.snapshot.phase, "failed");
+    assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false); h.clean();
+  });
+}
+test("09C provider empty transcription defaults preserve the exact model barrier", async () => {
+  const h = await lifecycle(); await h.begin();
+  assert.equal(h.projection().manifest.configure.session.audio.input.transcription, null);
+  assert.deepEqual(h.projection().manifest.finalize.session.audio.input.transcription, policy.transcription);
+  await h.initial(); await h.items(); assert.equal(h.mediaCalls(), 0);
+  const e = h.transport.config(); Object.assign(e.session.audio.input, { transcription: { ...policy.transcription, language: null, prompt: "" } });
+  h.transport.emit(e); await flush(); assert.equal(h.mediaCalls(), 1); h.clean();
+});
 for (const scenario of ["missing-initial", "missing-item", "added-only", "mismatched-item", "early-final", "missing-final", "unsettled-final", "unexpected-response"])
   test(`07G ${scenario} never acquires microphone or sends audio; late ACK cannot revive`, async () => {
     const h = await lifecycle(); await h.begin();
