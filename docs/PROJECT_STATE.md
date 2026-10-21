@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08I assignment —21October2026Toronto
+
+User affected-Chrome screenshot on latest diagnostic deployment: preparation_http ok HTTP201/204ms, then preparation_validation invalid/206ms. No credential/microphone stage. This attempt clears the server-response timeout boundary but fails browser response validation; exact rejected predicate unknown. Prior Node preparation-only PASS discarded body and did not validate the browser contract, so is not contradictory proof. No invalid-key or root-cause claim.
+
+Sole worker task [08I](WORKER_TASK_08I.md): reproduce real adapter validation with serialized production-shaped authored fixtures, identify the failed predicate, fix only an evidenced defect or add bounded safe validation categories. Offline/no provider calls; PM owns deployment. Voice remains enabled per explicit user instruction; no host change or request to retry this turn.
+
 ## PM08H hosted preparation-only test —21October2026Toronto
 
 Published8887a4e22017da3ebb904b5a3aa2fc98df2c67c9 (git push exit0). Diagnostics deploy dep-dbc4ipss728c73e00vtg Live01:12:46Toronto, initially voice disabled. User explicitly instructed **keep the voice enabled at all times** in response to action-time public activation confirmation; this supersedes prior automatic voice rollback plan. Saved voice=true/text=true/PDF=true, retained stable secrets and YouTube/proofs off; activation dep-dbc4jpuq1p3s73c9i6rg Live on same commit. Hosting stays free. No credentials changed.
