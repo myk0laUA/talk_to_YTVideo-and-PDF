@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08N deployed — 21 October 2026 Toronto
+
+User requested deployment preserving voice enabled. Pushed 5d496b1d178a8f1812c358d1ef727aa847f3b7f0 (git push origin main exit0). Render dep-dbchpmvf3r2c73bepha0 reports Deploy succeeded / Live; startup ngqs4 ready16:14:35, live16:14:44Toronto. Startup confirms owned voice/text/PDF enabled; YouTube/proofs disabled. No configuration, secret or database change.
+
+Pinned Node backend readiness at20:14:59.460Z passed exit0: root200, same-origin unauthenticated POST/api/voice-preparations401/no-store; zero provider calls. Evidence artifacts/local/08n-hosted/readiness.json and deployed.png. Deployment readiness does not prove physical audio behavior. Next user iPhone/headphone test: reload, import neutral PDF, start and enable playback; summary, spoken stop, five seconds quiet, distinct factual question. At first unexpected event capture safe Voice setup details and Stop. Spoken-only cause and physical acceptance remain open. No active worker implementation task; voice stays enabled.
+
 ## PM08N review — 21 October 2026 Toronto
 
 Accepted for deployment as a partial diagnosis and bounded diagnostic candidate; the spoken-only headphone symptom remains NOT_REPRODUCED. Reviewed the native-send validity guard, bridge forwarding, transport queue, diagnostic projection/lifecycle and UI. The reproduced stale manual buffer-clear defect is corrected, but is not established as the cause of spoken interruptions. No blocking finding within this scope.
