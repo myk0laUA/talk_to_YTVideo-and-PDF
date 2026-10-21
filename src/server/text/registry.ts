@@ -5,7 +5,9 @@ import type { TextRelaySnapshot } from "../../shared/text-relay.ts";
 import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
 import { createProviderTextPreparation, matchesProviderPreparation } from "../context/model-measurement.ts";
 import { guardedAwait } from "../context/await.ts";
-import { requireLive, requireOwned, SourceError, type SourceRepository } from "../sources/service.ts";
+import { requireLive, requireOwned, sourceDto, SourceError, type SourceRepository } from "../sources/service.ts";
+import type { YoutubeSourceContent } from "../../shared/source.ts";
+import { youtubeEvidenceTranscript } from "./youtube-evidence.ts";
 import type { Visitor } from "../proof/visitor.ts";
 import { Admission, issuanceLimits } from "../proof/admission.ts";
 import { onSourceChange } from "../sources/invalidation.ts";
@@ -16,7 +18,8 @@ type Timer = ReturnType<typeof setTimeout>;
 type Entry = { id: string; requestId: string; visitor: Visitor; sourceId: string; abort: AbortController;
   release: () => void; life: TextLifecycle; closed: boolean; closing: boolean; attached: boolean;
   pending: boolean; questionId?: string; questions: Set<string>; expires: number; idle: Timer; absolute: Timer; watch?: Timer; flush?: Timer;
-  output?: ReadableStreamDefaultController<Uint8Array>; removeAbort?: () => void; readyToStart: boolean };
+  output?: ReadableStreamDefaultController<Uint8Array>; removeAbort?: () => void; readyToStart: boolean;
+  evidenceSource?: YoutubeSourceContent };
 export class RelayError extends Error {
   readonly status: number;
   constructor(status: number) { super("Text session unavailable"); this.status = status; }
@@ -67,6 +70,7 @@ export class TextRegistry {
       e.expires = row.expiresAt.getTime(); clearTimeout(e.absolute);
       e.absolute = setTimeout(() => this.close(e, "timeout"), Math.max(1, e.expires - this.now()));
     }
+    return row;
   }
   private touch(e: Entry) { clearTimeout(e.idle); e.idle = setTimeout(() => this.close(e, "timeout"), this.limits.idleMs); }
   async start(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal) {
@@ -85,6 +89,12 @@ export class TextRegistry {
         this.guard(e);
         if (result.status !== "prepared" || !matchesProviderPreparation(result.input, { model: PROVIDER_TEXT_POLICY.model,
           mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion, sourceId, runId: identity.runId }, this.now())) throw new RelayError(404);
+        const row = await this.authorize(e); this.guard(e);
+        if (row.kind === "YOUTUBE") {
+          const source = sourceDto(row, true) as YoutubeSourceContent;
+          if (source.id !== result.input.variant.source.id || JSON.stringify(source.sections) !== JSON.stringify(result.input.variant.source.sections)) throw new RelayError(404);
+          e.evidenceSource = structuredClone(source);
+        }
         return result.input;
       },
       connect: async (_identity, abort) => {
@@ -121,7 +131,7 @@ export class TextRegistry {
     const status = e.pending && e.life.snapshot.phase === "ready"
       ? { ...e.life.snapshot, phase: "admitting" as const, protocolReady: false } : e.life.snapshot;
     return { status: failure ? { ...status, phase: "failed", failure, protocolReady: false } : status,
-      transcript: e.life.transcript, questionId: e.questionId };
+      transcript: e.evidenceSource ? youtubeEvidenceTranscript(e.life.transcript, e.evidenceSource) : e.life.transcript, questionId: e.questionId };
   }
   private emit(e: Entry, failure?: TextFailure) {
     if (!e.output) return;
@@ -198,7 +208,7 @@ export class TextRegistry {
     if (notify) this.emit(e, failure);
     const output = e.output; e.output = undefined;
     try { output?.close(); } catch { /* Already cancelled. */ }
-    e.life.dispose(); e.questions.clear(); e.closed = true; e.closing = false;
+    e.life.dispose(); e.evidenceSource = undefined; e.questions.clear(); e.closed = true; e.closing = false;
   }
   dispose() { for (const e of this.entries.values()) this.close(e); this.unsubscribe(); }
 }

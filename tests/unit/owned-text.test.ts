@@ -23,7 +23,7 @@ const registries: TextRegistry[] = [];
 afterEach(() => { for (const r of registries.splice(0)) { r.dispose(); assert.equal(r.size, 0); } });
 const wait = async (condition: () => boolean) => { for (let i = 0; i < 200; i++) { if (condition()) return; await delay(5); } assert.ok(condition(), "condition deadline"); };
 function fixture(kind: "PDF" | "YOUTUBE" = "PDF", limits: Parameters<typeof make>[0] = {}, scenario = "success") { return make(limits, kind, scenario); }
-function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = {}, kind: "PDF" | "YOUTUBE" = "PDF", scenario = "success") {
+function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = {}, kind: "PDF" | "YOUTUBE" = "PDF", scenario = "success", answers?: readonly string[]) {
   const visitor = createVisitor(config, Date.now());
   let row = kind === "PDF" ? uploadedRecord(pdfFixture, visitor) : captionRecord(captionFixture, visitor);
   const counts = { opens: 0, closes: 0, reads: 0, sends: 0 };
@@ -31,7 +31,7 @@ function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = 
   let acquire: (() => Promise<TextConnection>) | undefined;
   const registry = new TextRegistry({ limits, repository: { get: async (id, owner) => { counts.reads++; return read ? read() : row && row.id === id && row.ownerSessionHash === owner ? structuredClone(row) : null; } },
     connect: async () => { counts.opens++; if (acquire) return acquire();
-      const transport = scriptedFullSource(kind, scenario);
+      const transport = scriptedFullSource(kind, scenario, answers);
       return { transport: { ...transport, send: raw => { counts.sends++; return transport.send(raw); } }, close: () => { counts.closes++; transport.close(); } }; } });
   registries.push(registry);
   const handlers = createTextHandlers({ config: () => config, registry });
@@ -52,6 +52,26 @@ function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = 
   return { registry, visitor, counts, handlers, request, startId, begin, get row() { return row; }, setRow: (next: typeof row) => { row = next; },
     read: (next: typeof read) => { read = next; }, acquire: (next: typeof acquire) => { acquire = next; } };
 }
+test("03F registry projects only current owned source evidence across summary/follow-up/Stop", async () => {
+  const quote = captionFixture.segments[0].text.slice(0, 40);
+  const answers = [JSON.stringify({ claim: "Authored attributed summary.", refs: [["segment-1", quote]] }) + "\n",
+    JSON.stringify({ claim: "Authored follow-up.", refs: [["segment-unknown", quote]] }) + "\n"];
+  const f = make({}, "YOUTUBE", "success", answers), s = await f.begin();
+  await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
+  for (let n = 0; n < 2; n++) {
+    await f.registry.question(f.visitor, s.id, randomUUID(), `Question ${n}`, new AbortController().signal);
+    await wait(() => s.snapshots.at(-1)?.status.phase === "ready" && s.snapshots.at(-1)?.transcript.turns.length === (n + 1) * 2);
+  }
+  const parts = s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]);
+  assert.equal(parts[0].text, "Authored attributed summary."); assert.equal(parts[0].evidence?.[0].state, "matched");
+  assert.equal(parts[0].evidence?.[0].references[0].startSeconds, captionFixture.segments[0].startSeconds);
+  assert.equal(parts[0].evidence?.[0].references[0].excerpt, quote);
+  assert.equal(parts[1].evidence?.[0].state, "unconfirmed");
+  assert.ok(!parts.some(p => p.text.includes('"refs"')));
+  f.registry.stop(f.visitor, f.startId); await s.consume;
+  assert.deepEqual(s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]), parts);
+  assert.equal(f.registry.size, 0); assert.equal(f.counts.closes, 1);
+});
 for (const kind of ["PDF", "YOUTUBE"] as const) test(`10D actual lifecycle and preparation ${kind}: full ACK, follow-up, Stop`, async () => {
   const f = fixture(kind), s = await f.begin();
   await wait(() => s.snapshots.at(-1)?.status.phase === "ready");

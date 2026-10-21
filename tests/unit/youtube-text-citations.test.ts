@@ -37,7 +37,7 @@ for (const limit of [2048, 4096, 16384]) test(`03E exact claim locators survive 
       assert.ok("id" in original && "startSeconds" in original);
       const { text, ...locator } = original;
       assert.deepEqual(f.locator, locator);
-      assert.equal(f.citation, `[${original.id} @ ${original.startSeconds}s]`);
+      assert.equal(f.citation, undefined); // 03F supersedes model-authored timestamp pairs.
       assert.equal(f.offset, restored[f.sectionIndex].text.length);
       assert.equal(f.part, counts[f.sectionIndex]++);
       restored[f.sectionIndex].text += f.text;

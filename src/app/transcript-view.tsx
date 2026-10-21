@@ -103,7 +103,19 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
               </details> : null}
               {!turn.parts.length ? <p className="note">{snapshot?.phase === "active" ? "Waiting for text…" : "No text was received for this turn."}</p> : null}
               {turn.parts.map(part => <div key={`${part.index}:${part.kind}`} className="transcript-part" data-reading-anchor="part">
-                <p className="transcript-text" dir="auto">{part.text}</p>
+                {part.evidence ? part.evidence.map((unit, i) => <div key={i}>
+                  {unit.text ? <p className="transcript-text" dir="auto">{unit.text}</p> : null}
+                  {unit.references.map((reference, at) => <details className="note" key={`${reference.segmentId}:${at}`}>
+                    <summary>Source excerpt · {reference.startSeconds}s</summary>
+                    <blockquote className="transcript-text" dir="auto">{reference.excerpt}</blockquote>
+                    <a href={reference.url} target="_blank" rel="noopener noreferrer">Open video at {reference.startSeconds}s</a>
+                    <p>Excerpt matched to this source. Check whether it supports the answer.</p>
+                  </details>)}
+                  {unit.state !== "matched" ? <p className="note transcript-notice">{unit.state === "pending"
+                    ? "Source reference pending."
+                    : unit.state === "incomplete" ? "Source reference incomplete. This claim is unconfirmed."
+                    : "Source reference could not be matched. This claim is unconfirmed. Check the source preview."}</p> : null}
+                </div>) : <p className="transcript-text" dir="auto">{part.text}</p>}
                 {part.state === "draft" ? <p className="note">{snapshot?.phase === "limited" ? "Text incomplete at transcript limit." : "Text updating…"}</p> : null}
                 {part.state === "unfinished" ? <p className="note">Text unfinished when the conversation stopped.</p> : null}
                 {part.state === "transcription_failed" ? <p className="note transcript-notice">Speech could not be transcribed. Any earlier words above may be incomplete.</p> : null}

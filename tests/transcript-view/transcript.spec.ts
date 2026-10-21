@@ -11,6 +11,20 @@ async function act(page: Page, name: string) {
 }
 const turns = (page: Page) => page.getByRole("list", { name: "Conversation turns" }).getByRole("listitem");
 
+test("03F matched excerpts and pending/incomplete/unmatched copy remain distinct and inert", async ({ page }, info) => {
+  await act(page, "Evidence states");
+  await expect(page.getByText("An attributed claim.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Source reference pending.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Source reference incomplete. This claim is unconfirmed.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Source reference could not be matched. This claim is unconfirmed. Check the source preview.", { exact: true })).toBeVisible();
+  await page.getByText("Source excerpt · 1040.594s", { exact: true }).click();
+  await expect(page.locator("blockquote")).toHaveText('Exact source excerpt 😀\n<script>inert</script>');
+  await expect(page.getByRole("link", { name: "Open video at 1040.594s", exact: true })).toHaveAttribute("href", "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s");
+  await expect(page.locator(".transcript script")).toHaveCount(0); await expect(page.locator(".transcript")).not.toContainText('"refs"');
+  await fits(page); await capture(page, info, "03f-evidence-states");
+  await act(page, "Replace source"); await expect(page.locator(".transcript")).not.toContainText("1040.594");
+});
+
 test("08K output limit preserves partial text and exposes only safe completion details", async ({ page }, info) => {
   await act(page, "Begin draft"); await act(page, "Output limit"); await act(page, "Stop");
   await expect(page.getByText("Answer incomplete. Any text received stays below.", { exact: true })).toBeVisible();

@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03F correction required:**16hashes/fresh51checks pass, but live parser projection hides follow-up and resolves zero references.03F is NOT accepted for deployment/completion. Sole [03F correction](docs/WORKER_TASK_03F_CORRECTION.md) diagnoses exact rejected output and restores useful answers before final verification. Public voice enabled/YouTube disabled.
+
 **Current PM03F:**03E partial review passes5hashes/149checks; factual follow-up citation passes, summary citations fail. Sole task [03F](docs/WORKER_TASK_03F.md) adds bounded source-resolved evidence for YouTube text, with semantic evaluation still required. No deployment; public voice enabled/YouTube disabled.
 
 **Current PM03E:** local YouTube setup accepted after lossless packing (11hashes/fresh169checks; ready~1.5s). Answers complete but citations inaccurate. Sole task [03E](docs/WORKER_TASK_03E.md) corrects and verifies text source references. No deployment; public voice enabled, YouTube disabled. Older summaries historical.

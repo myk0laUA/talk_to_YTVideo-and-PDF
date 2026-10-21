@@ -36,3 +36,28 @@ test("10D HTTP proxy ignores queued old readiness; Stop cancels reader and never
     assert.equal(snapshots.at(-1), "ended");
   } finally { controller.dispose(); globalThis.fetch = original; }
 });
+
+test("03F local Stop or connection loss retains natural claim and marks pending evidence incomplete", async () => {
+  const original = globalThis.fetch;
+  for (const failed of [false, true]) {
+    let output!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({ start(c) { output = c; } });
+    globalThis.fetch = (async (url: string) => url.endsWith("/stream")
+      ? new Response(stream, { headers: { "content-type": "application/x-ndjson" } })
+      : Response.json(url === "/api/text-sessions" ? { sessionId: randomUUID() } : { ok: true })) as typeof fetch;
+    const controller = new HttpTextController(() => {});
+    try {
+      controller.start(randomUUID()); await setImmediate();
+      const transcript = { ...new TranscriptStore().snapshot, phase: "active", turns: [{ itemId: "a", role: "assistant", ordering: "established",
+        generation: "generating", interrupted: false, playback: "not_applicable", parts: [{ index: 0, kind: "output_text", state: "draft",
+          text: "The speaker says this.", evidence: [{ text: "The speaker says this.", state: "pending", references: [] }] }] }] };
+      output.enqueue(new TextEncoder().encode(JSON.stringify({ status: { phase: "responding", protocolReady: false, productionReady: false, revision: 0 }, transcript }) + "\n"));
+      await setImmediate();
+      if (failed) output.error(new Error("Synthetic connection loss")); else controller.stop();
+      await setImmediate();
+      const part = controller.transcript.turns[0].parts[0];
+      assert.equal(part.text, "The speaker says this."); assert.equal(part.evidence?.[0].state, "incomplete"); assert.deepEqual(part.evidence?.[0].references, []);
+      assert.equal(controller.snapshot.phase, failed ? "failed" : "ended");
+    } finally { controller.dispose(); globalThis.fetch = original; }
+  }
+});
