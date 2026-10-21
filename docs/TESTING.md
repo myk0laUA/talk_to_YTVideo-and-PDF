@@ -1,5 +1,21 @@
 # Testing and evidence — Talk to a Document
 
+## PM08L offline acceptance —21October2026Toronto
+
+Accepted the bounded optional capture-processing change for deployment/testing, not a proven acoustic fix. All6 delivery SHA256 hashes match. Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/voice-interruption.test.ts tests/unit/voice-lifecycle.test.ts` PASS234/234 exit0; artifacts/local/08l/pm-focused.log. Reviewed production factory, unsupported-processing fixture, original-build red assertion and final built-browser evidence on iEysEoBvbhE38zkwpQ85x. No blocking scoped finding. Worker full1572units and530built adapter checks remain separate offline evidence.
+
+Echo cancellation/noise suppression are ideal preferences; browser defaults may already provide them. Effective iPhone processing and reduction of false speech-trigger cancellations remain NOT_RUN. Provider v4/2048, automatic interruption, ACK barriers and timing are unchanged. Next PM deployment then bounded physical silent-listening/close-held/deliberate-interruption check and Chrome regression per08L brief. No active worker implementation task. Voice remains enabled; this review made no host change or paid/provider call. Last verified hosted application cd48889; original Step08/12 remain incomplete pending physical evidence.
+
+
+## Worker08L — proposed READY_FOR_REVIEW —21October2026Toronto
+
+[Capture rationale, acceptance map, documentation and exact command table](VOICE_CAPTURE_08L.md). Browser capture now requests optional ideal echo cancellation and noise suppression; unsupported processing remains a single successful capture attempt in the offline fixture. Provider v4/2048, 600ms speech-end delay, automatic/deliberate interruption, full-source ACK barriers and08J timing remain unchanged. Echo/breathing/handling noise remain competing explanations; affected iPhone effective settings and acoustic improvement are unobserved. Defaults may already enable these preferences.
+
+Clean arrival main HEADc102a7429712e224239c791ea16e88bc755f2b47; dirty/uncommitted delivery. Final local build **iEysEoBvbhE38zkwpQ85x**, pinned Node24.22.0/npm11.19.1, .env-free/network-denied harness `artifacts/local/08l/verify.mjs`. Lint/typecheck/full1572units/build PASS; priming75/interruption64/lifecycle63, adapter107units+530built, owned-voice122units+392built PASS/exit0. New original-build browser regression failed as expected on audio:true; retained red log/JSON, final external network0. Exact commands/UTC/exits in commands.jsonl; changed-file hashes and audit alongside it. No unexpected verification failures. Shared policy/manifest unchanged; conditional owned-text check not run.
+
+Physical iPhone silent listening close/ordinary distance, deliberate follow-up/manual Interrupt/mute/Stop and Chrome summary/follow-up after deployment remain **NOT_RUN** by worker. PM reviews/deploys and coordinates the bounded protocol in the brief/report. No provider/DB call, paid action, .env/public-flag edit, commit/push/deployment or next task; prior spend ledgers preserved. Voice stays enabled. Full Step08/12 not self-approved.
+
+
 ## PM08L assignment —21October2026Toronto
 
 Physical iPhone user report: voice works but close-held use unintentionally interrupts the assistant. Screenshot shows provider cancellation after detecting speech and short user transcript fragments. Speech-trigger cancellation is evidenced; echo/breathing/handling noise and exact device settings are not established. This is separate from 08K max-output truncation; Chrome summary/follow-up remains accepted by user report on deployed cd48889.

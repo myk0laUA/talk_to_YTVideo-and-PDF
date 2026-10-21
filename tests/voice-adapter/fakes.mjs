@@ -1,5 +1,6 @@
 // Injected offline browser/native fixtures ONLY. Never imported by application code.
 export function fakeBrowserVoice(target = globalThis, install = false) {
+  let captureRequest;
   const counts = { peers: 0, peerCloses: 0, channels: 0, channelCloses: 0, listeners: 0,
     media: 0, attached: 0, trackStops: 0, remoteStops: 0, audio: 0, releases: 0, plays: 0,
     offers: 0, local: 0, remote: 0, sends: 0, finalAck: 0, items: 0, violations: 0 };
@@ -91,13 +92,25 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
   const api = { counts, control, trace, deps, peers, channels, tracks, sourceParts,
     release: phase => { const work = pending.splice(0); for (const p of work) if (!phase || p.phase === phase) p.release(); else pending.push(p); },
     emit: event => channels.at(-1).emit(event),
-    snapshot: () => ({ counts: { ...counts }, trace: [...trace], pending: pending.length, liveTracks: tracks.filter(t => t.readyState === 'live').length,
+    snapshot: () => ({ captureRequest, counts: { ...counts }, trace: [...trace], pending: pending.length, liveTracks: tracks.filter(t => t.readyState === 'live').length,
       enabledTracks: tracks.filter(t => t.enabled && t.readyState === 'live' && !t.remote).length }),
   };
   if (install) {
     target.__voice08d = api;
     target.RTCPeerConnection = Peer; target.MediaStream = Stream;
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: deps.media } });
+    // No optional processing support: ignore ideal preferences, reject mandatory ones.
+    // This exercises the production factory, unlike injected deps.media in unit tests.
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: {
+      getSupportedConstraints: () => ({}),
+      getUserMedia: constraints => {
+        captureRequest = structuredClone(constraints);
+        if (constraints.audio && typeof constraints.audio === 'object'
+          && Object.values(constraints.audio).some(v => v && typeof v === 'object' && 'exact' in v)) {
+          return Promise.reject(new Error('Unsupported mandatory processing'));
+        }
+        return deps.media();
+      },
+    } });
     const create = document.createElement.bind(document);
     document.createElement = function(name, ...args) { return name === 'audio' ? deps.audio() : create(name, ...args); };
   }

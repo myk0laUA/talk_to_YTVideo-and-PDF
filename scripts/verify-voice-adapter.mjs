@@ -152,6 +152,10 @@ try {
           check(kind + ' final ACK withheld: no media', (await f.snap()).counts.media, 0);
           await page.evaluate(() => window.__voice08d.release('final')); await f.ready();
           const s = await f.snap(); check(kind + ' one peer/channel/media/attach', [s.counts.peers, s.counts.channels, s.counts.media, s.counts.attached], [1, 1, 1, 1]);
+          check(kind + ' 08L factory requests optional echo/noise processing', s.captureRequest,
+            { audio: { echoCancellation: { ideal: true }, noiseSuppression: { ideal: true } } });
+          check(kind + ' 08L capture succeeds without processing support or retry',
+            [await page.evaluate(() => navigator.mediaDevices.getSupportedConstraints()), s.counts.media, s.enabledTracks], [{}, 1, 1]);
           check(kind + ' full ordered source section count', s.counts.items, kind === 'PDF' ? pdfFixture.sections.length : captionFixture.segments.length);
           const reconstruction = await page.evaluate(() => { const parts = window.__voice08d.sourceParts, sections = new Map();
             for (const p of parts) { if (!sections.has(p.sectionIndex)) sections.set(p.sectionIndex, []); sections.get(p.sectionIndex).push(p.text); }

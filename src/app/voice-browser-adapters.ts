@@ -353,5 +353,11 @@ const clock = { now: () => performance.now(), setTimeout: (fn: () => void, ms: n
 // Stable function. Constructing/mounting/selecting a source acquires no provider/media resources.
 export const createBrowserVoiceController = (notify: (status: VoiceStatus) => void) => new VoiceLifecycle(clock, browserVoiceAdapters({
   fetch: (...args) => fetch(...args), peer: () => new RTCPeerConnection(), audio: () => document.createElement("audio"),
-  stream: () => new MediaStream(), media: () => navigator.mediaDevices.getUserMedia({ audio: true }), uuid: () => crypto.randomUUID(), now: clock.now,
+  stream: () => new MediaStream(),
+  // Prefer echo/noise processing before provider VAD. Ideal constraints remain
+  // optional on devices that cannot apply them; never retry permission requests.
+  // Requested settings do not establish effective processing or acoustic results.
+  media: () => navigator.mediaDevices.getUserMedia({ audio: {
+    echoCancellation: { ideal: true }, noiseSuppression: { ideal: true },
+  } }), uuid: () => crypto.randomUUID(), now: clock.now,
 }), notify);
