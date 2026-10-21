@@ -286,6 +286,46 @@ test("09C provider empty transcription defaults preserve the exact model barrier
   const e = h.transport.config(); Object.assign(e.session.audio.input, { transcription: { ...policy.transcription, language: null, prompt: "" } });
   h.transport.emit(e); await flush(); assert.equal(h.mediaCalls(), 1); h.clean();
 });
+
+test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
+  const h = await lifecycle(); await h.begin();
+  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v3");
+  assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
+  assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
+    { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600 });
+  await h.initial(); await h.items(); assert.equal(h.mediaCalls(), 0);
+  await h.final(); assert.equal(h.mediaCalls(), 1); h.clean();
+});
+for (const value of [undefined, null, 200, 599, 601, "600"]) {
+  test(`08F wrong or absent effective silence ${JSON.stringify(value)} denies microphone`, async () => {
+    const h = await lifecycle(); await h.begin(); await h.initial(); await h.items();
+    const e = h.transport.config(); Object.assign(e.session.audio.input.turn_detection!, { silence_duration_ms: value });
+    h.transport.emit(e); await flush(); assert.equal(h.controller.snapshot.phase, "failed");
+    assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false); h.clean();
+  });
+}
+test("08F stale v2 policy and altered final pause manifest cannot acquire resources", async () => {
+  const s = await source();
+  assert.equal((await s.prepare({ ...s.args, policyVersion: "provider-voice-full-source-2026-10-21-v2" })).status, "unavailable");
+  assert.equal(s.db.reads, 0);
+  const p = structuredClone((await input()).projection);
+  Object.assign(p.manifest.finalize.session.audio.input.turn_detection!, { silence_duration_ms: 200 });
+  const representation = [p.manifest.configure, ...p.manifest.items, p.manifest.finalize].map(e => JSON.stringify(e)).join("\n");
+  Object.assign(p.manifest, { representation, bytes: new TextEncoder().encode(representation).length });
+  assert.equal(validateProviderAdmission(p), false);
+  const h = prime(p); assert.equal(h.begin(), false); assert.equal(h.transport.outbound.length, 0);
+});
+
+test("08F provider text policy keeps VAD and transcription off at both stages", async () => {
+  const s = await source(), prepare = createProviderTextPreparation({ repository: s.repository, now: () => start });
+  const result = await prepare({ ...s.args, mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion });
+  assert.equal(result.status, "prepared"); if (result.status !== "prepared") throw new Error("Preparation failed");
+  assert.equal(result.input.policy.policyVersion, "provider-text-full-source-2026-10-20-v1");
+  for (const event of [result.input.manifest.configure, result.input.manifest.finalize]) {
+    assert.deepEqual(event.session.audio.input, { turn_detection: null, transcription: null });
+    assert.deepEqual(event.session.output_modalities, ["text"]);
+  }
+});
 for (const scenario of ["missing-initial", "missing-item", "added-only", "mismatched-item", "early-final", "missing-final", "unsettled-final", "unexpected-response"])
   test(`07G ${scenario} never acquires microphone or sends audio; late ACK cannot revive`, async () => {
     const h = await lifecycle(); await h.begin();

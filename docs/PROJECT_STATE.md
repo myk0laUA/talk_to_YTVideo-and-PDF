@@ -1,5 +1,25 @@
 # Project state — Talk to a Document
 
+## PM08F partial acceptance —21October2026UTC /20OctoberToronto
+
+Accepted v3pause implementation and controlled live generation-cancel/buffer-clear/follow-up scope; full playback gate remains open. All10delivery hashes matched. Reviewed effective600ms validation/unchanged initial-null barriers and narrow remote-track-before-srcObject fix. Fresh pinned isolated admission/adapter/interruption tests PASS239/239 exit0, artifacts/local/08f/pm-focused.log and pm-focused-result.json. Offline native diagnostic confirms empty-stream pending/currentTime0 versus bind-on-track resolved/readyState4/advancing time. No live proof of corrected buildYhkhD73NHaU1gpomogsBg; prior liveFn1wXqwYzTpxFuMdNFQQA audio arrival/decoded silence must not be called successful speaker playback. No PM live call.
+
+08F exhausted2sessions/5starts, known estimateUS$0.02277919, actual billing unknown. Next sole assignment [08F correction](WORKER_TASK_08F_CORRECTION.md) directly verifies normal HTMLAudioElement playback on corrected build, one question initially, new US$0.50 estimated ceiling/max2credential-session attempts/2response starts/120seconds each under standing credit authorization. Second only for a diagnosed narrow fix/evidence gap; old ledgers preserved. Passive observer must not fix/drive playback itself. Human listening/phone/real-person usability/hosted/YouTube gates remain open. Public configuration/deployment unchanged.
+
+
+## Worker08F handoff — proposed READY_FOR_REVIEW, partial live —21October2026UTC /20OctoberToronto
+
+[08F report](VOICE_PAUSES_INTERRUPTION_08F.md). Clean arrival main 6f0183ba2700c90a9b9eb30f930ad42987512fc2; dirty/uncommitted 10-file delivery. Explicit voice policy provider-voice-full-source-2026-10-21-v3 requires effective600ms final VAD before media; initial VAD/ASR and text policy unchanged. Live build Fn1wXqwYzTpxFuMdNFQQA; final offline playback-corrected build **YhkhD73NHaU1gpomogsBg**,114inputs each separately hashed.
+
+Original main-question PCM340–350ms gaps preserved without compression; extra trailing prompts excluded. Two bounded native Chromium/PDF/parser/PostgreSQL/OpenAI attempts used 2 sessions/5 starts. First01:41:18.561–01:42:26.050UTC exit1: natural question passed; late buffer.started after clear caused conservative observer Stop, no follow-up. Offline captured-order regression/4observer checks/native silence correction preceded sole optional attempt2,01:47:12.105–01:49:03.081UTC exit0. Exact user ASR 0/36 word errors (both attempts0/66); complete codename/recorder answer; still-generating response cancelled/target buffer cleared,1517.9ms decoded silence plus276quiet samples, then grounded KITE-482follow-up in same session. Six ordered turns retained after active Stop/full 3-page preview/removal404/default restoration passed.
+
+**Material limitation:** screenshot review showed normal speaker enable timed out (Try speaker playback), despite received/decoded audio. Offline native diagnosis reproduced empty-stream binding (play pending/currentTime0); binding after remote track resolved play/currentTime3.517418. Narrow actual-adapter fix/regression verified offline only, final build has NO live-provider/audio verification. No third attempt. Generation/buffer/transcript evidence is not audible success.
+
+Final pinned secret-free/network-denied checks: priming75/interruption63/transcript64/lint/typecheck/**1471 units**/build; adapter58+433built/UI208/owned-voice94+392/owned-text417/mode156/boundaries186+59 PASS/0. Final-build UI207/1fixture-load timeout and unchanged rerun retained; no timeout adjustment. Fresh final default audit PASS: unavailable UI/3routes503-no-store/0native/external resources. Full commands/UTC/exits/build/hash/preservation evidence under ignored artifacts/local/08f.
+
+Allocation EXHAUSTED2attempts/5starts; known response+ASR estimateUS$0.02277919(cache adjusted), undiscounted0.02378015; preflight0.76544. Actual/prior/cumulative billing unknown. Previous08E/09C ledgers/private files/public configuration unchanged; no .env/SQL/migration/billing/deploy/commit/push. Physical phone/human audibility/real-person pause tolerance/hosted/YouTube/full evaluation and final playback live gate remain open. PM decides acceptance; no next task.
+
+
 ## PM09C acceptance — 21 October2026UTC /20OctoberToronto
 
 Accepted for implemented and bounded local synthetic-input live scope. All11delivery hashes matched; reviewed v2 final-only transcription binding/effective matcher, unchanged initial-null/media barrier and reuse of sole transcript store. PM independently inspected session-2/stopped.png: both user questions and factually correct assistant answers are ordered and retained. Fresh isolated provider-voice-admission plus transcript tests PASS173/173 exit0, pinned Node24.22.0/network guard, evidence artifacts/local/09c/pm-focused.log and pm-focused-result.json. Final buildEBv0wdPqgWwrUXxwS9SvQ; successful live01:22:05.882–01:23:26.516UTC exit0 and both output-buffer stops supported; first observer timeout remains a failed command. No PM live call/rebuild.

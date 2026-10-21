@@ -15,7 +15,7 @@ export type SessionEvent = Readonly<{ type: "session.update"; event_id: string; 
   type: "realtime"; instructions: string; truncation: "disabled"; tools: readonly [];
   output_modalities: readonly ["text" | "audio"];
   max_output_tokens?: number; tool_choice?: "none"; reasoning?: { effort: "minimal" };
-  audio: { input: { transcription?: null | { model: "gpt-4o-mini-transcribe" }; turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null } };
+  audio: { input: { transcription?: null | { model: "gpt-4o-mini-transcribe" }; turn_detection: null | { type: "server_vad"; create_response: true; interrupt_response: true; idle_timeout_ms: null; silence_duration_ms?: number } };
     output?: { voice: "marin" } };
 } }>;
 export type Manifest = Readonly<{ version: typeof PRIMING_VERSION; runId: string; mode: Mode;
@@ -57,7 +57,8 @@ export function encodeManifest(variant: ContextVariant, runId: string, mode: Mod
         reasoning: { effort: PROVIDER_TEXT_POLICY.reasoningEffort } } : {}),
       ...(providerVoice ? { max_output_tokens: PROVIDER_VOICE_POLICY.maxOutputTokens, tool_choice: "none" as const } : {}),
       audio: { input: { turn_detection: final && mode === "voice"
-        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null,
+        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null,
+          ...(providerVoice ? { silence_duration_ms: PROVIDER_VOICE_POLICY.silenceDurationMs } : {}) } : null,
         ...(providerText || providerVoice ? { transcription: final && providerVoice ? { ...PROVIDER_VOICE_POLICY.transcription } : null } : {}) },
         ...(providerVoice ? { output: { voice: PROVIDER_VOICE_POLICY.voice } } : {}) } } });
   const items: ItemEvent[] = [];

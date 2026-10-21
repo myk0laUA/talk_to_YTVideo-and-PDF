@@ -208,7 +208,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         clientSecret = result.clientSecret; result.clientSecret = undefined;
         const credentialExpiry = result.expiresAt * 1000;
         peer = deps.peer(); audio = deps.audio(); audio.autoplay = false;
-        const remote = deps.stream(); audio.srcObject = remote;
+        const remote = deps.stream();
         const pc = peer, speaker = audio;
         // Pre-negotiate send/receive audio with NO local microphone or sender track.
         const transceiver = pc.addTransceiver("audio", { direction: "sendrecv" });
@@ -217,6 +217,9 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
             if (closed) { safely(() => track.stop()); continue; }
             tracks.add(track); remote.addTrack(track);
           }
+          // Chromium can leave play() pending if srcObject was an empty stream.
+          // Bind after the first remote track; repeated track events must not restart playback.
+          if (!closed && speaker.srcObject !== remote) speaker.srcObject = remote;
         };
         pc.addEventListener("track", ontrack); remove.push(() => pc.removeEventListener("track", ontrack));
         channel = pc.createDataChannel("oai-events", { ordered: true });

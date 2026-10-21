@@ -1,6 +1,6 @@
 import { bytes, freeze, sourceItemId, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES, type Manifest, type SessionEvent, type SourceItem } from "./priming-manifest.ts";
 import { isProviderInput, validateAdmission, validateProviderAdmission, type AdmissionInput as PrimingInput } from "./priming-admission.ts";
-import { isContextLimit, matchesVoiceTranscription } from "./priming-provider-policy.ts";
+import { isContextLimit, matchesVoiceTranscription, PROVIDER_VOICE_POLICY } from "./priming-provider-policy.ts";
 
 export type PrimingState = "idle" | "configuring" | "priming" | "primed" | "stopped" | "failed";
 export type Failure = "budget_unavailable" | "invalid_input" | "timeout" | "transport" | "protocol" | "configuration" | "provider" | "context_limit";
@@ -96,7 +96,7 @@ export class PrimingController {
     try {
       r.input = freeze(structuredClone(input));
       const m = r.input.manifest;
-      if (!m || m.runId !== identity.runId || !this.validManifest(m)) { this.fail(r, "invalid_input"); return false; }
+      if (!m || m.runId !== identity.runId || !this.validManifest(m, isProviderInput(r.input) && r.input.policy.mode === "voice")) { this.fail(r, "invalid_input"); return false; }
       r.basis = this.admission(r.input);
       if (!r.basis) { this.fail(r, "budget_unavailable"); return false; }
       this.update(r, "configuring");
@@ -108,7 +108,7 @@ export class PrimingController {
       return this.current(r);
     } catch { this.fail(r, "invalid_input"); return false; }
   }
-  private validManifest(m: Manifest) {
+  private validManifest(m: Manifest, providerVoice: boolean) {
     if (m.version !== "source-priming-v1" || !["voice", "text"].includes(m.mode) || !["A", "B"].includes(m.variant)
       || !Array.isArray(m.items) || !m.items.length || m.items.length > MAX_ITEMS
       || !Number.isSafeInteger(m.maxEventBytes) || m.maxEventBytes < 2048 || m.maxEventBytes > MAX_EVENT_BYTES) return false;
@@ -121,7 +121,8 @@ export class PrimingController {
       && e.session.truncation === "disabled" && JSON.stringify(e.session.tools) === "[]"
       && JSON.stringify(e.session.output_modalities) === JSON.stringify([final && m.mode === "voice" ? "audio" : "text"])
       && JSON.stringify(e.session.audio?.input.turn_detection) === JSON.stringify(final && m.mode === "voice"
-        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null } : null);
+        ? { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null,
+          ...(providerVoice ? { silence_duration_ms: PROVIDER_VOICE_POLICY.silenceDurationMs } : {}) } : null);
     return config(m.configure, false) && config(m.finalize, true) && m.configure.session.instructions !== m.finalize.session.instructions
       && m.items.every((e, i) => e.type === "conversation.item.create" && e.event_id === `${m.runId}_create_${i}`
         && e.item.id === sourceItemId(m.runId, i) && e.item.type === "message" && e.item.role === "user"
@@ -176,6 +177,7 @@ export class PrimingController {
         output_modalities: session.output_modalities, turn_detection: record(effectiveTurn) ? {
           type: effectiveTurn.type, create_response: effectiveTurn.create_response,
           interrupt_response: effectiveTurn.interrupt_response, idle_timeout_ms: effectiveTurn.idle_timeout_ms,
+          silence_duration_ms: effectiveTurn.silence_duration_ms,
         } : effectiveTurn, ...(isProviderInput(r.input) ? { max_output_tokens: session.max_output_tokens,
           tool_choice: session.tool_choice, reasoning: session.reasoning, transcription: effectiveInput?.transcription,
           audio_output: record(session.audio) && record(session.audio.output) ? { voice: session.audio.output.voice } : undefined } : {}) });
@@ -185,7 +187,8 @@ export class PrimingController {
       const audio = record(session.audio) && record(session.audio.input) ? session.audio.input : undefined;
       const turn = audio?.turn_detection, desiredTurn = desired.audio.input.turn_detection;
       const turnMatches = desiredTurn === null ? turn === null : record(turn) && turn.type === desiredTurn.type
-        && turn.create_response === true && turn.interrupt_response === true && turn.idle_timeout_ms === null;
+        && turn.create_response === true && turn.interrupt_response === true && turn.idle_timeout_ms === null
+        && (desiredTurn.silence_duration_ms === undefined || turn.silence_duration_ms === desiredTurn.silence_duration_ms);
       const model = isProviderInput(r.input) ? r.input.policy.model : r.input.wireBudget.model;
       if (session.type !== "realtime" || session.model !== model || session.instructions !== desired.instructions || session.truncation !== "disabled"
         || JSON.stringify(session.tools) !== "[]" || JSON.stringify(session.output_modalities) !== JSON.stringify(desired.output_modalities) || !turnMatches) {

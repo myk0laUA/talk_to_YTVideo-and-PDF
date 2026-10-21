@@ -1,5 +1,18 @@
 # Testing and evidence — Talk to a Document
 
+**PM08F review:**10hashes matched; fresh239admission/adapter/interruption tests PASS/0. Controlled live interruption and pause scope accepted, speaker playback remains unverified on final corrected build. Next WORKER_TASK_08F_CORRECTION.md has a separate bounded allocation; original08F remains exhausted.
+
+## Task08F — natural pauses/interruption, proposed READY_FOR_REVIEW (partial live)
+
+[08F report](VOICE_PAUSES_INTERRUPTION_08F.md) contains policy/official basis, waveform hashes, exact command UTC/exits, separate live/final build identities, failures, usage, screenshots and acceptance map. v3voice policy explicitly sets final silence_duration_ms600; require exact effective ACK after complete source, initial VAD/ASR null; text unchanged. Additions reject missing/wrong silence, stale policy/coherent manifest alteration and reproduce captured late buffer metadata; playback adapter now binds srcObject after its first remote track.
+
+Use Node24.22.0/npm11.19.1 in established .env-free/empty-real-key/unusable-loopback-DB/network-denied copy. Run test:priming, test:interruption, test:transcript, lint, typecheck, test, build, test:voice-adapter, test:voice-session, test:owned-voice, test:owned-text, test:mode-switch, test:boundaries. All final pass on **YhkhD73NHaU1gpomogsBg**,1471 units. Initial final-build voice UI fixture-load timeout207/1 is preserved; unchanged-command rerun passes208. Cleanup/departure code unchanged, test:recovery not repeated.
+
+Real synthetic-input local buildFn1wXqwYzTpxFuMdNFQQA passed original340ms-gap question as one complete ASR/response; attempt2cancelled active generation/cleared buffer, confirmed decoded quiet and grounded spoken follow-up, then retained six turns/full preview after Stop. Desktop/390px screenshots reviewed. **Playback UI timed out; native packets/decoded silence do not prove speaker playback.** Offline diagnosis and narrow wiring fix pass, but final fix has NO real-provider/human-audio check. Keep both builds distinct.
+
+**Never rerun08F live:2sessions/5starts consumed, separate locks/ledger exhausted.** Actual known estimateUS$0.02277919; bill unknown. Own-source deletion/read404, fresh original defaults and final disabled UI/503-no-store/zero native/external resources verified; private/prior artifacts preserved. Physical-phone/human audibility/real-person pause tolerance/hosted/YouTube/full evaluation and live final playback remain NOT_RUN. PM owns acceptance; no public activation.
+
+
 **PM09C acceptance:**11hashes matched; fresh173admission/transcript tests PASS/0 and actual stopped four-turn screenshot reviewed. Local synthetic-input ASR/answers/Stop accepted, not physical audio. Next08F addresses natural pauses and interruption under its separate bounded allocation;09C ledger remains exhausted.
 
 ## Task09C — actual user speech transcription (proposed READY_FOR_REVIEW)

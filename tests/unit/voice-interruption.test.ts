@@ -83,6 +83,20 @@ for (const order of ["speech-first", "clear-first", "cancel-first"] as const) te
   assert.equal(h.controller.interruptCurrentResponse(), false); assert.equal(h.clock.timers.size, 0); h.clean(`vad-${order}`);
 });
 
+test("08F captured clear→late started→cancelled→stopped cannot revive cancelled output", async () => {
+  const h = await ready(); h.emit(created(), buffer("started"));
+  assert.equal(h.controller.interruptCurrentResponse(), true); await flush();
+  h.emit(buffer("cleared"), buffer("started"));
+  assert.equal(h.state().output.state, "cleared"); assert.equal(h.state().interruption.state, "pending");
+  h.emit(done("resp_A", "cancelled"), buffer("stopped")); await flush();
+  assert.equal(h.state().generation.state, "cancelled"); assert.equal(h.state().output.state, "stopped");
+  assert.equal(h.state().interruption.state, "confirmed"); assert.equal(h.commands().length, 2);
+  h.controller.mute(); assert.ok(h.r.tracks.every(t => !t.enabled)); h.controller.unmute();
+  h.emit(created("resp_B"), buffer("started", "resp_B"), buffer("started"));
+  assert.equal(h.state().generation.responseId, "resp_B"); assert.equal(h.state().output.responseId, "resp_B");
+  assert.equal(h.state().output.state, "streaming"); assert.equal(h.commands().length, 2); h.clean("08f-captured-late-start");
+});
+
 test("mute changes only local input; interruption neither toggles mute nor releases session/playback", async () => {
   const h = await ready(); h.emit(created(), buffer("started")); await h.controller.playAudio();
   h.controller.mute(); assert.ok(h.r.tracks.every(t => !t.enabled)); assert.equal(h.commands().length, 0);

@@ -92,6 +92,22 @@ for (const kind of ["PDF", "YOUTUBE"]) test(`08D ${kind} actual boundary → nat
   f.start(); await until(() => f.controller.snapshot.microphone === "available"); assert.equal(f.calls(), 2); await f.stopped();
 });
 
+test("08F speaker stream is first bound after its remote track exists", async () => {
+  const f = fixture(), originalAudio = f.deps.audio; let binds = 0;
+  f.deps.audio = () => {
+    const audio = originalAudio(); let current: MediaProvider | null = null;
+    Object.defineProperty(audio, "srcObject", { get: () => current, set: (value: MediaStream | null) => {
+      if (value) { assert.ok(value.getTracks().length > 0, "Binding an empty stream leaves native playback pending"); binds++; }
+      current = value;
+    } });
+    return audio;
+  };
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  assert.equal(binds, 1); assert.equal(f.native.counts.plays, 0);
+  await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "available");
+  await f.stopped(); assert.equal(f.native.counts.plays, 1);
+});
+
 for (const mime of ["application/sdp", "text/plain; charset=utf-8"]) test(`08E SDP201 ${mime} retains full ACK-before-media and Stop cleanup`, async () => {
   const f = fixture(), base = f.deps.fetch;
   f.deps.fetch = async (url, init) => {
