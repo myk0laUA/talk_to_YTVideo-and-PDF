@@ -1,5 +1,12 @@
 # Project state — Talk to a Document
 
+## PM08N expanded code inspection —21October2026Toronto
+
+User requested a code-grounded hypothesis/debugging brief before worker execution. Expanded existing WORKER_TASK_08N.md, no second task. Inspected adapter sender/remote stream separation, queued transport, response controller, lifecycle subscription/start, transcript attribution and UI actions. No obvious automatic Start/response.create or remote-to-sender path found. Priorities: unexpected input causing provider auto-generation; effective capture/routing; candidate delayed untargeted clear under backpressure; pending-interruption UI attribution; model stop/continue behavior; duplicate/replay lifecycle. A queued-clear race is only a hypothesis and may not explain spoken-only reports. Added specific reproductions, event/command correlation and falsification criteria, bounded diagnostics, no blind tuning, and WebRTC-specific server truncation guidance from official documentation.
+
+Read-only source review, no new executable tests or live/provider calls. One rg command included two nonexistent guessed files and exited2; inspection continued with discovered actual files voice-session.tsx/voice-lifecycle.ts. Worker must prove any bug and distinguish causal from independent findings. Host74ec316 remains enabled; physical acceptance open.
+
+
 ## PM08N assignment —21October2026Toronto
 
 Clarification: earlier stop/continue attempt used speaker, not headphones. New user test explicitly used headphones, generally worked but still produced an unexpected interruption/renewed response. Screenshots show summary, Stop/acknowledgement, distinct follow-up, interrupted response starting Based on, user transcript Based on, then another answer. This is not proof of loopback or actual user speech; screenshot ordering is not protocol timing. Headphone comparison does not establish a clean acoustic result.
