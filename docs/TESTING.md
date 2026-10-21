@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## PM08N iPhone screenshots — 21 October 2026 Toronto
+
+User reports interactions still feel laggy after08N deployment. Twelve screenshots show successful setup: preparation441ms, final-settings ACK3254ms, microphone attachment5095ms (cumulative since setup began, not separate stage durations). Transcript shows Stop acknowledgements, a distinct follow-up, several interrupted labels and later blank displayed user turns followed by additional assistant replies. This is partial physical evidence, not natural-interruption/latency acceptance. Current headset use, meaning/duration of lag, intentional speech behind blank turns, and quiet-interval outcome are not confirmed in this report.
+
+Only a fragment of the safe event JSON is visible: inbound input transcription completed for local item5 at35307ms, with zero queued/buffered values in that snapshot. This cannot establish whole-session command traffic, audio latency, routing, or cause of extra replies. Blank text is not proof of silence; interrupted labels alone are not proof of cancelled generation. Request complete existing safe JSON and clarification of whether lag means delayed answers, slow interruption, or choppy playback; avoid another paid retry until existing evidence is recovered. No provider calls, application changes, deployment or threshold tuning. Voice remains enabled on5d496b1; no active worker implementation task.
+
 ## PM08N deployed — 21 October 2026 Toronto
 
 User requested deployment preserving voice enabled. Pushed 5d496b1d178a8f1812c358d1ef727aa847f3b7f0 (git push origin main exit0). Render dep-dbchpmvf3r2c73bepha0 reports Deploy succeeded / Live; startup ngqs4 ready16:14:35, live16:14:44Toronto. Startup confirms owned voice/text/PDF enabled; YouTube/proofs disabled. No configuration, secret or database change.
