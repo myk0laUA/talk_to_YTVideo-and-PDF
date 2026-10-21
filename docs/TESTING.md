@@ -1,5 +1,11 @@
 # Testing and evidence — Talk to a Document
 
+## PM08O deployed — 21 October 2026 Toronto
+
+User explicitly chose deployment and own testing before controlled comparison. Pushed52ba0a013c5693127343915b05a685fc6adefc7a (exit0); Render dep-dbcidpd9fdbs73a1gt9g reports Deploy succeeded / Live, instance nlgfq ready16:57:21 and live16:57:26Toronto. Startup confirms voice/text/PDF enabled, YouTube/proofs disabled. No configuration/secrets/DB changes; hosting remains Free. v6 prompt candidate is deployed, not behaviorally accepted.
+
+Pinned Node HTTP readiness20:58:05.869Z passed exit0: root200, same-origin unauthenticated preparation401/no-store. Zero PM provider calls. Evidence artifacts/local/08o-hosted/readiness.json and deployed.png. Controlled v5/v6 comparison remains NOT_RUN by user sequencing. Next iPhone fresh-page/session test: summary, spoken Stop during answer, five seconds quiet, explicit Continue or distinct question; record restart and silence-triggered interruption separately, safe details at first failure. Voice stays enabled; physical acceptance remains open. No active worker task.
+
 ## PM08O offline acceptance — 21 October 2026 Toronto
 
 Accepted the v6 voice-only prompt as a controlled-comparison candidate, not a proven fix. Reviewed instruction replacement/ACK binding, unchanged text/acoustic policy, deterministic spoken-flow cases, authored input generation, and PM-only comparison driver. No new causal controller defect reproduced. Spoken Stop/restart and quiet-input interruption remain separate unresolved physical gates; prompt omission alone does not prove either cause.
