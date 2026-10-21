@@ -1,5 +1,11 @@
 # Project state — Talk to a Document
 
+## PM08J correction deployed —21October2026Toronto
+
+User requested deployment with voice enabled. Published c1eaa38ea52f35506dd19ad340d23a7e9d12a011 (push exit0). Render dep-dbc5duei0phs73af47t0 reports Deploy succeeded/Live; startup02:10:06Toronto visibly retains voice/text/PDF=true and YouTube/proofs=false. No configuration/secret changes. Fresh pinned Node HTTP readiness exit0: root200, unauthenticated voice preparation401/no-store. Evidence artifacts/local/08j-hosted/readiness.json and deployed.png. No paid/provider call by PM.
+
+Next human check: reload Chrome to match new versioned timing envelope, upload small PDF and Start once. Report expanded details on failure; on success allow microphone, ask one short question and Stop. Deployed fix is not yet verified on affected Chrome or physical audio. No active worker task; voice remains enabled.
+
 ## PM08J offline correction accepted —21October2026Toronto
 
 Accepted bounded clock-skew correction after code/evidence review. All11delivery hashes verified (manifest uses path; initial PM hash command incorrectly used file, corrected before acceptance). Fresh pinned Node24.22.0 `node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts tests/unit/owned-voice.test.ts tests/unit/voice-lifecycle.test.ts` PASS288/288 exit0, artifacts/local/08j/pm-focused.log. Reviewed versioned issuedAt contract, request-start monotonic deadlines, lifetime bounds, source clipping, downstream credential/SDP/media/playback checks and server reauthorization. No blocking scoped finding. Worker35native/526built and1546unit results remain offline evidence on T2F-_Ar9QGcez-Ya4FExN; no fresh paid call or redundant full build by PM.
