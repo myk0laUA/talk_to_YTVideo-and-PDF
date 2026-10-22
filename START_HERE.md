@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03F:** two-stage candidate reviewed:9hashes/103fresh tests pass. Live selection exceeded passage bounds; composition NOT_RUN. Sole [catalog correction](docs/WORKER_TASK_03F_CATALOG.md) builds valid blocks in code before model selection. New <=8generation calls/US$1.00estimated; previous ledger closed. No deployment/integration; voice enabled/YouTube disabled.
+
 **Current PM03F:** Responses candidate reviewed:8hashes/38fresh tests pass; summary semantics FAIL, factual follow-up/absent-fact PASS. Sole next task [complete passages before answer composition](docs/WORKER_TASK_03F_PASSAGES.md). Isolated two-stage correction; <=8generation calls/US$1.00estimated, earlier ledger closed. No integration/deployment; voice enabled/YouTube disabled.03F IN_PROGRESS.
 
 **Current PM03F:** user chose continued grounding work. Sole active task [Responses grounding candidate](docs/WORKER_TASK_03F_RESPONSES.md): implement isolated server-side candidate and four-case semantic evaluation before app integration. New <=US$0.50 estimated/four-call allocation; prior ledgers closed. Voice remains enabled, public YouTube disabled; no deployment.03F IN_PROGRESS.

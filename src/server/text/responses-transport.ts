@@ -1,9 +1,9 @@
 import "server-only";
-import { RESPONSES_POLICY, type CandidateRequest, type CandidateTransport, type CandidateTokenBound, type PreparedCandidate } from "./responses-candidate.ts";
+import { RESPONSES_POLICY, type CandidateRequest, type CandidateTransport, type CandidateTokenBound, type PreparedResponseStage } from "./responses-stage.ts";
 
 /** Fixed public endpoint, no redirects/retries, bounded body, no provider error bodies in exceptions. */
 export function createResponsesTransport(apiKey: string, fetcher: typeof fetch = fetch): {
-  generate: CandidateTransport; count: (prepared: PreparedCandidate, signal: AbortSignal) => Promise<CandidateTokenBound>;
+  generate: CandidateTransport; count: (prepared: PreparedResponseStage, signal: AbortSignal) => Promise<CandidateTokenBound>;
 } {
   if (!/^sk-[A-Za-z0-9_-]{10,500}$/u.test(apiKey)) throw new Error("candidate_key_unavailable");
   const post = async (path: "" | "/input_tokens", body: unknown, signal: AbortSignal): Promise<unknown> => {

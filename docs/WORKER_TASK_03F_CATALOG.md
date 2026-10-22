@@ -1,0 +1,29 @@
+# Task03F — bounded passage catalog correction
+
+Use prompts/WORKER_PROMPT.md and required handoffs. Sole active task; parent Steps03/07/10. Starting evidence: two-stage implementation reviewed,9hashes/103fresh tests pass. First live selection requested46/26caption ranges; code correctly rejected before composition. This is a selection-contract failure, not evidence that composition failed. No integration/deployment; voice enabled/public YouTube disabled.
+
+## Scope and implementation
+
+Replace model-authored range endpoints with selection from a deterministic, source-bound catalog built BEFORE inference. Keep the existing two-stage candidate, pinned model, composition semantics, source validation, no retries, storefalse, exact token counting, cancellation/deadlines/reservation and isolated route-free status. No prompt-only retry, increased evidence budget, new model, ownership integration, DB, acquisition or voice/PDF changes.
+
+Partition the original ordered captions into nonoverlapping consecutive blocks of at most12captions and120seconds (time envelope includes durations). Greedily append until the next caption would exceed either bound, then start another block. Preserve every caption exactly once, including empty text, Unicode, IDs and precise locators. Do not decode/translate/normalize source text. If a single caption cannot fit, reject explicitly; never clip it. This is a mechanical partition, not a claim that each block is a complete sentence. Adjacent blocks can be selected together for complete support. No source-specific boundaries or IDs.
+
+Assign stable opaque source/content-bound block IDs in code. Stage1 sees the ENTIRE catalog including all caption content, order and locators; no duplicate fullText or competing ordinal caption identities. Strict selection schema uses an enum of actual catalog IDs and maxItems8. Server validates IDs, bounds and source binding too. Duplicate IDs may be treated as set membership with stable first occurrence (document and test); they must not create duplicated excerpts or consume another generation. Availability rules remain selected/nonempty versus unavailable-or-insufficient/empty. At most8blocks means <=96captions, so individual and aggregate range limits cannot be violated by choosing valid IDs. Bound catalog/request/schema size and fail before calls if unsupported; no truncation. Keep the original range resolver only if needed for retained baseline tests, not as a fallback for new output.
+
+Pass only selected canonical blocks to Stage2, explicitly not the full source. Permit a statement to cite multiple selected blocks when a sentence/antecedent spans boundaries. Existing max3references per atomic statement remains. The model must omit unsupported detail or admit insufficient evidence rather than reconstructing missing context from memory/history. Canonical excerpts and time/constituent links are code-owned; membership remains separate from semantic support. No post-generation window expansion, regrouping or ID repair.
+
+## Offline checks
+
+Test lossless catalog reconstruction against all428saved original captions/acquisition XML and authored sparse-ID/Unicode/empty/long-duration/nonmonotonic-time fixtures. Every selectable entry individually valid; any8distinct entries respect96aggregate. Verify enum matches catalog, source changes invalidate IDs, unknown IDs reject, deterministic duplicates, bounds/error/abort prevent subsequent generation, and Stage2 contains exactly selected evidence. Retain original frozen artifacts and old request-parity tests. Captured failed ranges are a regression motivation, not something to pad/repair into passing evidence. No claim of semantic success from synthetic tests.
+
+Pinned Node24.22.0/npm11.19.1: focused candidate/passage/catalog tests, affected context/evidence tests, lint/typecheck/unit/build in isolated fake configuration. Record exact commands/exits/task build ID, unchanged voice/PDF manifests and runtime entry points. Relevant OpenAI Docs guidance for strict schema/token counting only; no UI work.
+
+## One frozen evaluation
+
+Same four questions/order/history and unchanged source language sq/hash from scripts/lib/responses-evaluation.ts. Freeze catalog algorithm/bounds/prompts/schemas/code/questions/scoring before paid work. Same source acquisition evidence; no fresh import. Preserve full source in selection; clearly disclose limited Stage2 evidence. No baseline rerun or question changes.
+
+NEW allowance <=8generation calls, <=US$1.00estimated total, no retries or additional judge calls; previous ledger closed with1generation. Reserve both stages per case ($0.230 with existing verified input/output caps/prices); separate counting HTTP calls disclosed. Verify official rates before calls. No substitutions if access/pricing/bounds fail. Keep all failures and NOT_RUN cases; no post-live executable edits or reruns.
+
+Score every material assertion against all ORIGINAL captions in its actually cited selected blocks, including antecedents and compound clauses. Both summaries must retain central message, speaker attribution, <100words and full support; factual case20minutes/20people must include355and expose1040.594s constituent locator; DOI must remain unavailable without invention. Passage-start link is not the precise fact time. Report selected sizes/relevance and all stage latency/usage. Selection success alone is not grounding success; no relaxation of these criteria.
+
+Return docs/YOUTUBE_CATALOG_03F.md, PROJECT_STATE/TESTING, hashes, exact commands/build, frozen catalog/schema identities, raw stage outputs, per-claim review, ledger/cleanup. Evidence ignored under artifacts/local/03f-catalog/. Estimated60–90minutes; stop after one evaluation. No public integration, deployment or physical-phone claims. READY_FOR_REVIEW;03F remains IN_PROGRESS until actual integrated acceptance.
