@@ -68,12 +68,11 @@ function Harness() {
       start(); exchange(); output("delta", "Scoped display fixture", 0, false);
       const value = store.current.snapshot;
       setSnapshot({ ...value, turns: value.turns.map(t => t.role !== "assistant" ? t : { ...t, parts: t.parts.map(p => ({ ...p,
-        text: "An attributed claim.", evidence: [
-          { text: "An attributed claim.", state: "matched", references: [{ segmentId: "segment-355", excerpt: 'Exact source excerpt 😀\n<script>inert</script>', startSeconds: 1040.594, url: "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s" }] },
-          { text: "Words arriving before evidence.", state: "pending", references: [] },
-          { text: "Words retained on Stop.", state: "incomplete", references: [] },
-          { text: "Words with unmatched evidence.", state: "unconfirmed", references: [] },
-          { text: "", state: "format_error", references: [] },
+        text: 'An attributed claim. [segment-355]\nWords retained despite failed annotations. <script>inert</script> https://evil.invalid', evidence: [
+          { start: 21, end: 34, state: "source_matched", references: [{ segmentId: "segment-355", excerpt: 'Exact source excerpt 😀\n<script>inert</script>', startSeconds: 1040.594, url: "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s" }] },
+          { start: 0, end: 0, state: "pending", references: [] },
+          { start: 0, end: 0, state: "incomplete", references: [] },
+          { start: 0, end: 0, state: "unconfirmed", reason: "bounds", references: [] },
         ],
       })) }) });
     } else setSnapshot(store.current.snapshot);

@@ -50,7 +50,7 @@ test("03F local Stop or connection loss retains natural claim and marks pending 
       controller.start(randomUUID()); await setImmediate();
       const transcript = { ...new TranscriptStore().snapshot, phase: "active", turns: [{ itemId: "a", role: "assistant", ordering: "established",
         generation: "generating", interrupted: false, playback: "not_applicable", parts: [{ index: 0, kind: "output_text", state: "draft",
-          text: "The speaker says this.", evidence: [{ text: "The speaker says this.", state: "pending", references: [] }] }] }] };
+          text: "The speaker says this.", evidence: [{ start: 0, end: 0, state: "pending", references: [] }] }] }] };
       output.enqueue(new TextEncoder().encode(JSON.stringify({ status: { phase: "responding", protocolReady: false, productionReady: false, revision: 0 }, transcript }) + "\n"));
       await setImmediate();
       if (failed) output.error(new Error("Synthetic connection loss")); else controller.stop();

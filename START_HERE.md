@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current03F source-selection review:** route A readability/stored-reference implementation accepted partially (13hashes/fresh62checks); semantic support still FAIL. Sole [source-selection review](docs/WORKER_TASK_03F_SOURCE_SELECTION.md) is offline targeted audit of competing IDs/ordinals and caption granularity, zero model calls.03F incomplete; no deployment, voice enabled/YouTube disabled.
+
 **Current03F route A selected:** decision accepted (3doc hashes/407protected files unchanged). Sole [route A implementation](docs/WORKER_TASK_03F_ROUTE_A.md): keep natural answers visible independently, resolve optional references from owned source. One bounded live pair only after offline checks. Semantic accuracy still required;03F IN_PROGRESS. No deployment; voice enabled/YouTube disabled.
 
 **Current03F design checkpoint:** correction reviewed (11hashes/fresh62tests); live grounded references still FAIL, partial summary loss persists. Sole [03F decision task](docs/WORKER_TASK_03F_DECISION.md) is OFFLINE API-capability/design/replay, zero model calls. No more parser/prompt retries until PM selects design.03F IN_PROGRESS, no deployment; public voice enabled/YouTube disabled.

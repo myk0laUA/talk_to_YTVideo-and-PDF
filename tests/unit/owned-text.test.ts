@@ -53,9 +53,7 @@ function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = 
     read: (next: typeof read) => { read = next; }, acquire: (next: typeof acquire) => { acquire = next; } };
 }
 test("03F registry projects only current owned source evidence across summary/follow-up/Stop", async () => {
-  const quote = captionFixture.segments[0].text.slice(0, 40);
-  const answers = [JSON.stringify({ claim: "Authored attributed summary.", refs: [["segment-1", quote]] }) + "\n",
-    JSON.stringify({ claim: "Authored follow-up.", refs: [["segment-unknown", quote]] }) + "\n"];
+  const answers = ["  Authored attributed summary. [segment-1]\n", "Authored follow-up. [segment-unknown]\n"];
   const f = make({}, "YOUTUBE", "success", answers), s = await f.begin();
   await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
   for (let n = 0; n < 2; n++) {
@@ -63,11 +61,11 @@ test("03F registry projects only current owned source evidence across summary/fo
     await wait(() => s.snapshots.at(-1)?.status.phase === "ready" && s.snapshots.at(-1)?.transcript.turns.length === (n + 1) * 2);
   }
   const parts = s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]);
-  assert.equal(parts[0].text, "Authored attributed summary."); assert.equal(parts[0].evidence?.[0].state, "matched");
+  assert.equal(parts[0].text, answers[0]); assert.equal(parts[0].evidence?.[0].state, "source_matched");
   assert.equal(parts[0].evidence?.[0].references[0].startSeconds, captionFixture.segments[0].startSeconds);
-  assert.equal(parts[0].evidence?.[0].references[0].excerpt, quote);
+  assert.equal(parts[0].evidence?.[0].references[0].excerpt, captionFixture.segments[0].text);
   assert.equal(parts[1].evidence?.[0].state, "unconfirmed");
-  assert.ok(!parts.some(p => p.text.includes('"refs"')));
+  assert.equal(parts[1].text, answers[1]);
   f.registry.stop(f.visitor, f.startId); await s.consume;
   assert.deepEqual(s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]), parts);
   assert.equal(f.registry.size, 0); assert.equal(f.counts.closes, 1);
