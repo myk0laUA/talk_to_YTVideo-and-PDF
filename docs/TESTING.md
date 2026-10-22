@@ -1,5 +1,7 @@
 # Testing and evidence — Talk to a Document
 
+**Current03F candidate gate:** [Responses task](WORKER_TASK_03F_RESPONSES.md) requires isolated implementation tests and four frozen live cases: summary, factual follow-up, repeat summary, absent fact. All NOT_RUN at assignment. Full source/statement support and canonical reference accuracy scored separately from schema compliance. <=US$0.50 estimated/four calls; no retries. No public UI/phone/deployment proof implied.
+
 **PM03F single-ID review:**10delivery hashes matched; fresh171focused tests pass exit0. Scoped identity/preservation cleanup accepted. Both real conditions cite raw355correctly, so no demonstrated identity improvement; both summary semantic gates FAIL and some reference formats remain unconfirmed. Experiment closed, no new allowance or deployment acceptance. Full03F remains incomplete.
 
 ## 03F single-ID verification — 21 October 2026 Toronto — implementation READY_FOR_REVIEW; semantic FAIL

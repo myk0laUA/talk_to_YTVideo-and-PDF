@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03F:** user chose continued grounding work. Sole active task [Responses grounding candidate](docs/WORKER_TASK_03F_RESPONSES.md): implement isolated server-side candidate and four-case semantic evaluation before app integration. New <=US$0.50 estimated/four-call allocation; prior ledgers closed. Voice remains enabled, public YouTube disabled; no deployment.03F IN_PROGRESS.
+
 **Current PM03F review:** single-ID cleanup accepted (10hashes/fresh171checks), but v4/v5 comparison shows no identity improvement and semantic grounding FAIL in both. Stop speculative index/prompt retries. No new worker task or spend allocation; next is product-direction decision.03F incomplete; no deployment, public voice enabled/YouTube disabled.
 
 **Current03F single-ID correction:** diagnosis accepted; competing zero-based index and stored ID confirmed, causation unproven. Sole [single-ID task](docs/WORKER_TASK_03F_SINGLE_ID.md) implements scoped text representation cleanup and bounded old/new comparison. Semantic support remains required; no deployment, voice enabled/YouTube disabled.
