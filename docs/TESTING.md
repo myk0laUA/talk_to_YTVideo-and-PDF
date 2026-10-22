@@ -1,5 +1,30 @@
 # Testing and evidence — Talk to a Document
 
+**PM03F composition review:**4hashes/140fresh focused tests PASS. Both controls FAIL citation support/coverage even with sufficient supplied evidence. No selector-only conclusion. Next reference-contract correction tests short enum handles, source/request-bound mapping and repeats exact control twice<=US$0.25estimated; new checks NOT_RUN. No product/deployment acceptance.
+
+## 03F controlled composition — 21 October2026 Toronto — READY_FOR_REVIEW; semantic FAIL twice
+
+[Complete report, both verbatim answers, per-claim judgments and acceptance mapping](YOUTUBE_COMPOSITION_CONTROL_03F.md). Diagnostic implemented;03F remains IN_PROGRESS. Clean arrival mainHEAD `334e7e2ffd06f90771132685ba4dfd31d03e409e`,dirty four-file delivery,no commit/deployment. Existing root build `R_ixIZMDu1UXwpkBpA8ws` unchanged; no new app build. One isolated candidate-only pure preparation/parser export refactor enables actual reuse; no route/selector/prompt/schema/model/cap/transport/flags change. Evidence ignored under artifacts/local/03f-composition-control/;commands.jsonl records actual absolute pinned executable/argv/cwd/UTC/exits/logs.
+
+|Exact command with pinned Node24.22.0/npm11.19.1|Context / observed|Status / exit|
+|---|---|---|
+|`node --conditions=react-server --test tests/unit/responses-catalog.test.ts tests/unit/responses-passages.test.ts tests/unit/responses-candidate.test.ts`|Task-owned `.env`-free offline checkout,blank keys,unusableDB,network denial;140/140.|PASS /0|
+|`npm run lint`;`npm run typecheck`|Same isolated environment;0warnings/TypeScript errors;Prisma/Next type generation does not connect DB.|PASS /0 each|
+|`node --conditions=react-server artifacts/local/03f-composition-control/baseline.mjs`;then`parity.mjs`|Five pre/post request/parser replays;four byte-identical to existing captured live requests/history/unavailable behavior,fifth additional manual-selection/DOI variation. No calls.|PASS /final0,0|
+|`node --conditions=react-server artifacts/local/03f-composition-control/evidence-map.mjs`|Fresh independent Python XML parse/all428exact/fullText hash;prereviewed7blocks/80captions,required ideas≤3references.|PASS /final0|
+|`node --conditions=react-server artifacts/local/03f-composition-control/official.mjs`|Fresh official snapshot/input/cached/output rates and$0.115reservation bounds.|PASS /0|
+|`node --conditions=react-server artifacts/local/03f-composition-control/control.mjs --prepare`|Frozen reviewed support/source/question/scoring/request/code;28inputs,zero calls.|PASS /0|
+|Same harness with`--live`|One execution,identical original summary question twice/fresh empty history/same evidence;2generations/2counters/0selection/0retries/judges;both complete.|Execution0;semanticFAIL/FAIL|
+|`node --conditions=react-server artifacts/local/03f-composition-control/evaluate.mjs`|Raw/value equality,exact counter/usage,policy/context,frozen inputs,all clauses/output hashes/cleanup.|AuditPASS /0;semanticFAIL|
+|`node --conditions=react-server artifacts/local/03f-composition-control/audit.mjs`;`git diff --check`|574protected tracked files/106prior JSON/private/build/frozen integrity;delivery hashes/whitespace.|PASS /0|
+|Build/full suite/DB/source acquisition/browser/hosted/device/audio|Outside bounded diagnostic;not acceptance evidence.|NOT_RUN|
+
+Freeze03:10:19.511UTC22October(21OctoberToronto),SHA256 `327eab63ca6f6d688311cde3260cb6806a081a53b77f3cbc90b5606cfc6de624`;requestSHA256 `2e922e5fae829dd7ba3361255907a5258d2c4125e061a02717aea2c2f6607197`. Same snapshotgpt-5.4-mini-2026-03-17/medium/4096/strict schema/storefalse/no tools/truncationdisabled. No frozen-code/prompt/schema/scoring/selection edits after live. Required central-summary support was sufficient before calls;this is a human-chosen test selection,not a generalizable selector or app success.
+
+Answers53/36words,attribution/length/schemaPASS. Control1membershipPASS,but role antecedentmissing and before-stress408supplied yetuncited. Control2membershipFAIL,third reference one128-character combined/truncated string remainsunconfirmed;several claims lack valid cited support. Both omit complete behavior→outcomes/conclusion coverage. Composer failure is evidenced despite sufficient supplied support;selection is not established as sole limiting stage. Exact originals/both complete outputs/per-clause cited-vs-missing assessments retained;no repairs or after-the-fact evidence additions.
+
+NEW allowanceCLOSED:2/2generation calls,2separate non-generation counters,0selection/retry/judge/acquisition;$0.115each/$0.230reserved≤$0.25. Input7461each(countincludes schema)matches usage;14922input/1242output(includes648reasoning)/7296cached;usage estimate$0.0167805undiscounted/$0.0118557reported cache,actual billingUNKNOWN. Buffered readable5451.76/4764.12ms,not app streaming/phone/audio evidence. Do not rerun closed allowance. Two pre-freeze setup failures(import path,Python pipe encoding)and successful corrections retained;no paid retry. No server/browser/DB/source/background resource created;child processes exited/private files preserved/evidence retained. Voice enabled/public YouTube disabled unchanged. Stop and return to PM;no integration/deployment/further fix authorized by this result.
+
 **PM03F catalog review:**7hashes and fresh140focused tests PASS. Live protocol/bounds PASS all4cases; summary semantics FAIL twice, factual/absent DOI PASS. No deployment acceptance. Sole next composition-control task uses reviewed complete evidence and unchanged composer,2frozen calls<=US$0.25estimated; new checks NOT_RUN, prior allowance closed. Record latency separately from correctness.
 
 ## 03F catalog correction — 21 October2026 Toronto

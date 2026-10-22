@@ -89,7 +89,7 @@ export function resolvePassageSelection(input: CandidateSource, value: unknown):
   return freeze({ availability: value.availability as PassageSelection["availability"], passages });
 }
 
-function compositionStatements(value: unknown, selection: PassageSelection): PassageStatement[] {
+export function compositionStatements(value: unknown, selection: PassageSelection): PassageStatement[] {
   if (!record(value) || !keys(value, ["statements"]) || !Array.isArray(value.statements) || !value.statements.length
     || value.statements.length > PASSAGE_BOUNDS.statements) throw new Error("malformed");
   const known = new Map(selection.passages.map(p => [p.id, p]));
@@ -109,6 +109,15 @@ function compositionStatements(value: unknown, selection: PassageSelection): Pas
     return { ...statement, semanticSupport: "not_evaluated", evidenceState: statement.classification === "unavailable" && !references.length ? "unavailable"
       : references.length && references.every(r => r.state === "source_matched") ? "source_matched" : "unconfirmed", references };
   });
+}
+
+/** Pure preparation shared by the candidate lifecycle and isolated composition diagnostics. */
+export function preparePassageComposition(input: { source: CandidateSource; question: string; history?: CandidateHistory }, selection: PassageSelection): PreparedResponseStage {
+  const base = prepareCandidate(input), source = base.source;
+  return prepare({ ...base.request, instructions: COMPOSITION_PROMPT,
+    input: [{ role: "user", content: JSON.stringify({ selected_evidence: { sourceId: source.id, videoId: source.videoId,
+      language: source.language, availability: selection.availability, passages: selection.passages } }) }, ...base.request.input.slice(1)],
+    text: { format: { type: "json_schema", name: "atomic_passage_statements_v1", strict: true, schema: COMPOSITION_SCHEMA } } });
 }
 
 /** Both stages reserved up front. One overall deadline covers reservation, both counters, generation and observers. */
@@ -164,11 +173,7 @@ export async function runEvidenceCandidate(input: { source: CandidateSource; que
       live(); stage = "select"; const selected = await execute(first); live();
       selection = contract.resolveSelection(source, selected); await observe("selected", selection); live();
       stage = "compose";
-      const base = prepareCandidate({ ...input, source });
-      const second = prepare({ ...base.request, instructions: COMPOSITION_PROMPT,
-        input: [{ role: "user", content: JSON.stringify({ selected_evidence: { sourceId: source.id, videoId: source.videoId,
-          language: source.language, availability: selection.availability, passages: selection.passages } }) }, ...base.request.input.slice(1)],
-        text: { format: { type: "json_schema", name: "atomic_passage_statements_v1", strict: true, schema: COMPOSITION_SCHEMA } } });
+      const second = preparePassageComposition({ ...input, source }, selection);
       live(); const statements = compositionStatements(await execute(second), selection); live();
       return { ok: true, sourceId: source.id, selection, statements, diagnostics: structuredClone(diagnostics),
         answer: statements.map(s => (s.classification === "inference" ? "Inference: " : "") + s.text).join("\n\n"), elapsedMs: performance.now() - start };
