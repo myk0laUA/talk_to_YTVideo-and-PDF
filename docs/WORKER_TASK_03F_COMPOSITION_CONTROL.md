@@ -1,0 +1,21 @@
+# Task03F — controlled composition diagnosis
+
+Use prompts/WORKER_PROMPT.md and required handoffs. Sole active task. Catalog implementation passes bounds/protocol, but both frozen summaries fail complete support/central-message criteria. Princeton/absent DOI pass. PM verified7hashes and140focused tests. No production acceptance. Stop speculative prompt/partition/model changes.
+
+## One question to resolve
+
+Can the EXISTING unchanged composer produce a fully supported central summary when supplied with independently reviewed, complete evidence within existing catalog limits? This controlled diagnostic isolates selection quality from composition. It is not a generalizable selector, fix, or app acceptance test.
+
+Use the same saved428caption sq source and independent XML/fullText hash. Read the full source, original four-case scoring and both catalog summary failures. Prepare one test-only selection of actual current catalog block IDs covering central thesis, body/mind/behavior claim, practical before-stress advice and conclusion, including necessary antecedents. Keep <=8blocks/96captions and existing per-statement <=3references. Document each required idea and exact original supporting passages BEFORE calls. Do not write an expected answer into prompts or alter source. Avoid unnecessary scientific details. If complete support cannot fit, report that precise representation/budget limitation OFFLINE and make no paid call. Do not enlarge bounds.
+
+Build a task-local composition-only harness under ignored artifacts/local/03f-composition-control/. Reuse actual catalog resolver and production-candidate composition request/parser; do not duplicate a different composer. A narrow pure preparation export/refactor is allowed only if required for actual reuse and must prove byte-identical existing composition requests and unchanged behavior. No public route, selector, schema, prompt, model, cap or transport changes. Human-chosen IDs stay exclusively in test evidence, never application code. No source-specific production behavior.
+
+Freeze reviewed evidence, request, source, code and scoring. Run the identical original summary question twice in fresh context with the same independently reviewed passages, unchanged composition instructions/schema/model/medium reasoning, no history, no retries or model judge. The control omits selection calls explicitly, not by disguising fixture selection as model success. Existing captured catalog outputs are the baseline; do not regenerate them.
+
+NEW allowance <=2generation calls/US$0.25estimated, each reserved$0.115 with existing128000input/4096output bound and verified official rates. Previous8call ledger closed. Count exact request tokens including schema, disclose non-generation counter requests separately. No automatic repair, resampling, new prompt, or higher model if a case fails. Cancellation/timeout/errors halt and remain recorded. Actual billing stays unknown absent invoice evidence.
+
+Score all material claims against their cited original blocks; same central-message/attribution/<100word/antecedent criteria. Independently record: (1) required support actually present in supplied selection, (2) correct evidence cited by each composed statement, (3) central-message coverage. A good answer with bad references still fails. Record complete output/latency/usage, no after-the-fact additions. If both pass, report evidence that selection is the current limiting stage, not proof of universal composer correctness. If either fails despite sufficient input evidence, identify the exact composition failure. Do not assign or implement another fix in this task.
+
+Pinned Node24.22.0/npm11.19.1; run relevant candidate tests and request-parity checks if exporting preparation; lint/typecheck for tracked TypeScript edits. Do not rebuild unchanged app solely for ignored diagnostics. Record exact commands/exits, changed hashes and whether any app inputs changed. Keep voice/PDF/public flags untouched, no deployment/DB/acquisition/phone checks.
+
+Return docs/YOUTUBE_COMPOSITION_CONTROL_03F.md, PROJECT_STATE/TESTING, reviewed evidence map, frozen identities, both outputs/per-claim judgments, ledger/cleanup and narrowly supported conclusion. Preserve prior evidence. Estimated30–45minutes. READY_FOR_REVIEW then stop; full03F remains IN_PROGRESS, no integration authorization.

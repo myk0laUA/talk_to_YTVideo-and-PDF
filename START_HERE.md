@@ -1,5 +1,7 @@
 # Talk to a Document — repository handoff
 
+**Current PM03F:** catalog bounds/protocol accepted in isolation (7hashes/140fresh tests), summaries still FAIL; factual/absent DOI PASS. Sole next [composition control](docs/WORKER_TASK_03F_COMPOSITION_CONTROL.md) supplies independently reviewed complete evidence to unchanged composer; <=2generation calls/US$0.25estimated. No deployment/integration, voice enabled/YouTube disabled.
+
 **Current PM03F:** two-stage candidate reviewed:9hashes/103fresh tests pass. Live selection exceeded passage bounds; composition NOT_RUN. Sole [catalog correction](docs/WORKER_TASK_03F_CATALOG.md) builds valid blocks in code before model selection. New <=8generation calls/US$1.00estimated; previous ledger closed. No deployment/integration; voice enabled/YouTube disabled.
 
 **Current PM03F:** Responses candidate reviewed:8hashes/38fresh tests pass; summary semantics FAIL, factual follow-up/absent-fact PASS. Sole next task [complete passages before answer composition](docs/WORKER_TASK_03F_PASSAGES.md). Isolated two-stage correction; <=8generation calls/US$1.00estimated, earlier ledger closed. No integration/deployment; voice enabled/YouTube disabled.03F IN_PROGRESS.

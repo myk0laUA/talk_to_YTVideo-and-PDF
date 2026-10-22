@@ -1,5 +1,23 @@
 # Testing and evidence — Talk to a Document
 
+**PM03F catalog review:**7hashes and fresh140focused tests PASS. Live protocol/bounds PASS all4cases; summary semantics FAIL twice, factual/absent DOI PASS. No deployment acceptance. Sole next composition-control task uses reviewed complete evidence and unchanged composer,2frozen calls<=US$0.25estimated; new checks NOT_RUN, prior allowance closed. Record latency separately from correctness.
+
+## 03F catalog correction — 21 October2026 Toronto
+
+[Full handoff/acceptance mapping and exact UTC command ledger](YOUTUBE_CATALOG_03F.md). READY_FOR_REVIEW;03F IN_PROGRESS. Isolated catalog only, no routes/ownership/voice/PDF/deployment changes. Clean mainHEAD `e16cb1dbaf31a423df7ea89ae06e788205d81883`,dirty7file delivery,no commit;task-owned `.env`-free fake-config build `vECr7SiGiv6uubZfzUXjB`. Pinned Node24.22.0/npm11.19.1 throughout actual verification. Evidence ignored under artifacts/local/03f-catalog/; commands.jsonl records executable/argv/cwd/UTC/exits. Root system runtime discovery26.5.0/12.0.1was not used for checks.
+
+|Exact check using pinned node/npm|Context/expected/observed|Status/exit|
+|---|---|---|
+|`node --conditions=react-server --test tests/unit/responses-catalog.test.ts tests/unit/responses-passages.test.ts tests/unit/responses-candidate.test.ts`|Isolated network-denied checkout/fake transports,37new+65retained+38retained=140/140|PASS/0|
+|`node --conditions=react-server --test tests/unit/responses-candidate.test.ts tests/unit/context.test.ts tests/unit/youtube-evidence.test.ts tests/unit/youtube-evidence-format.test.ts tests/unit/youtube-text-citations.test.ts tests/unit/text-caption-packing.test.ts tests/unit/provider-admission.test.ts tests/unit/priming.test.ts`|Affected source/context/evidence/lifecycle-admission regressions321/321|PASS/0|
+|`npm run lint`;`npm run typecheck`;`npm test`;`npm run build`|Blank real credentials/unusableDB/false flags/network denial;1846/1846units and task build above|PASS/all0|
+|`python artifacts/local/03f-catalog/parse_captions.py`;`node --conditions=react-server artifacts/local/03f-catalog/catalog-check.mjs`|Saved acquisition XML/original428exact;36greedy valid blocks/any8≤96;no source normalization;enum exact;captured failed ranges reject;old request parity|PASS/both0|
+|`node --conditions=react-server artifacts/local/03f-catalog/preserve.mjs`;`node --conditions=react-server artifacts/local/03f-catalog/audit.mjs`|24voice/PDF byte comparisons;569protected/35prior frozen files unchanged,13client/20runtime traces exclude isolated modules,private integrity/build/freeze parity|PASS/both0|
+|`node --conditions=react-server scripts/catalog-eval.ts --prepare artifacts/local/03f-single-id/candidate/source.json artifacts/local/03f-catalog/independent-xml.json artifacts/local/03f-catalog/`|Frozen once before live;catalog/schema/prompts/source/questions/scoring/11inputs retained|PASS/0|
+|Same command with `--live`|One authorized saved-source evaluation;8generations+8countingHTTP,0retry/judge/new acquisition; all4complete with protocol/schema/membershipPASS; summariesFAIL,factual/absentPASS|Execution0;semanticFAIL|
+
+Live is explicit opt-in, never ordinary tests/imports. Do not rerun this closed allowance. Both-stage reservation$0.230/case,total$0.92/$1ceiling;usage estimate$0.06452985with reported cache/$0.12596025without,actual billingUNKNOWN. Input counting exact for all8stages; latency27963/6152/11667/5255ms is buffered local provider result, not UI/physical/audio proof. Both summaries52/57words attributed but incomplete/missing cited antecedents; Princeton355at1040.594s20minutes/20peoplePASS; DOIunavailablePASS after full original source read. Per-assertion details/raw stages retained, no post-live frozen-code changes. No integration/hosted/device checks; original full acceptance gates remain open. Initial setup-buffer/documentation-format helper failures are retained separately; no application-check failure or provider retry. No server/browser/DB resources created; processes exited, evidence retained. Voice enabled/YouTube disabled unchanged.
+
 **PM03F passage review:**9hashes match; fresh103focused tests PASS exit0. Live failed at selection bounds before composition; no new answer/semantic PASS. Next [catalog correction](WORKER_TASK_03F_CATALOG.md) precomputes bounded source blocks, tests lossless partition/enum/source isolation and repeats frozen four-case evaluation within a new8call/US$1.00estimated ceiling. New checks NOT_RUN. No integration/deployment acceptance.
 
 ## 03F complete passages — 21 October2026 Toronto — READY_FOR_REVIEW; selection FAIL

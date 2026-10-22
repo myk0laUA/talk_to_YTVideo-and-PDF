@@ -113,6 +113,12 @@ function compositionStatements(value: unknown, selection: PassageSelection): Pas
 
 /** Both stages reserved up front. One overall deadline covers reservation, both counters, generation and observers. */
 export async function runPassageCandidate(input: { source: CandidateSource; question: string; history?: CandidateHistory }, deps: PassageDependencies): Promise<PassageResult> {
+  return runEvidenceCandidate(input, deps, { prepareSelection: preparePassageSelection, resolveSelection: resolvePassageSelection });
+}
+
+/** Shared lifecycle; catalog callers supply an explicit selection contract, with no range fallback. */
+export async function runEvidenceCandidate(input: { source: CandidateSource; question: string; history?: CandidateHistory }, deps: PassageDependencies,
+  contract: { prepareSelection: typeof preparePassageSelection; resolveSelection: typeof resolvePassageSelection }): Promise<PassageResult> {
   const start = performance.now(), diagnostics: StageDiagnostic[] = []; let stageBegan = start;
   let stage: PassageStage = "reserve", selection: PassageSelection | undefined;
   const failure = (code: Failure): PassageResult => ({ ok: false, stage, code, diagnostics: structuredClone(diagnostics), ...(selection ? { selection } : {}), elapsedMs: performance.now() - start });
@@ -153,10 +159,10 @@ export async function runPassageCandidate(input: { source: CandidateSource; ques
   };
   const operation = (async (): Promise<PassageResult> => {
     try {
-      const source = validateCandidateSource(input.source), first = preparePassageSelection({ ...input, source }); live();
+      const source = validateCandidateSource(input.source), first = contract.prepareSelection({ ...input, source }); live();
       if (!await deps.reserve({ stages: 2, inputCap: 128000, outputCap: 4096, stageUsd: 0.115, totalUsd: 0.23 })) throw new Error("budget");
       live(); stage = "select"; const selected = await execute(first); live();
-      selection = resolvePassageSelection(source, selected); await observe("selected", selection); live();
+      selection = contract.resolveSelection(source, selected); await observe("selected", selection); live();
       stage = "compose";
       const base = prepareCandidate({ ...input, source });
       const second = prepare({ ...base.request, instructions: COMPOSITION_PROMPT,
