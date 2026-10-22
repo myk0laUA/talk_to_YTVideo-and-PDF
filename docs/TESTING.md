@@ -1,5 +1,21 @@
 # Testing and evidence — Talk to a Document
 
+**PM03F diagnosis acceptance:**3delivery/552protected hashes match; whitespace passes. No runtime tests required or claimed for diagnosis-only review. Next single-ID task must preserve all source/voice/PDF invariants and separately score identity versus semantic support in a preregistered2session/4response comparison, <=$0.32estimated, no retries.03F remains incomplete.
+
+## 03F source-selection review — 21 October 2026 Toronto — diagnosis READY_FOR_REVIEW only
+
+[Representation audit, full observed-ID inventory and one proposed correction](YOUTUBE_SOURCE_SELECTION_03F.md). Clean main HEAD `30b7edbeeec16c99b456451cb396c6166db903e6`, documentation-only dirty delivery; no new build/runtime patch. Historical Route-A build `nM0j1bWNJgirIaU5aRck2`; eight inspected encoding/context/lifecycle/admission/socket files match its saved build inputs. Local offline Node24.22.0/npm11.19.1 and Python3.12.6; no keys/private-env reads, network/provider/DB/browser/admin/device operations. Semantic selection is NOT_TESTED afresh; prior live FAIL remains FAIL. No new spend allowance or deployment acceptance.
+
+| Exact offline command from repo root | Observed / exit | Evidence under ignored artifacts/local/03f-source-selection/ |
+|---|---|---|
+| `.tools/node-v24.22.0-win-x64/node.exe artifacts/local/03f-source-selection/init.mjs` |552tracked protected hashes, initial clean identity /0|`protected-files.json`, `identity.json` |
+| `python artifacts/local/03f-source-selection/xml.py` then renamed `python artifacts/local/03f-source-selection/parse_captions.py` |Initial stdlib import shadowing /1; renamed helper independently verifies all428XML/stored IDs/text/times/durations/order and fullText /0|`xml.log`, `xml-retry.log`, `independent-xml.json` |
+| `.tools/node-v24.22.0-win-x64/node.exe --conditions=react-server artifacts/local/03f-source-selection/inspect.mjs` |Three exit0runs as evidence inventory/trace expanded: matching build inputs; actual first-run reconstruction passes current admission7items/431fragments/107311bytes;428independent ID-keyed round trips and historical-source comparisons;19actual ID occurrences|`manifest.ndjson`, `model-content.json`, `reconstruction.json`, all428entries in `passage-trace.json`, `capture-inventory.json`, `identity-comparison.json` |
+| `.tools/node-v24.22.0-win-x64/node.exe artifacts/local/03f-source-selection/fixture.mjs` |Six authored captions/seven fragments: nonconsecutive IDs/order and split-part reconstruction; no visible sectionIndex /0|`authored-fixture.json`; illustrative layout only, no runtime encoder or model-selection proof |
+| `.tools/node-v24.22.0-win-x64/node.exe artifacts/local/03f-source-selection/audit.mjs` |552protected files unchanged; exactly three documentation files; ignored artifacts; diff whitespace /0|`audit.json`, `delivery-hashes.json`, `audit.log` |
+
+All main probe commands run through pinned `node artifacts/local/03f-source-selection/run.mjs <job>`; exact executable/argv/cwd/UTC start/end/exits in `commands.jsonl`. Initial read-only Windows wildcard/missing-path probes were corrected with explicit existing files. No full build/lint/typecheck/unit/browser suite needed or run for this docs-only task. Full third-party transcript/payload excerpts stay ignored. Selected354is not repaired to355: supporting355actually has sectionIndex354, but competing identity is a hypothesis, not proven cause. Four latest references are complete single fragments; antecedent/compound-claim failures remain distinct. Future implementation must test exact reconstruction/stale-manifest rejection/ACK binding and unchanged24voice/PDF manifests before any separately authorized same-source semantic comparison. All prior ledgers closed; public voice enabled/YouTube disabled unchanged by this work;03F/Steps03/07/10remain open.
+
 **PM03F route A review:**13hashes match; fresh62tests exit0. Readability/Stop retention and4stored reference fields PASS in worker live evidence; summary/follow-up semantic support FAIL. Next source-selection review uses existing captures offline; ID354versus supporting355is observed, zero-based-index causation unproven. No new live allowance or deployment acceptance.
 
 ## 03F Route A verification — 21 October 2026 Toronto — implementation READY_FOR_REVIEW, live semantic FAIL
