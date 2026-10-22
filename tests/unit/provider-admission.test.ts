@@ -1,3 +1,4 @@
+import { decodeCaptions } from "../priming/caption-decoder.ts";
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
 import { writeFile } from "node:fs/promises";
@@ -60,7 +61,7 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
   test(`07E ${kind}/${variant}: full reconstruction, server provenance, default protocol priming without fit claim`, async () => {
     const s = await input(kind, variant), p = s.projection, m = p.manifest;
     const fragments = m.items.map(i => JSON.parse(i.item.content[0].text)).flatMap(data => data.fragments ?? [data]);
-    const sections = Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
+    const sections = kind === "YOUTUBE" && variant === "B" ? decodeCaptions(m).map(s => s.text) : Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
     assert.equal(sections.join(p.variant.source.separator), s.row.fullText);
     assert.equal(s.db.reads, 3); assert.equal(s.db.creates, 1); assert.equal(s.db.deletes, 1); // Initial replace transaction only.
     assert.equal(validateProviderAdmission(p), true); assert.equal(validateAdmission(p), false);
@@ -88,9 +89,9 @@ for (const patch of [{ model: "gpt-realtime-2.1" }, { model: "gpt-realtime-2.1-m
     assert.equal(r.status, "unavailable"); assert.equal(s.db.reads, 0);
   });
 
-for (const problem of ["foreign", "expired", "removed", "replaced", "cancelled", "expiry-final", "replacement-final", "visitor-expiry-final", "cancel-final"] as const)
-  test(`07E server authorization ${problem}`, async () => {
-    const s = await source();
+for (const kind of ["PDF", "YOUTUBE"] as const) for (const problem of ["foreign", "expired", "removed", "replaced", "cancelled", "expiry-final", "replacement-final", "visitor-expiry-final", "cancel-final"] as const)
+  test(`07E ${kind} server authorization ${problem}`, async () => {
+    const s = await source(kind);
     if (problem === "foreign") s.args.visitor = createVisitor({ origin: "https://07e.invalid", cookieSecret: "07".repeat(32), secure: true }, start);
     if (problem === "expired") s.time(s.row.expiresAt.getTime());
     if (problem === "removed") s.db.rows.clear();
@@ -141,9 +142,9 @@ for (const stage of ["initial", "final"] as const) for (const field of ["max_out
     assert.equal(h.ready(), 0); assert.equal(h.transport.closes, 1); assert.equal(h.clock.timers.size, 0);
   });
 
-for (const scenario of ["missing", "partial", "early-final", "added-only", "timeout", "cancel", "unsettled-final"])
-  test(`07E ACK barrier ${scenario} and late callback`, async () => {
-    const s = await input(), h = prime(s.projection); h.begin(); await h.initial();
+for (const kind of ["PDF", "YOUTUBE"] as const) for (const scenario of ["missing", "partial", "early-final", "added-only", "timeout", "cancel", "unsettled-final"])
+  test(`07E ${kind} ACK barrier ${scenario} and late callback`, async () => {
+    const s = await input(kind), h = prime(s.projection); h.begin(); await h.initial();
     if (scenario === "early-final") h.transport.emit(config(h.transport, s.projection.manifest.finalize));
     else if (scenario === "added-only") for (const e of s.projection.manifest.items) h.transport.ack(e, { type: "conversation.item.added" });
     else if (scenario === "partial") h.transport.ack(s.projection.manifest.items[0]);

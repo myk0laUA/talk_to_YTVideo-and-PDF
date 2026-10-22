@@ -1,3 +1,4 @@
+import { decodeCaptions } from "../priming/caption-decoder.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createHash } from "node:crypto";
@@ -20,23 +21,26 @@ for (const limit of [2048, 4096, MAX_EVENT_BYTES]) test(`03D lossless text capti
   const variants = source(["", "a\n\nb", "😀é漢字\u2028\u2029<>&\\\"".repeat(2000), "", "last"]);
   const v = variants.B, m = encodeManifest(v, "text_1", "text", limit, true);
   const restored = v.source.sections!.map(s => ({ ...s, text: "" }));
-  const parts = new Map<number, number>(); let previousSection = 0, sawBound = false;
+  const parts = new Map<string, number>(); let previousSection = 0, sawBound = false;
   for (const [i, e] of m.items.entries()) {
     const size = bytes(JSON.stringify(e)); assert.ok(size <= limit); if (size >= limit - 15) sawBound = true;
     assert.equal(e.previous_item_id, i ? m.items[i - 1].item.id : undefined);
     const data = JSON.parse(e.item.content[0].text);
     assert.deepEqual(data.source, { id: v.source.id, kind: "YOUTUBE", expiresAt: v.source.expiresAt, separator: "\n" });
     for (const f of data.fragments) {
-      assert.ok(f.sectionIndex === previousSection || f.sectionIndex === previousSection + 1); previousSection = f.sectionIndex;
-      assert.equal(f.sectionCount, restored.length); assert.equal(f.part, parts.get(f.sectionIndex) ?? 0);
-      parts.set(f.sectionIndex, f.part + 1);
-      const target = restored[f.sectionIndex], original = v.source.sections![f.sectionIndex];
+      assert.equal(Object.hasOwn(f, "sectionIndex"), false);
+      const index = restored.findIndex(s => "id" in s && s.id === f.locator.id);
+      assert.ok(index === previousSection || index === previousSection + 1); previousSection = index;
+      assert.equal(f.sectionCount, restored.length); assert.equal(f.part, parts.get(f.locator.id) ?? 0);
+      parts.set(f.locator.id, f.part + 1);
+      const target = restored[index], original = v.source.sections![index];
       const { text: originalText, ...locator } = original;
       assert.deepEqual(f.locator, locator); assert.equal(f.offset, target.text.length);
       assert.ok(!/^[\uDC00-\uDFFF]/u.test(f.text)); assert.ok(!/[\uD800-\uDBFF]$/u.test(f.text));
       target.text += f.text; assert.equal(f.last, target.text.length === originalText.length);
     }
   }
+  assert.deepEqual(decodeCaptions(m), v.source.sections);
   assert.deepEqual(restored, v.source.sections); assert.equal(restored.map(s => s.text).join("\n"), variants.A.source.fullText);
   assert.ok(sawBound); assert.ok(m.bytes <= MAX_WIRE_BYTES); assert.ok(m.items.length <= MAX_ITEMS);
   assert.equal(m.bytes, bytes(m.representation));

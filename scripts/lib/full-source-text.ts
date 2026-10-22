@@ -119,7 +119,11 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
         prepared = result.input;
         report.provenance = matchesProviderPreparation(prepared, args, Date.now());
         const fragments = prepared.manifest.items.map(e => JSON.parse(e.item.content[0].text)).flatMap(data => data.fragments ?? [data]);
-        const sections = Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
+        const captionIds = prepared.variant.source.kind === "YOUTUBE" && prepared.manifest.variant === "B"
+          ? [...new Set<string>(fragments.map(f => f.locator.id))] : undefined;
+        const sections = captionIds
+          ? captionIds.map(id => fragments.filter(f => f.locator.id === id).map(f => f.text).join(""))
+          : Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
         const full = sections.join(prepared.variant.source.separator);
         report.sourceSha256Utf16 = hash(row.fullText); report.reconstructedSha256Utf16 = hash(full);
         report.manifestSha256Utf16 = hash(prepared.manifest.representation); report.variantSha256Utf16 = hash(prepared.variant.serialized);

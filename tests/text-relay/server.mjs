@@ -36,10 +36,12 @@ class LocalProvider extends EventEmitter {
         assert.ok(row); const sections = new Map();
         for (const fragment of this.sourceParts) {
           assert.equal(fragment.source.id, row.id); assert.equal(fragment.variant, "B");
-          const parts = sections.get(fragment.sectionIndex) ?? []; parts.push(fragment); sections.set(fragment.sectionIndex, parts);
+          const identity = row.kind === "YOUTUBE" ? fragment.locator.id : fragment.sectionIndex;
+          if (row.kind === "YOUTUBE") assert.equal(Object.hasOwn(fragment, "sectionIndex"), false);
+          const parts = sections.get(identity) ?? []; parts.push(fragment); sections.set(identity, parts);
         }
         assert.equal(sections.size, first.sectionCount);
-        const texts = [...sections.entries()].sort(([a], [b]) => a - b).map(([, parts]) => {
+        const texts = [...sections.values()].map(parts => {
           let offset = 0;
           for (const [part, fragment] of parts.entries()) {
             assert.equal(fragment.part, part); assert.equal(fragment.offset, offset); offset += fragment.text.length;
