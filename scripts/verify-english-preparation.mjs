@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import net from 'node:net';
@@ -13,8 +13,9 @@ import { oversizedCaptions } from '../tests/context/caption-boundaries.ts';
 import { pdfFixture } from '../tests/context/fixtures.ts';
 import { SOURCE_SIZE_MESSAGE } from '../src/shared/priming-failure.ts';
 
-const directory = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/13e/browser');
-await mkdir(directory, { recursive: true });
+const root = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/source-limits');
+await mkdir(root, { recursive: true });
+const directory = await mkdtemp(path.join(root, 'run-'));
 const port = 3139, origin = `http://127.0.0.1:${port}`;
 await new Promise((resolve, reject) => { const s = net.createServer(); s.once('error', reject); s.listen(port, '127.0.0.1', () => s.close(resolve)); });
 const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };

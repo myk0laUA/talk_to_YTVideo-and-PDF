@@ -2,15 +2,16 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import net from 'node:net';
 import { chromium, expect } from '@playwright/test';
 import { entityCases, entityXml, entityVideoId } from '../tests/captions/entities.ts';
 
-const directory = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/13f/browser');
-await mkdir(directory, { recursive: false });
+const root = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/caption-entities');
+await mkdir(root, { recursive: true });
+const directory = await mkdtemp(path.join(root, 'run-'));
 await writeFile(path.join(directory, 'upstream.xml'), entityXml());
 const port = 3140, origin = `http://127.0.0.1:${port}`;
 await new Promise((resolve, reject) => { const s = net.createServer(); s.once('error', reject); s.listen(port, '127.0.0.1', () => s.close(resolve)); });

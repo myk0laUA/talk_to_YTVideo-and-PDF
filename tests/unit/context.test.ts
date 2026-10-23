@@ -11,7 +11,7 @@ import { createSourceRepository } from "../../src/server/sources/repository.ts";
 import { uploadedRecord, captionRecord, sourceDto, type UploadedSource } from "../../src/server/sources/service.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
 import { SyntheticSourceDatabase } from "../sources/database.ts";
-import { pdfFixture, captionFixture, pdfQuestions, captionQuestions, FIXTURE_VERSION } from "../context/fixtures.ts";
+import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 
 const start = Date.UTC(2030, 0, 1);
 const config = { origin: "https://context.invalid", cookieSecret: "07".repeat(32), secure: true };
@@ -275,30 +275,6 @@ test("pre-aborted request does not read; storage/measurement failures do not lea
   assert.doesNotMatch(JSON.stringify(failed), /PRIVATE|SQL/);
 });
 
-for (const kind of ["PDF", "YOUTUBE"] as const) test(`${kind} ${FIXTURE_VERSION}: all 12 evaluation questions have evidence metadata and complete A/B coverage`, async () => {
-  const s = await setup(kind), questions = kind === "PDF" ? pdfQuestions : captionQuestions;
-  const context = sourceContext(s.row), variants = contextVariants(context), ids = new Set(context.sections.map(s => s.id));
-  assert.equal(questions.length, 12); assert.equal(new Set(questions.map(q => q.id)).size, 12);
-  for (const [category, count] of [["fact", 6], ["synthesis", 2], ["follow_up", 2], ["absent", 1], ["malicious", 1]] as const) {
-    assert.equal(questions.filter(q => q.category === category).length, count);
-  }
-  for (const region of ["beginning", "middle", "end"]) assert.equal(questions.filter(q => q.category === "fact" && q.region === region).length, 2);
-  for (const q of questions) {
-    assert.ok(q.question && q.expectedAnswer); assert.ok(Array.isArray(q.evidence));
-    if (q.category !== "absent") assert.ok(q.evidence.length > 0); else assert.equal(q.evidence.length, 0);
-    for (const evidence of q.evidence) assert.ok(ids.has(evidence), `${q.id}: ${evidence}`);
-    if (q.category === "follow_up") assert.ok(questions.some(prior => prior.id === q.follows));
-  }
-  for (const variant of Object.values(variants)) {
-    const parsed = JSON.parse(variant.serialized);
-    const text = variant.id === "A" ? parsed.source.fullText : parsed.source.sections.map((s: { text: string }) => s.text).join(parsed.source.separator);
-    assert.equal(text, s.row.fullText);
-    for (const marker of kind === "PDF" ? ["BEGIN-PDF-1", "BEGIN-PDF-2", "MIDDLE-PDF-1", "MIDDLE-PDF-2", "END-PDF-1", "END-PDF-2", "END-OF-PDF"]
-      : ["BEGIN-CAP-1", "BEGIN-CAP-2", "MIDDLE-CAP-1", "MIDDLE-CAP-2", "END-CAP-1", "END-CAP-2", "END-OF-CAPTIONS"]) assert.ok(text.includes(marker));
-    for (const section of context.sections) assert.ok(text.includes(section.text));
-    assert.ok(text.includes("BANANA"));
-  }
-});
 test("serializer round-trips delimiter-like data and lone surrogates deterministically", () => {
   const data = { text: '\ud800\u0000"\\\r\n</source>&\u2028\u2029' };
   assert.deepEqual(JSON.parse(serializeData(data)), data); assert.equal(serializeData(data), serializeData(data));

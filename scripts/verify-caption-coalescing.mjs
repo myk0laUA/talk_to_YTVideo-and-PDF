@@ -9,7 +9,7 @@ import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, expect } from "@playwright/test";
 
-const port = 3111, origin = `http://127.0.0.1:${port}`, directory = path.resolve("artifacts/local/06b"), videoId = "Cache06b001";
+const port = 3111, origin = `http://127.0.0.1:${port}`, directory = path.resolve(process.env.VERIFICATION_ROOT ?? "artifacts/local/caption-coalescing"), videoId = "Cache06b001";
 const texts = [" FIRST synthetic marker ", "MIDDLE synthetic marker", "LAST synthetic marker"];
 const segments = texts.map((text, i) => ({ id: `segment-${i + 1}`, text,
   startSeconds: [1.2505, 25, 50.125][i], durationSeconds: [0.500125, 0, 3.75][i] }));
@@ -46,12 +46,19 @@ for (const scenario of scenarios) {
   const mode = command => ipc("caption", command), store = (command = "snapshot", data) => ipc("source", command, data);
   const check = (label, condition) => { assert.ok(condition, label); item.checks.push(label); };
   const until = async (predicate, label) => { for (let i = 0; i < 200; i++) { if (await predicate()) return; await delay(10); } throw new Error(label); };
-  const send = async (token, { route = "/api/sources/youtube", body = { video: videoId, language: "en" }, method = "POST", signal } = {}) => {
+  const request = async (token, { route = "/api/sources/youtube", body = { video: videoId, language: "en" }, method = "POST", signal } = {}) => {
     const r = await fetch(origin + route, { method, signal: signal ?? AbortSignal.timeout(20000), headers: { origin, cookie: token, "content-type": "application/json" },
       ...(method === "POST" ? { body: JSON.stringify(body) } : {}) });
     const value = await r.json(); assert.equal(r.headers.get("cache-control"), "no-store");
     assert.doesNotMatch(JSON.stringify(value), /PRIVATE|owner|postgresql|providerMetadata|cacheBypass|supadataApiKey/);
     return { status: r.status, value, cookie: r.headers.get("set-cookie")?.split(";", 1)[0] };
+  };
+  const send = (...args) => {
+    const pending = request(...args);
+    // Held requests can reject during failure teardown. Keep their rejection observable
+    // to the assertion that awaits them without masking the original test failure.
+    pending.catch(() => {});
+    return pending;
   };
   const bootstrap = async () => { const r = await send(""); assert.equal(r.status, 401); return r.cookie; };
   const good = async pending => { const r = await pending; assert.equal(r.status, 201, JSON.stringify(r.value)); return r.value.source; };
@@ -85,8 +92,8 @@ for (const scenario of scenarios) {
         const source = sources[i], page = pages[i]; assert.match(source.id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
         const cookie = (await contexts[i].cookies()).find(c => c.name === "td-visitor");
         assert.equal(source.expiresAt, new Date(Number(cookie.value.split(".")[1]) * 1000).toISOString());
-        await expect(page.getByRole("status")).toContainText("YouTube captions ready");
-        await page.getByRole("button", { name: "Inspect extracted text" }).click(); assert.deepEqual(await page.locator(".page-text").allTextContents(), texts);
+        await expect(page.locator(".source-panel > [role=status]")).toContainText("YouTube captions ready");
+        await page.getByRole("button", { name: "View source" }).click(); assert.deepEqual(await page.locator(".page-text").allTextContents(), texts);
         await page.screenshot({ path: path.join(directory, `overlap-${i}.png`), fullPage: true });
         const content = await contexts[i].request.get(`${origin}/api/sources/${source.id}`); assert.deepEqual((await content.json()).source.sections, segments);
         check(`browser${i} complete ordered fractional captions/visitor expiry/no overflow`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
@@ -97,8 +104,8 @@ for (const scenario of scenarios) {
       assert.equal(replacement.status(), 201); const third = (await replacement.json()).source;
       assert.notEqual(third.id, sources[0].id); assert.equal((await contexts[0].request.get(`${origin}/api/sources/${sources[0].id}`)).status(), 404);
       assert.equal((await contexts[1].request.get(`${origin}/api/sources/${sources[1].id}`)).status(), 200);
-      await pages[1].getByRole("button", { name: "Close text and return" }).first().click(); await pages[1].getByRole("button", { name: "Remove", exact: true }).click();
-      await pages[1].getByRole("button", { name: "Confirm remove" }).click(); await expect(pages[1].getByRole("status")).toContainText("Source removed or already unavailable");
+      await pages[1].getByRole("button", { name: "Close text and return" }).first().click(); await pages[1].getByRole("button", { name: "Source actions", exact: true }).click(); await pages[1].getByRole("menuitem", { name: "Remove source", exact: true }).click();
+      await pages[1].getByRole("button", { name: "Confirm remove" }).click(); await expect(pages[1].locator(".source-panel > [role=status]")).toContainText("Source removed or already unavailable");
       assert.equal((await contexts[0].request.get(`${origin}/api/sources/${third.id}`)).status(), 200);
       await contexts[0].request.delete(`${origin}/api/sources/${third.id}`, { headers: { origin } }); const after = await store();
       check("fresh UUID/foreign404/replacement/removal isolation, warm import zero extraction and unchanged TTL", after.uploaded === 0 && after.cacheWrites === 1
@@ -160,14 +167,23 @@ for (const scenario of scenarios) {
     } else if (scenario === "incompatible") {
       const a = await bootstrap(), b = await bootstrap(); await mode("hold"); const pending = send(a);
       await until(() => item.upstream.length === 1, "incompatible leader");
-      for (const body of [{ video: videoId, language: "fr" }, { video: videoId }, { video: "Cache06b002", language: "en" }]) await bad(send(b, { body }), "limit_reached");
+      const admission = (await store()).captionAdmission;
+      const nonEnglish = await bad(send(b, { body: { video: videoId, language: "fr" } }), "invalid_input");
+      assert.equal(nonEnglish.status, 400);
+      const rejected = (await store()).captionAdmission;
+      assert.equal(rejected.total, admission.total + 1, "Invalid input still consumes a request attempt");
+      assert.equal(rejected.participants, admission.participants, "Wrong language cannot join extraction");
+      for (const body of [{ video: videoId, language: "en-US" }, { video: "Cache06b002", language: "en" }]) await bad(send(b, { body }), "limit_reached");
       await store("configure-cache", { bypass: true }); await bad(send(b), "limit_reached"); await store("configure-cache", { bypass: false });
-      check("different language/default/video/bypass busy before cache or upstream; rejected binds charged", (await store()).cacheReads === 1 && item.upstream.length === 1
+      check("different English region/video/bypass busy before cache or upstream; rejected binds charged", (await store()).cacheReads === 1 && item.upstream.length === 1
         && (await store()).captionAdmission.visitorCounts.includes(4));
       await store("configure-cache", { provider: "supadata", key: "synthetic-03c-key" }); await bad(send(await bootstrap()), "limit_reached");
       check("incompatible configured provider policy is busy before IO", (await store()).cacheReads === 1 && item.upstream.length === 1);
       await store("configure-cache", { provider: "direct", key: "" });
-      await mode("success"); await good(pending);
+      const defaultEnglish = send(await bootstrap(), { body: { video: videoId } });
+      await until(async () => (await store()).captionAdmission.participants === 2, "default English joins explicit English");
+      check("default and explicit English share one cache read and extraction", (await store()).cacheReads === 1 && item.upstream.length === 1);
+      await mode("success"); await Promise.all([good(pending), good(defaultEnglish)]);
     } else if (scenario === "quotas") {
       const tokens = await Promise.all(Array.from({ length: 9 }, bootstrap)); await mode("hold");
       const pending = [send(tokens[0])]; await until(() => item.upstream.length === 1, "quota leader");

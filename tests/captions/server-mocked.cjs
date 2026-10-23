@@ -1,10 +1,11 @@
 // Test-only Node preload. Not imported by application code. Never calls an external server.
 const originalFetch = globalThis.fetch;
 let polls = 0;
-const transcript = { lang: "fr", content: [
-  { text: "FIRST synthetic marker", offset: 1250.5, duration: 500.125, lang: "fr" },
-  { text: "MIDDLE synthetic marker", offset: 25000, duration: 1000, lang: "fr" },
-  { text: "LAST synthetic marker", offset: 50000, duration: 750.5, lang: "fr" },
+const language = process.env.CAPTION_MOCK_SCENARIO === "wrong-language" ? "fr" : "en";
+const transcript = { lang: language, content: [
+  { text: "FIRST synthetic marker", offset: 1250.5, duration: 500.125, lang: language },
+  { text: "MIDDLE synthetic marker", offset: 25000, duration: 1000, lang: language },
+  { text: "LAST synthetic marker", offset: 50000, duration: 750.5, lang: language },
 ] };
 globalThis.fetch = async function (input, init) {
   const { default: assert } = await import("node:assert/strict");
@@ -26,7 +27,7 @@ globalThis.fetch = async function (input, init) {
         emit("supadata-initial");
         if (url.searchParams.get("url").endsWith("Ks-_Mh1QhMc")) return Response.json({ error: "limit-exceeded",
           details: "Plan usage limit was exceeded.", message: "RAW_PRIVATE", documentationUrl: "https://evil.invalid" }, { status: 429 });
-        return process.env.CAPTION_MOCK_SCENARIO === "sync" ? Response.json(transcript)
+        return ["sync", "wrong-language"].includes(process.env.CAPTION_MOCK_SCENARIO) ? Response.json(transcript)
           : Response.json({ jobId: "synthetic-job_1" }, { status: 202 });
       }
       assert.equal(url.pathname, "/v1/transcript/synthetic-job_1"); assert.equal(url.search, "");

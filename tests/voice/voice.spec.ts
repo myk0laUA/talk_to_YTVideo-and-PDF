@@ -101,7 +101,7 @@ test("mocked voice events, autoplay action, Stop, keyboard focus and retry", asy
   await page.getByRole("button", { name: "Start", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Ready.");
   await page.getByRole("link", { name: "Talk to a Document" }).click();
-  await expect(page.getByRole("heading", { name: "A little more understanding." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bring a source. Start a chat." })).toBeVisible();
   expect(await page.evaluate(() => window.voiceMock.closed)).toBe(2); expect(h.errors).toEqual([]);
 });
 test("permission denial makes no credential request", async ({ page }, info) => {

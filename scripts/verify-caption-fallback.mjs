@@ -9,7 +9,7 @@ import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, expect } from "@playwright/test";
 
-const port = 3112, origin = `http://127.0.0.1:${port}`, directory = path.resolve("artifacts/local/06c"), video = "Cache06c001";
+const port = 3112, origin = `http://127.0.0.1:${port}`, directory = path.resolve(process.env.VERIFICATION_ROOT ?? "artifacts/local/caption-fallback"), video = "Cache06c001";
 const texts = [" FIRST synthetic marker ", "MIDDLE synthetic marker", "LAST synthetic marker"];
 const sections = texts.map((text, i) => ({ id: `segment-${i + 1}`, text, startSeconds: [1.2505, 25, 50.125][i], durationSeconds: [0.500125, 0, 3.75][i] }));
 await mkdir(directory, { recursive: true });
@@ -90,7 +90,7 @@ for (const scenario of scenarios) {
         const page = pages[i]; assert.equal(sources[i].provider, "supadata"); assert.match(sources[i].id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
         const cookie = (await contexts[i].cookies()).find(c => c.name === "td-visitor");
         assert.equal(sources[i].expiresAt, new Date(Number(cookie.value.split(".")[1]) * 1000).toISOString());
-        await page.getByRole("button", { name: "Inspect extracted text", exact: true }).click();
+        await page.getByRole("button", { name: "View source", exact: true }).click();
         for (const text of texts) await expect(page.locator("#source-text").getByText(text.trim(), { exact: true })).toBeVisible();
         assert.deepEqual(await page.locator(".page-text").allTextContents(), texts);
         check(`visitor ${i} complete ordered preview, provider, expiry and width`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));

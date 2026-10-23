@@ -7,7 +7,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 const origin = "http://127.0.0.1:3104";
-const evidence = path.resolve("artifacts/local/03b");
+const evidence = path.resolve(process.env.VERIFICATION_ROOT ?? "artifacts/local/captions-mocked");
 await mkdir(evidence, { recursive: true });
 const report = { startedUtc: new Date().toISOString(), buildId: (await readFile(".next/BUILD_ID", "utf8")).trim(),
   runtime: process.version, context: "local built Next HTTP; all external fetch intercepted by test preload; no real DB/provider", scenarios: [] };
@@ -21,7 +21,7 @@ try {
   throw new Error("Port 3104 is occupied");
 } catch (error) { if (error.message === "Port 3104 is occupied") throw error; }
 
-for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "async", "failed", "pending", "direct"]) {
+for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "wrong-language", "async", "failed", "pending", "direct"]) {
   const item = { scenario, startedUtc: new Date().toISOString(), checks: [], upstream: [], teardown: null };
   report.scenarios.push(item);
   const child = spawn(process.execPath, ["--require", preloader, "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3104"], {
@@ -69,7 +69,7 @@ for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "
       await check("invalid video rejected", 400, "invalid_input", { body: { video: "bad" } });
       assert.equal(item.upstream.length, 0);
       const { dto, cookie } = await check("managed success through built route", 200);
-      assert.equal(dto.transcript.provider, "supadata"); assert.equal(dto.transcript.language, "fr");
+      assert.equal(dto.transcript.provider, "supadata"); assert.equal(dto.transcript.language, "en");
       assert.equal(dto.transcript.segments[0].startSeconds, 1.2505);
       assert.equal(dto.transcript.segments[0].durationSeconds, 0.500125);
       assert.equal(dto.transcript.fullText, "FIRST synthetic marker\nMIDDLE synthetic marker\nLAST synthetic marker");
@@ -79,6 +79,9 @@ for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "
       await check("fourth admitted attempt", 200, null, { headers: { cookie } });
       await check("visitor quota rejects before upstream", 429, "limit_reached", { headers: { cookie } });
       assert.deepEqual(item.upstream, Array(4).fill("supadata-initial"));
+    } else if (scenario === "wrong-language") {
+      await check("English request rejects a French provider result", 422, "no_captions");
+      assert.deepEqual(item.upstream, ["supadata-initial"]);
     } else if (scenario === "direct") {
       const { dto } = await check("explicit direct built selection", 200);
       assert.equal(dto.transcript.provider, "youtube-transcript-plus@2.0.3");

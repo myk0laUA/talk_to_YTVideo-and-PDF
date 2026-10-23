@@ -56,7 +56,13 @@
     "test:owned-text": "node --conditions=react-server scripts/verify-owned-text.mjs",
     "test:owned-voice": "node --conditions=react-server --test tests/unit/owned-voice.test.ts && node --conditions=react-server scripts/verify-owned-voice.mjs",
     "test:voice-adapter": "node --conditions=react-server --test tests/unit/voice-browser-adapters.test.ts && node --conditions=react-server scripts/verify-voice-adapter.mjs",
-    "test:voice-preparation": "node --conditions=react-server scripts/verify-voice-preparation.mjs"
+    "test:voice-preparation": "node --conditions=react-server scripts/verify-voice-preparation.mjs",
+    "test:coverage": "node --conditions=react-server --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-exclude=\"src/generated/**\" --test tests/unit/*.test.ts",
+    "test:workspace": "npm run test:workspace:flows && npm run test:workspace:layout",
+    "test:workspace:flows": "node --conditions=react-server scripts/verify-workspace-flows.mjs",
+    "test:workspace:layout": "node --conditions=react-server scripts/verify-workspace-layout.mjs",
+    "test:source-limits": "node --conditions=react-server scripts/verify-english-preparation.mjs",
+    "test:caption-entities": "node --conditions=react-server scripts/verify-caption-entities.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

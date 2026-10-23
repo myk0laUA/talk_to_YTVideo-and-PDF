@@ -9,7 +9,7 @@ import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, expect } from "@playwright/test";
 
-const origin = "http://127.0.0.1:3110", directory = path.resolve("artifacts/local/06a"), videoId = "Cache06a001";
+const origin = "http://127.0.0.1:3110", directory = path.resolve(process.env.VERIFICATION_ROOT ?? "artifacts/local/caption-cache"), videoId = "Cache06a001";
 const texts = [" FIRST synthetic marker ", "MIDDLE synthetic marker", "LAST synthetic marker"];
 const segments = texts.map((text, i) => ({ id: `segment-${i + 1}`, text,
   startSeconds: [1.2505, 25, 50.125][i], durationSeconds: [0.500125, 0, 3.75][i] }));
@@ -80,8 +80,8 @@ for (const scenario of ["browser-ownership", "cache-io", "source-io-expiry", "pr
         await page.getByRole("textbox", { name: "YouTube URL" }).fill(`https://youtu.be/${videoId}`);
         await page.getByRole("button", { name: "Import YouTube video", exact: true }).click();
         const source = (await (await created).json()).source;
-        await expect(page.getByRole("status")).toContainText("YouTube captions ready");
-        await page.getByRole("button", { name: "Inspect extracted text" }).click();
+        await expect(page.locator(".source-panel > [role=status]")).toContainText("YouTube captions ready");
+        await page.getByRole("button", { name: "View source" }).click();
         assert.deepEqual(await page.locator(".page-text").allTextContents(), texts);
         for (let i = 0; i < 3; i++) await expect(page.locator(`#source-segment-${i + 1}`)).toBeVisible();
         await page.screenshot({ path: path.join(directory, `${label}.png`), fullPage: true });
@@ -112,9 +112,9 @@ for (const scenario of ["browser-ownership", "cache-io", "source-io-expiry", "pr
       check("replacement removes only owned previous ID", (await contexts[0].request.get(`${origin}/api/sources/${first.id}`)).status() === 404);
       check("other visitor source survives replacement", (await contexts[1].request.get(`${origin}/api/sources/${second.id}`)).status() === 200);
       await pages[1].getByRole("button", { name: "Close text and return" }).first().click();
-      await pages[1].getByRole("button", { name: "Remove", exact: true }).click();
+      await pages[1].getByRole("button", { name: "Source actions", exact: true }).click(); await pages[1].getByRole("menuitem", { name: "Remove source", exact: true }).click();
       await pages[1].getByRole("button", { name: "Confirm remove" }).click();
-      await expect(pages[1].getByRole("status")).toContainText("Source removed or already unavailable");
+      await expect(pages[1].locator(".source-panel > [role=status]")).toContainText("Source removed or already unavailable");
       check("removed source unavailable", (await contexts[1].request.get(`${origin}/api/sources/${second.id}`)).status() === 404);
       check("other visitor/cache survive removal", (await contexts[0].request.get(`${origin}/api/sources/${third.id}`)).status() === 200 && (await ipc("snapshot")).cacheRows === 1);
       await contexts[0].request.delete(`${origin}/api/sources/${third.id}`, { headers: { origin } });

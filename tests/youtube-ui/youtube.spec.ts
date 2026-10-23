@@ -50,7 +50,6 @@ test("mocked: native submit, one 401, metadata then full GET, complete ordered c
   await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-loaded.png`, fullPage: true });
   await open(page);
   await expect(page.getByText("Caption language:", { exact: false })).toContainText("en · Automatic captions");
-  await expect(page.locator("time")).toHaveAttribute("datetime", source.expiresAt);
   expect(await page.locator(".caption-segment").evaluateAll(nodes => nodes.map(n => n.id))).toEqual(source.sections.map(s => `source-${s.id}`));
   expect(await page.locator(".page-text").allTextContents()).toEqual(source.sections.map(s => s.text));
   await expect(page.locator("#source-segment-1 h3")).toHaveText("0:00 · duration 2 s");

@@ -41,7 +41,7 @@ test("mocked: one 401 retry, Unicode/safe filename, source navigation, keyboard,
   await page.goto("/");
   await page.keyboard.press("Tab"); await expect(page.getByRole("link", { name: "Skip to workspace" })).toBeFocused();
   await page.keyboard.press("Enter"); await expect(page.getByRole("main")).toBeFocused();
-  await expect(page.getByText("Up to 25 MB. Text PDFs only; no OCR.")).toBeVisible();
+  await expect(page.getByText("Up to 25 MB. Text PDFs only.")).toBeVisible();
   await load(page); expect(posts).toBe(2); expect(gets).toBe(1);
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).focus();

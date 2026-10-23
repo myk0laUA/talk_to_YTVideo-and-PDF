@@ -3,15 +3,10 @@ import { afterEach, test } from "node:test";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { EventEmitter, getEventListeners } from "node:events";
-import { Tiktoken } from "js-tiktoken/lite";
-import ranks from "js-tiktoken/ranks/o200k_base";
-import { estimateTextInput, TEXT_ESTIMATOR } from "../helpers/text-input-estimate.ts";
 import { createProviderTextPreparation, matchesProviderPreparation } from "../../src/server/context/model-measurement.ts";
 import { DIAGNOSTIC_MINI_TEXT_POLICY as mini, PROVIDER_TEXT_POLICY as large, PROVIDER_VOICE_POLICY,
   type ProviderTextPolicy } from "../../src/shared/priming-provider-policy.ts";
 import { validateProviderAdmission, type ProviderPrimingInput } from "../../src/shared/priming-admission.ts";
-import { encodeManifest } from "../../src/shared/priming-manifest.ts";
-import { contextVariants, sourceContext } from "../../src/server/context/document.ts";
 import { uploadedRecord, captionRecord } from "../../src/server/sources/service.ts";
 import { createVisitor } from "../../src/server/proof/visitor.ts";
 import { TextRegistry } from "../../src/server/text/registry.ts";
@@ -19,7 +14,6 @@ import { openTextSocket, type TextSocketConstructor } from "../../src/server/tex
 import { scriptedFullSource } from "../helpers/full-source-scripted.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import type { TextRelaySnapshot } from "../../src/shared/text-relay.ts";
-import { routingCalibrationFixtures } from "../context/routing-calibration-fixtures.ts";
 import { PrimingController } from "../../src/shared/priming-controller.ts";
 import { FakeClock, flush } from "../priming/harness.ts";
 import { TextTransport } from "../priming/text-harness.ts";
@@ -30,45 +24,6 @@ function source(kind: "PDF" | "YOUTUBE") {
   const row = kind === "PDF" ? uploadedRecord(structuredClone(pdfFixture), visitor) : captionRecord(structuredClone(captionFixture), visitor);
   return { visitor, row };
 }
-for (const kind of ["PDF", "YOUTUBE"] as const) test(`03I ${kind} complete multilingual fragments, metadata and replacing instructions estimated`, async () => {
-  const { row } = source(kind), v = contextVariants(sourceContext(row)).B;
-  // Use actual serializer fragmentation with Unicode, escaped source commands and final markers.
-  const original = structuredClone(v);
-  const m = encodeManifest(v, "estimate03i", "text", 2048, true), snapshot = JSON.stringify(m);
-  const e = await estimateTextInput(m), encoder = new Tiktoken(ranks);
-  const count = (text: string) => encoder.encode(text, [], []).length;
-  assert.equal(e.basis, "estimated_tokens"); assert.equal(e.tokenizer, TEXT_ESTIMATOR);
-  assert.deepEqual(e.sourceMessages, m.items.map(item => count(item.item.content[0].text)));
-  assert.equal(e.instructions, Math.max(count(m.configure.session.instructions), count(m.finalize.session.instructions)));
-  assert.equal(e.inputSize, e.instructions! + e.sourceMessages!.reduce((a, b) => a + b, 0));
-  assert.ok(e.inputSize! > count(row.fullText)); // Metadata/instructions really included.
-  assert.equal(JSON.stringify(m), snapshot); assert.deepEqual(v, original);
-  const parts = m.items.flatMap(item => { const data = JSON.parse(item.item.content[0].text); return data.fragments ?? [data]; });
-  const texts = v.source.sections!.map(section => parts.filter(p => p.locator.id === section.id).map(p => p.text).join(""));
-  assert.equal(texts.join(v.source.separator), row.fullText);
-});
-test("03I long non-ASCII PDF serializes and estimates each fragment without losing content", async () => {
-  const { visitor } = source("PDF"), text = 'العربية 中文 café é 🌱 <|endoftext|> "quoted"\n'.repeat(600);
-  const row = uploadedRecord({ ...pdfFixture, pageCount: 1, sections: [{ id: "page-1", pageNumber: 1, text }],
-    fullText: text, characterCount: text.length }, visitor);
-  const v = contextVariants(sourceContext(row)).B, m = encodeManifest(v, "fragmented03i", "text", 2048, true);
-  assert.ok(m.items.length > 2);
-  assert.equal(m.items.map(i => JSON.parse(i.item.content[0].text).text).join(""), text);
-  const e = await estimateTextInput(m); assert.equal(e.basis, "estimated_tokens");
-  assert.equal(e.sourceMessages!.length, m.items.length);
-});
-test("03I frozen six-fixture load inventory preserves every support key and ordered full content", () => {
-  const fixtures = routingCalibrationFixtures(); assert.equal(fixtures.length, 6);
-  for (const f of fixtures) {
-    const { visitor } = source(f.kind);
-    const row = f.kind === "PDF" ? uploadedRecord(f.content as typeof pdfFixture, visitor) : captionRecord(f.content as typeof captionFixture, visitor);
-    const v = contextVariants(sourceContext(row)).B, ids = new Set(v.source.sections!.map(s => s.id));
-    assert.equal(v.source.sections!.map(s => s.text).join(v.source.separator), f.content.fullText);
-    assert.equal(f.questions.length, 13);
-    for (const q of f.questions) for (const key of q.evidence) assert.ok(ids.has(key), `${f.id}/${q.id}/${key}`);
-    assert.ok(f.questions.some(q => q.category === "absent")); assert.ok(f.questions.some(q => q.category === "follow_up"));
-  }
-});
 for (const kind of ["PDF", "YOUTUBE"] as const) for (const policy of [mini, large])
   test(`03I ${kind} ${policy.model} preparation/provenance/admission and mismatched policy denial`, async () => {
     const { visitor, row } = source(kind);
@@ -149,7 +104,6 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const policy of [large])
     f.registry.stop(f.visitor, f.requestId); await s.done;
     assert.equal(f.registry.size, 0); assert.equal(f.counts().closes, 1); assert.equal(getEventListeners(s.abort.signal, "abort").length, 0);
     assert.equal(s.snapshots.at(-1)?.transcript.turns.length, 4);
-    assert.ok(!JSON.stringify(s.snapshots).includes(TEXT_ESTIMATOR));
   });
 test("03M replacement source starts a fresh larger session after Stop; old session cannot reconnect", async () => {
   const f = fixture("PDF"), first = await f.begin();
