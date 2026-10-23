@@ -15,8 +15,9 @@ playwright-report/
 .playwright-cli/
 .playwright/
 artifacts/local/
-.agents/skills/impeccable/scripts/bin/
-.impeccable/review/
-.impeccable/cache/
+.agents/
+.codex/
+.impeccable/
+skills-lock.json
 .DS_Store
 Thumbs.db

@@ -9,7 +9,7 @@ export const DIAGNOSTIC_MINI_TEXT_POLICY = Object.freeze({ ...PROVIDER_TEXT_POLI
 export type ProviderTextPolicy = typeof PROVIDER_TEXT_POLICY | typeof DIAGNOSTIC_MINI_TEXT_POLICY;
 /** Separate voice opt-in. No tokenizer/framing binding or pre-admitted capacity.
  * 08M candidate: 0.6 versus documented server_vad default 0.5; may miss quiet speech.
- * Physical comparison pending. Keep other acoustic settings fixed. See docs/VOICE_ACTIVATION_08M.md. */
+ * Keep acoustic settings fixed across transports; physical audio verification is separate from synthetic tests. */
 export const PROVIDER_VOICE_POLICY = Object.freeze({ basis: "provider_enforced", model: "gpt-realtime-2.1",
   policyVersion: "provider-voice-full-source-default-2026-10-22-v8", mode: "voice", maxOutputTokens: 2048, silenceDurationMs: 600, activationThreshold: 0.6,
   // 08O behavioral comparison candidate; does not address false speech detection.

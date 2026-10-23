@@ -335,13 +335,6 @@ test("successful preparation releases abort listeners; source copies survive inp
   }
   assert.equal(getEventListeners(controller.signal, "abort").length, 0);
 });
-test("committed A/B table retains all 24 question IDs and only NOT_RUN actual accuracy/latency cells", async () => {
-  const table = await readFile(new URL("../../docs/CONTEXT_EVALUATION_07A.md", import.meta.url), "utf8");
-  for (const q of [...pdfQuestions, ...captionQuestions]) {
-    const row = table.split("\n").find(line => line.startsWith(`| ${q.id} |`));
-    assert.ok(row, q.id); assert.equal(row.match(/NOT_RUN/g)?.length, 4);
-  }
-});
 test("preparation makes no provider fetch and all context modules enforce server-only", async t => {
   let fetches = 0;
   t.mock.method(globalThis, "fetch", async () => { fetches++; throw new Error("forbidden external fetch"); });

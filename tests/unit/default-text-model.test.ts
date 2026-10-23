@@ -5,7 +5,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { EventEmitter, getEventListeners } from "node:events";
 import { Tiktoken } from "js-tiktoken/lite";
 import ranks from "js-tiktoken/ranks/o200k_base";
-import { estimateTextInput, TEXT_ESTIMATOR } from "../../scripts/lib/text-input-estimate.ts";
+import { estimateTextInput, TEXT_ESTIMATOR } from "../helpers/text-input-estimate.ts";
 import { createProviderTextPreparation, matchesProviderPreparation } from "../../src/server/context/model-measurement.ts";
 import { DIAGNOSTIC_MINI_TEXT_POLICY as mini, PROVIDER_TEXT_POLICY as large, PROVIDER_VOICE_POLICY,
   type ProviderTextPolicy } from "../../src/shared/priming-provider-policy.ts";
@@ -16,7 +16,7 @@ import { uploadedRecord, captionRecord } from "../../src/server/sources/service.
 import { createVisitor } from "../../src/server/proof/visitor.ts";
 import { TextRegistry } from "../../src/server/text/registry.ts";
 import { openTextSocket, type TextSocketConstructor } from "../../src/server/text/socket.ts";
-import { scriptedFullSource } from "../../scripts/lib/full-source-scripted.ts";
+import { scriptedFullSource } from "../helpers/full-source-scripted.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import type { TextRelaySnapshot } from "../../src/shared/text-relay.ts";
 import { routingCalibrationFixtures } from "../context/routing-calibration-fixtures.ts";

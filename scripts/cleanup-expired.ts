@@ -5,7 +5,7 @@ import { createPostgresCleanupStore } from "../src/server/cleanup/postgres.ts";
 import { runCleanupCli } from "./lib/cleanup-cli.ts";
 
 if (process.argv.slice(2).length === 1 && process.argv[2] === "--help") {
-  process.stdout.write("npm run db:cleanup -- [--execute] [--batch-size 1..500] [--max-rows 1..5000] [--max-batches 1..100] [--timeout-ms 1..60000]\nDefault: dry-run, batch 100, total 1000, 20 batches, 30000ms. Explicit DATABASE_URL required. Exit 0 complete scan, 2 capped, 1 error/cancel/timeout. Read docs/CLEANUP_11A.md.\n");
+  process.stdout.write("npm run db:cleanup -- [--execute] [--batch-size 1..500] [--max-rows 1..5000] [--max-batches 1..100] [--timeout-ms 1..60000]\nDefault: dry-run, batch 100, total 1000, 20 batches, 30000ms. Explicit DATABASE_URL required. Exit 0 complete scan, 2 capped, 1 error/cancel/timeout. Read docs/OPERATIONS.md.\n");
 } else {
   config({ quiet: true });
   const controller = new AbortController();

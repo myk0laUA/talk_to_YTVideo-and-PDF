@@ -4,7 +4,7 @@ import { pdfFixture, captionFixture, pdfQuestions, captionQuestions, type Evalua
 
 export const ROUTING_CALIBRATION_VERSION = "routing-calibration-inventory-2026-10-22-v1";
 // These are synthetic routing LOAD fixtures. Repetition adds load, never independent semantic evidence.
-// Original 03H real-source regressions are separately frozen by hash in docs/MODEL_ROUTING_03I.md.
+// Regression fixtures for complete-source preparation across source sizes.
 export function routingCalibrationFixtures() {
   return ([1, 8, 32] as const).flatMap((copies, index) => {
     const size = (["short", "medium", "long"] as const)[index];

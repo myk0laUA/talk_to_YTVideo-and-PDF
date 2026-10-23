@@ -20,7 +20,7 @@ Write-existing reads a prepared manifest and inserts once; duplicate IDs fail, n
 TTL: exactly 2 hours. Retain the manifest securely off-host before restarting the web service.
 Verify never writes or refreshes expiry. Cleanup matches only this fixture (even after expiry).
 Exit 0: success; exit 1: sanitized failure category; no credentials/owner hashes in output.
-Read docs/DB_PERSISTENCE_RUNBOOK.md before live use.`;
+Read docs/DATABASE_PROBE.md before live use.`;
 
 function report(category: string) {
   process.stderr.write(JSON.stringify({ status: "FAIL", category, at: new Date().toISOString() }) + "\n");

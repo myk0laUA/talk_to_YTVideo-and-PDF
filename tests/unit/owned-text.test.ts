@@ -10,7 +10,7 @@ import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts"
 import { uploadedRecord, captionRecord } from "../../src/server/sources/service.ts";
 import { sourceChanged } from "../../src/server/sources/invalidation.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
-import { scriptedFullSource } from "../../scripts/lib/full-source-scripted.ts";
+import { scriptedFullSource } from "../helpers/full-source-scripted.ts";
 import type { TextRelaySnapshot } from "../../src/shared/text-relay.ts";
 import type { TextConnection } from "../../src/shared/text-lifecycle.ts";
 import { openTextSocket, type TextSocket, type TextSocketConstructor } from "../../src/server/text/socket.ts";

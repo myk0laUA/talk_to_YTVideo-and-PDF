@@ -10,7 +10,7 @@ import { createTextHandlers } from "../../src/server/text/handlers.ts";
 import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
 import { uploadedRecord } from "../../src/server/sources/service.ts";
 import { pdfFixture } from "../context/fixtures.ts";
-import { scriptedFullSource } from "../../scripts/lib/full-source-scripted.ts";
+import { scriptedFullSource } from "../helpers/full-source-scripted.ts";
 import { parseAdmissionRejection } from "../../src/shared/session-admission.ts";
 import { VoiceRecovery } from "../../src/shared/voice-recovery.ts";
 
