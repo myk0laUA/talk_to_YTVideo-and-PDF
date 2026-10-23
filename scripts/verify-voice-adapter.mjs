@@ -12,9 +12,10 @@ import { createVisitor } from '../src/server/proof/visitor.ts';
 import { uploadedRecord, captionRecord, sourceDto } from '../src/server/sources/service.ts';
 import { pdfFixture, captionFixture } from '../tests/context/fixtures.ts';
 import { fakeBrowserVoice } from '../tests/voice-adapter/fakes.mjs';
+import { observeVoiceDiagnostics } from '../tests/voice-adapter/diagnostics.mjs';
 import { PROVIDER_VOICE_POLICY } from '../src/shared/priming-provider-policy.ts';
 
-const directory = path.resolve('artifacts/local/08d'); await mkdir(directory, { recursive: true });
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08d`); await mkdir(directory, { recursive: true });
 const port = 3129, origin = `http://127.0.0.1:${port}`;
 const report = { startedUtc: new Date().toISOString(), buildId: (await readFile('.next/BUILD_ID', 'utf8')).trim(), runtime: process.version,
   environment: 'local built Next application/owned HTTP routes; synthetic sources/Prisma/fake client-secret, SDP, peer, channel and media; no physical audio/provider/database',
@@ -53,6 +54,7 @@ try {
       await context.addCookies([{ name: 'td-visitor', value: visitor.token, url: origin, httpOnly: true, sameSite: 'Strict' }]);
       const page = await context.newPage();
       await page.addInitScript('(' + fakeBrowserVoice.toString() + ')(globalThis, true)');
+      await page.addInitScript(observeVoiceDiagnostics);
       let sdpFault = '', heldSdp;
       await page.route('**/*', async route => {
         const url = new URL(route.request().url());
@@ -73,15 +75,16 @@ try {
       await page.route(`**/api/sources/${kind === 'PDF' ? 'pdf' : 'youtube'}`, route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, source: sourceDto(row) }) }));
       await page.goto(origin);
       const upload = async () => {
+        if (!await page.locator('.replacement-dialog').count() && await page.locator('button[aria-haspopup=menu][aria-expanded=false]').count()) await page.getByText('Source actions', { exact: true }).click(); if (await page.locator('.source-menu button').count() && !await page.locator('.replacement-dialog').count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click();
         if (kind === 'PDF') { const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: /Upload a PDF|Replace PDF/, exact: true }).click();
           await (await chooser).setFiles({ name: 'Synthetic08D.pdf', mimeType: 'application/pdf', buffer: Buffer.from('seeded-owned-source-acquisition') });
         } else { await page.getByLabel('YouTube URL', { exact: true }).fill('https://www.youtube.com/watch?v=Context07A1'); await page.getByRole('button', { name: 'Import YouTube video', exact: true }).click(); }
-        await page.getByRole('button', { name: 'Inspect extracted text', exact: true }).waitFor();
+        await page.getByRole('button', { name: 'View source', exact: true }).waitFor();
       };
       await upload(); await page.getByRole('button', { name: 'Voice mode', exact: true }).click();
       const snap = () => page.evaluate(() => window.__voice08d.snapshot());
       const control = data => page.evaluate(data => Object.assign(window.__voice08d.control, data), data);
-      const start = () => page.getByRole('button', { name: /Start.*voice session/, exact: true }).click();
+      const start = () => page.getByRole('button', { name: /^(Start|Retry) voice$/, exact: true }).click();
       const ready = () => page.getByRole('button', { name: 'Mute microphone', exact: true }).waitFor({ state: 'visible' }).then(() => expect(page.getByRole('button', { name: 'Mute microphone', exact: true })).toBeEnabled());
       const clean = async label => {
         await until(async () => (await snap()).counts.peerCloses === (await snap()).counts.peers);
@@ -106,7 +109,7 @@ try {
           await f.page.evaluate(offset => { const wall = Date.now.bind(Date); Date.now = () => wall() - offset * 2; }, offset);
           await f.page.evaluate(() => window.__voice08d.release('offer')); await f.ready();
           check('08J skew reaches ACK-gated microphone ' + offset, (await f.snap()).counts.media, 1);
-          await f.page.getByRole('button', { name: 'Stop session', exact: true }).click();
+          await f.page.getByRole('button', { name: 'End voice', exact: true }).click();
           await f.clean('08J skew and wall jump ' + offset); await f.context.close();
         }
         const f = await open('PDF', 1440, 1800), exchanges = report.sdpExchanges;
@@ -114,7 +117,7 @@ try {
         await until(async () => (await f.snap()).pending > 0);
         await f.page.evaluate(() => { const wall = Date.now.bind(Date); Date.now = () => wall() - 3600_000; });
         await delay(1850); await f.page.evaluate(() => window.__voice08d.release('offer'));
-        await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
+        await expect(f.page.getByRole('button', { name: /^(Start|Retry) voice$/, exact: true })).toBeEnabled();
         check('08J backward clock jump cannot extend source validity: no SDP', report.sdpExchanges, exchanges);
         check('08J backward clock jump cannot extend source validity: no microphone', (await f.snap()).counts.media, 0);
         await f.clean('08J expired source after backward wall jump'); await f.context.close();
@@ -128,20 +131,22 @@ try {
           data.expiresAt += 60_000;
           await route.fulfill({ response, body: JSON.stringify(data) });
         });
-        await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
-        await f.page.getByText('Voice setup details', { exact: true }).click();
-        await expect(f.page.getByText('Voice setup details', { exact: true }).locator('..')).toContainText('preparation_validation: invalid (ticket_future)');
+        await f.start(); await expect(f.page.getByRole('button', { name: /^(Start|Retry) voice$/, exact: true })).toBeEnabled();
+        await expect(f.page.getByText('Voice help', { exact: true })).toHaveCount(0);
+        const diagnostics = await f.page.evaluate(() => window.__voice13dDiagnostics());
+        check('08I preparation rejection diagnostic preserved', diagnostics.setup.some(r => r.stage === 'preparation_validation' && r.outcome === 'invalid' && r.reason === 'ticket_future'));
+        await expect(f.page.locator('#voice-session-guidance')).toContainText('Select Retry voice');
         check('08I no credentials requested', credentials, 0);
         check('08I no native acquisitions', (await f.snap()).counts.peers + (await f.snap()).counts.media, 0);
         check('08I no synthetic provider calls', (await ipc('snapshot')).calls, 0);
-        const target = path.resolve('artifacts/local/08i'); await mkdir(target, { recursive: true });
+        const target = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08i`); await mkdir(target, { recursive: true });
         await f.page.screenshot({ path: path.join(target, 'preparation-rejection.png'), fullPage: true });
         await f.clean('08I preparation rejection'); await f.context.close();
       }
       if (group === 'flow') {
         await ipc('gate', { field: 'OWNED_SOURCE_VOICE_ENABLED', value: 'false' });
         const off = await open('PDF', 390); const before = await ipc('snapshot');
-        await expect(off.page.getByRole('button', { name: 'Start voice session', exact: true })).toBeDisabled();
+        await expect(off.page.getByRole('button', { name: 'Start voice', exact: true })).toBeDisabled();
         check('gate off zero native acquisitions', (await off.snap()).counts.peers + (await off.snap()).counts.media, 0);
         check('gate off zero provider calls', (await ipc('snapshot')).calls, before.calls);
         await off.page.screenshot({ path: path.join(directory, 'gate-off-390.png'), fullPage: true }); await off.context.close();
@@ -149,7 +154,7 @@ try {
         for (const [kind, width] of [['PDF', 1440], ['YOUTUBE', 390]]) {
           const f = await open(kind, width), { page } = f;
           check('mount/source/mode has zero native calls', (await f.snap()).counts.peers + (await f.snap()).counts.media, 0);
-          await f.control({ hold: 'final' }); await f.start(); await until(async () => (await f.snap()).pending > 0);
+          await f.control({ hold: 'final', blockedPlayback: true }); await f.start(); await until(async () => (await f.snap()).pending > 0);
           check(kind + ' final ACK withheld: no media', (await f.snap()).counts.media, 0);
           await page.evaluate(() => window.__voice08d.release('final')); await f.ready();
           const s = await f.snap(); check(kind + ' one peer/channel/media/attach', [s.counts.peers, s.counts.channels, s.counts.media, s.counts.attached], [1, 1, 1, 1]);
@@ -158,18 +163,26 @@ try {
             { audio: { echoCancellation: { ideal: true }, noiseSuppression: { ideal: true } } });
           check(kind + ' 08L capture succeeds without processing support or retry',
             [await page.evaluate(() => navigator.mediaDevices.getSupportedConstraints()), s.counts.media, s.enabledTracks], [{}, 1, 1]);
-          check(kind + ' full ordered source section count', s.counts.items, kind === 'PDF' ? pdfFixture.sections.length : captionFixture.segments.length);
           const reconstruction = await page.evaluate(() => { const parts = window.__voice08d.sourceParts, sections = new Map();
-            for (const p of parts) { if (!sections.has(p.sectionIndex)) sections.set(p.sectionIndex, []); sections.get(p.sectionIndex).push(p.text); }
-            return [...sections.values()].map(p => p.join('')).join(parts[0].source.separator);
+            for (const p of parts) for (const f of p.fragments ?? [p]) {
+              const id = f.locator.id;
+              if (!sections.has(id)) sections.set(id, { ...f.locator, text: '' });
+              sections.get(id).text += f.text;
+            }
+            return { sections: [...sections.values()], text: [...sections.values()].map(s => s.text).join(parts[0].source.separator), events: parts.length };
           });
-          check(kind + ' full source reconstructed before microphone', reconstruction === f.row.fullText);
+          check(kind + ' all emitted items acknowledged', s.counts.items, reconstruction.events);
+          check(kind + ' full ordered source section count', reconstruction.sections.length, kind === 'PDF' ? pdfFixture.sections.length : captionFixture.segments.length);
+          check(kind + ' exact locators and timestamps retained', reconstruction.sections, kind === 'PDF' ? pdfFixture.sections : captionFixture.segments.map((s, i) => ({ id: `segment-${i + 1}`, ...s })));
+          check(kind + ' full source reconstructed before microphone', reconstruction.text === f.row.fullText);
           await page.getByRole('button', { name: 'Mute microphone', exact: true }).click(); check('mute disables outgoing track', (await f.snap()).enabledTracks, 0);
           await page.getByRole('button', { name: 'Unmute microphone', exact: true }).click(); check('unmute enables outgoing track', (await f.snap()).enabledTracks, 1);
-          await f.control({ blockedPlayback: true }); await page.getByRole('button', { name: 'Enable speaker playback', exact: true }).click();
-          await page.getByRole('button', { name: 'Try speaker playback', exact: true }).waitFor();
-          await f.control({ blockedPlayback: false }); await page.getByRole('button', { name: 'Try speaker playback', exact: true }).click();
-          await page.getByText('Playback enabled. This does not confirm what you heard.', { exact: true }).waitFor();
+          check('automatic speaker attempt', (await f.snap()).counts.plays, 1);
+          await page.getByRole('button', { name: 'Tap to enable sound', exact: true }).waitFor();
+          await f.control({ blockedPlayback: false }); await page.getByRole('button', { name: 'Tap to enable sound', exact: true }).click();
+          await expect(page.locator('.voice-device-status')).toContainText('Playback enabled.');
+          await page.getByRole('button',{name:'Mute speaker',exact:true}).click(); check('speaker muted independently',await page.evaluate(()=>window.__voice08d.speakers[0].muted),true);check('speaker mute preserves microphone',(await f.snap()).enabledTracks,1);
+          await page.getByRole('button',{name:'Unmute speaker',exact:true}).click(); check('speaker unmute has no new play',(await f.snap()).counts.plays,2);
           await page.evaluate(() => { const f = window.__voice08d;
             // Real documented event shapes through the application's sole transcript store.
             f.emit({ type: 'input_audio_buffer.committed', item_id: 'question09c', previous_item_id: null });
@@ -184,7 +197,7 @@ try {
           });
           await expect(page.locator('.transcript')).toContainText('Synthetic09C partial question.');
           await expect(page.locator('.transcript')).toContainText('Text updating…');
-          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-partial.png`), fullPage: true });
+          await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-partial.png`), fullPage: true });
           await page.getByRole('button', { name: 'Interrupt answer', exact: true }).click();
           await expect(page.locator('.voice-media-announcement')).toContainText('Interruption confirmed');
           await page.evaluate(() => { const f = window.__voice08d;
@@ -197,8 +210,8 @@ try {
           await expect(page.locator('.transcript')).toContainText('Speech could not be transcribed.');
           check('09C ordered speakers and one bubble per item', await page.locator('.transcript-turn h4').allTextContents(), ['You', 'Assistant', 'You']);
           check('09C late delta and private errors absent', !/late words ignored|PRIVATE09C/.test(await page.locator('.transcript').textContent()));
-          await page.getByText('Voice setup details', { exact: true }).click();
-          const chronology = JSON.parse(await page.locator('.voice-session details pre').innerText());
+          await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
+          const chronology = await page.evaluate(() => window.__voice13dDiagnostics().chronology);
           check('08N one explicit lifecycle, native acquisition and priming batch',
             ['session_start', 'peer_created', 'channel_created', 'media_acquired', 'microphone_attached', 'priming_start', 'playback_bound'].map(k => chronology.counts[k]), [1, 1, 1, 1, 1, 1, 1]);
           check('08N actual command sends distinct from enqueue', chronology.counts.send > 0 && chronology.counts.send === chronology.counts.enqueue);
@@ -206,29 +219,29 @@ try {
           check('08N safe details omit provider/source/transcript identifiers',
             !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|question09c|answer08d|Synthetic08D|Synthetic09C/.test(JSON.stringify(chronology)));
           check('08N unsupported capture is explicitly unknown', chronology.capture.effective.echoCancellation, 'unknown');
-          check('08N details remain within viewport', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-          const evidence08n = path.resolve('artifacts/local/08n'); await mkdir(evidence08n, { recursive: true });
-          await page.screenshot({ path: path.join(evidence08n, `${kind.toLowerCase()}-${width}-safe-details.png`), fullPage: true });
-          await page.getByText('Voice setup details', { exact: true }).click();
-          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-ready.png`), fullPage: true });
+          check('08N conversation remains within viewport', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+          const evidence08n = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08n`); await mkdir(evidence08n, { recursive: true });
+          await writeFile(path.join(evidence08n, `${kind.toLowerCase()}-${width}-safe-diagnostics.json`), JSON.stringify(chronology, null, 2));
+          await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
+          await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-ready.png`), fullPage: true });
           const retained = await page.locator('.transcript-text').allTextContents();
-          await page.getByRole('button', { name: 'Stop session', exact: true }).click(); await f.clean(kind + ' Stop');
+          await page.getByRole('button', { name: 'End voice', exact: true }).click(); await f.clean(kind + ' Stop');
           check('09C both speakers retained on Stop', await page.locator('.transcript-text').allTextContents(), retained);
-          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-stopped.png`), fullPage: true });
+          await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-stopped.png`), fullPage: true });
           check('assistant speech transcript retained on Stop', (await page.locator('.transcript').textContent()).includes('Synthetic08D assistant speech text.'));
           check('only injected provider words rendered', await page.locator('.transcript-turn').count(), 3);
-          await page.getByRole('button', { name: 'Inspect extracted text', exact: true }).click();
+          await page.getByRole('button', { name: 'View source', exact: true }).click();
           check('source preview retained after Stop', await page.locator('.source-reader .page-text').count(), kind === 'PDF' ? pdfFixture.sections.length : captionFixture.segments.length);
           await page.getByRole('button', { name: 'Close text and return', exact: true }).first().click();
           await f.control({ hold: '' }); await f.start(); await f.ready();
           check('09C new voice session clears transcript', await page.locator('.transcript-turn').count(), 0);
-          await page.getByText('Voice setup details', { exact: true }).click();
-          const freshChronology = JSON.parse(await page.locator('.voice-session details pre').innerText());
+          await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
+          const freshChronology = await page.evaluate(() => window.__voice13dDiagnostics().chronology);
           check('08N explicit new session clears old chronology', freshChronology.counts.session_start === 1 && !freshChronology.rows.some(r => r.event === 'response.created'));
-          await page.getByText('Voice setup details', { exact: true }).click();
+          await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
           await page.getByRole('button', { name: 'Text mode', exact: true }).click(); await f.clean(kind + ' mode switch');
           check('mode switch clears conversation', await page.locator('.transcript-turn').count(), 0);
-          await page.getByRole('button', { name: 'Start text session', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
+          await page.getByRole('button', { name: 'Start chat', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
           await page.getByLabel('Your question', { exact: true }).fill('Synthetic follow-up in text mode'); await page.getByRole('button', { name: 'Send question', exact: true }).click();
           await expect(page.locator('.transcript')).toContainText('All source markers preserved.');
           check('text mode acquires no new microphone', (await f.snap()).counts.media, 2);
@@ -245,7 +258,7 @@ try {
           else if (group === 'active-races') await f.ready();
           else await until(async () => (await f.snap()).pending > 0);
           if (phase === 'departure') await f.page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
-          else if (phase === 'removal') { await f.page.getByRole('button', { name: 'Remove', exact: true }).click(); await f.page.getByRole('button', { name: 'Confirm remove', exact: true }).click(); }
+          else if (phase === 'removal') { await f.page.getByText('Source actions', { exact: true }).click(); await f.page.getByRole("menuitem", { name: "Remove source", exact: true }).click(); await f.page.getByRole('button', { name: 'Confirm remove', exact: true }).click(); }
           else if (phase === 'offline') await f.page.evaluate(() => { Object.defineProperty(navigator, 'onLine', { configurable: true, value: false }); window.dispatchEvent(new Event('offline')); });
           else if (phase === 'disconnect') await f.page.evaluate(() => { const p = window.__voice08d.peers.at(-1); p.connectionState = 'disconnected'; p.dispatchEvent(new Event('connectionstatechange')); });
           else if (phase === 'replacement') {
@@ -253,7 +266,7 @@ try {
             await f.page.route('**/api/sources/pdf', route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, source: sourceDto(row) }) }));
             await f.upload();
           }
-          else if (phase !== 'expiry') await f.page.getByRole('button', { name: 'Stop session', exact: true }).click();
+          else if (phase !== 'expiry') await f.page.getByRole('button', { name: 'End voice', exact: true }).click();
           await f.page.evaluate(() => window.__voice08d.release()); await f.releaseSdp(); await f.clean(phase);
           await f.context.close();
         }
@@ -263,20 +276,24 @@ try {
         for (const fault of group === 'activation-settings' ? ['threshold-missing', 'threshold-wrong'] : group === 'transcription-settings' ? ['transcription-missing', 'transcription-wrong'] : ['settings', 'item', 'provider', 'context', 'malformed', 'oversized', 'sdp-mime', 'sdp-body', 'denied']) {
           const f = await open('PDF', fault === 'denied' ? 390 : 1440);
           if (fault.startsWith('sdp-')) f.sdpFault(fault.slice(4)); else await f.control(fault === 'denied' ? { denied: true } : { fault });
-          await f.start(); await expect(f.page.getByRole('button', { name: 'Start a fresh voice session', exact: true })).toBeEnabled();
-          await f.page.getByText('Voice setup details', { exact: true }).click();
-          const details = f.page.getByText('Voice setup details', { exact: true }).locator('..');
+          await f.start(); await expect(f.page.getByRole('button', { name: /^(Start|Retry) voice$/, exact: true })).toBeEnabled();
+          await expect(f.page.getByText('Voice help', { exact: true })).toHaveCount(0);
+          const details = await f.page.evaluate(() => window.__voice13dDiagnostics().setup);
           const stage = fault.startsWith('transcription-') || fault.startsWith('threshold-') ? 'final_settings_ack' : fault === 'settings' || fault === 'provider' || fault === 'context'
             ? 'initial_settings_ack' : fault === 'item' ? 'source_items_ack' : fault.startsWith('sdp-') ? 'sdp_validation' : fault === 'denied' ? 'microphone_request' : 'initial_settings_ack';
-          await expect(details).toContainText(stage);
-          check(fault + ' diagnostics exclude raw or private fields', !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|input_text|v=0/.test(await details.innerText()));
+          check(fault + ' setup stage preserved', details.some(r => r.stage === stage));
+          await expect(f.page.locator('#voice-session-guidance')).toBeVisible();
+          check(fault + ' diagnostics exclude raw or private fields', !/ek_|sk-|PRIVATE09C|PRIVATE02D|ownerSessionHash|clientSecret|input_text|v=0/.test(JSON.stringify(details)));
           if (fault === 'settings') await f.page.screenshot({ path: path.join(directory, 'setup-details-08g.png'), fullPage: true });
           check(fault + ' no audio attachment', (await f.snap()).counts.attached, 0);
           if (fault.startsWith('threshold-')) check(fault + ' 08M rejects before microphone', (await f.snap()).counts.media, 0);
           await f.clean(fault);
           if (fault === 'denied') {
-            await expect(f.page.locator('#voice-session-guidance')).toContainText('Text mode is a separate next step');
+            await expect(f.page.locator('#voice-session-guidance')).toContainText('select Text mode');
             await f.page.screenshot({ path: path.join(directory, 'denied-390.png'), fullPage: true });
+            await expect(f.page.getByText('Voice help', { exact: true })).toHaveCount(0);
+            await f.page.evaluate(() => window.scrollTo(0, 0));
+            await f.page.screenshot({ path: path.join(directory, 'denied-390-collapsed.png'), fullPage: true });
             check('denied media leaves explicit mode choice', await f.page.getByRole('button', { name: 'Text mode', exact: true }).isEnabled());
           }
           await f.context.close();
@@ -297,7 +314,7 @@ try {
       const p = path.join(dir, e.name); if (e.isDirectory()) await audit(p, client);
       else if (client && e.name.endsWith('.js')) {
         chunks++; const s = await readFile(p, 'utf8');
-        for (const marker of ['Synthetic09C', 'PRIVATE09C', 'fakeBrowserVoice', '__voice08d', 'sk-synthetic', 'SyntheticSourceDatabase', 'ownerSessionHash', 'VoiceRegistry', 'OWNED_SOURCE_VOICE_ENABLED']) check('client excludes ' + marker, !s.includes(marker));
+        for (const marker of ['Synthetic09C', 'PRIVATE09C', 'fakeBrowserVoice', '__voice08d', '__voice13dDiagnostics', 'observeVoiceDiagnostics', 'sk-synthetic', 'SyntheticSourceDatabase', 'ownerSessionHash', 'VoiceRegistry', 'OWNED_SOURCE_VOICE_ENABLED']) check('client excludes ' + marker, !s.includes(marker));
       } else if (!client && e.name.endsWith('.nft.json')) check('production trace excludes fixtures', JSON.parse(await readFile(p, 'utf8')).files.every(f => !/(?:^|[/\\])(tests|scripts|artifacts)(?:[/\\])/.test(f)));
     }
   };

@@ -8,8 +8,8 @@ import { VoiceEventDiagnostics } from "../../src/shared/voice-event-diagnostics.
 const source = "Cedar Loop is a two kilometre trail. Start at the north gate. Follow blue markers to the pond. The west bridge is closed; use the east boardwalk. Bring water and return before dusk.";
 const evidence: unknown[] = [];
 after(async () => {
-  await mkdir("artifacts/local/08o", { recursive: true });
-  await writeFile("artifacts/local/08o/replays.json", JSON.stringify({ environment: "synthetic events/media/clock, no model or acoustic proof", evidence }, null, 2));
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08o`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08o/replays.json`, JSON.stringify({ environment: "synthetic events/media/clock, no model or acoustic proof", evidence }, null, 2));
 });
 
 for (const scenario of ["stop-silence", "stop-continue", "different-question", "zero-input-event", "blank-delayed-asr"] as const) {

@@ -3,7 +3,7 @@ import { captionCacheKey, type CaptionCache } from "../captions/cache.ts";
 import type { YoutubeSourceConfig } from "./config.ts";
 import type { CaptionSelectionConfig } from "../captions/config.ts";
 import type { CaptionProvider } from "../captions/provider.ts";
-import { normalizeVideo, validLanguage } from "../captions/input.ts";
+import { isEnglish, matchesCaptionLanguage, normalizeVideo, validLanguage } from "../captions/input.ts";
 import { readBounded } from "../captions/bounded-body.ts";
 import { Admission } from "../proof/admission.ts";
 import { CaptionAdmission, captionLimits } from "../captions/admission.ts";
@@ -20,11 +20,11 @@ const errors: Record<SourceFailureCode, [number, string]> = {
   disabled: [503, "YouTube import unavailable"], forbidden: [403, "Request forbidden"],
   visitor_required: [401, "Visitor cookie required; retry once with the issued cookie"],
   invalid_request: [400, "Send only video and optional language as JSON within 512 bytes and 2 seconds"],
-  invalid_input: [400, "Invalid YouTube URL, video ID or language"],
+  invalid_input: [400, "Use a valid YouTube URL and English captions (en or an English regional tag)."],
   limit_reached: [429, "Caption service busy or request limit reached; try again later"],
   unavailable: [422, "Video unavailable for caption retrieval"], storage_unavailable: [503, "Source storage unavailable; try again later"],
   replacement_conflict: [409, "Another import completed; replace the source deliberately when ready"],
-  no_captions: [422, "No native captions available for this video or language"],
+  no_captions: [422, "English captions are unavailable for this video. Choose a video with English captions."],
   rate_limited: [429, "Caption provider rate limit reached; try again later"],
   blocked: [502, "Caption provider could not access this video"],
   timeout: [504, "Caption import deadline exceeded"], cancelled: [408, "Caption import cancelled"],
@@ -76,7 +76,8 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
       const fields = value as Record<string, unknown>;
       const video = normalizeVideo(fields.video);
       if (!video || ("language" in fields && !validLanguage(fields.language))) return fail("invalid_input");
-      const language = fields.language as string | undefined;
+      if (fields.language !== undefined && !isEnglish(fields.language)) return fail("invalid_input");
+      const language = (fields.language as string | undefined) ?? "en";
       const key = captionCacheKey(video.videoId, language);
       const jobKey = captionJobKey(key, config);
       if (lease && !lease.bind(config.cacheBypass ? Symbol() : jobKey)) return fail("limit_reached");
@@ -94,7 +95,7 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
         try {
           transcript = validatedTranscript(transcript);
           if (transcript.canonicalUrl !== video.canonicalUrl
-            || (key.languagePreference && transcript.language.toLowerCase() !== key.languagePreference)
+            || !matchesCaptionLanguage(transcript.language, language)
             || (!hit && config.provider !== "auto" && transcript.provider !== (config.provider === "direct" ? "youtube-transcript-plus@2.0.3" : "supadata"))) throw new Error();
         } catch { throw new SourceError("malformed"); }
         live();

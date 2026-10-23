@@ -5,9 +5,10 @@ import {
   YoutubeTranscriptVideoUnavailableError, type FetchParams,
 } from "youtube-transcript-plus";
 import type { CaptionResult, CaptionStage, CaptionTranscript } from "../../shared/captions.ts";
-import { normalizeVideo, validLanguage } from "./input.ts";
+import { matchesCaptionLanguage, normalizeVideo, validLanguage } from "./input.ts";
 import { CaptionError } from "./errors.ts";
 import { readBounded } from "./bounded-body.ts";
+import { canonicalDirectCaptionText } from "./entities.ts";
 
 export const CAPTION_PROVIDER = "youtube-transcript-plus@2.0.3" as const;
 export const captionBounds = { deadlineMs: 9000, segments: 20000, characters: 1_000_000,
@@ -36,19 +37,20 @@ export function normalizeSegments(raw: unknown, videoId: string): CaptionTranscr
 }
 
 // The release's regex parser silently skips unsupported XML nodes. Reject partial parsing.
-function checkTranscriptXml(text: string): void {
+function checkTranscriptXml(text: string): string[] {
   const wrapper = /^\s*(?:<\?xml[^?]*\?>\s*)?<transcript\b[^>]*>([\s\S]*)<\/transcript>\s*$/.exec(text);
   if (!text.trim()) throw new CaptionError("no_captions", "Caption endpoint returned an empty body", "transcript");
   if (!wrapper) throw new CaptionError("malformed", "Caption XML format is unsupported", "transcript");
-  let count = 0;
-  const remainder = wrapper[1].replace(/<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g, (_, start: string, duration: string) => {
-    count++;
+  const texts: string[] = [];
+  const remainder = wrapper[1].replace(/<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g, (_, start: string, duration: string, content: string) => {
+    texts.push(content);
     if (!start.trim() || !duration.trim() || !Number.isFinite(Number(start)) || Number(start) < 0
       || !Number.isFinite(Number(duration)) || Number(duration) < 0) throw new CaptionError("malformed", "Caption XML timing is invalid", "transcript");
     return "";
   });
   if (remainder.trim()) throw new CaptionError("malformed", "Caption XML contains unsupported or malformed segments", "transcript");
-  if (count > captionBounds.segments) throw new CaptionError("too_large", "Transcript exceeds 20000 segments", "transcript");
+  if (texts.length > captionBounds.segments) throw new CaptionError("too_large", "Transcript exceeds 20000 segments", "transcript");
+  return texts;
 }
 
 export function createDirectCaptionProvider(options: { fetch?: typeof fetch; deadlineMs?: number } = {}): CaptionProvider {
@@ -63,6 +65,7 @@ export function createDirectCaptionProvider(options: { fetch?: typeof fetch; dea
     const signal = AbortSignal.any([input.signal, deadline.signal]);
     let stage: CaptionStage = "watch";
     let automatic = false;
+    let xmlTexts: string[] | undefined;
     try {
       const hook = (step: CaptionStage, maxBytes: number) => async (params: FetchParams) => {
         stage = step;
@@ -74,7 +77,7 @@ export function createDirectCaptionProvider(options: { fetch?: typeof fetch; dea
           throw new CaptionError("blocked", "Extractor requested an unsupported upstream destination", step);
         }
         const response = await network(url, { method: params.method ?? "GET", body: params.body,
-          headers: { ...params.headers, ...(params.lang ? { "Accept-Language": params.lang } : {}),
+          headers: { ...params.headers, ...(input.language ? { "Accept-Language": input.language } : {}),
             ...(params.userAgent ? { "User-Agent": params.userAgent } : {}) },
           signal, redirect: "manual", cache: "no-store", credentials: "omit" });
         if (!response.ok) {
@@ -88,7 +91,7 @@ export function createDirectCaptionProvider(options: { fetch?: typeof fetch; dea
           void response.body?.cancel().catch(() => {});
           throw new CaptionError("too_large", "Response exceeds the proof byte limit", step);
         }
-        const text = await readBounded(response.body, maxBytes, signal);
+        let text = await readBounded(response.body, maxBytes, signal);
         if (step === "watch" && !/"INNERTUBE_API_KEY":"([^"]+)"|INNERTUBE_API_KEY\\":\\"([^\\"]+)\\"/.test(text)
           && !text.includes('class="g-recaptcha"')) throw new CaptionError("unavailable", "Watch page did not expose the extractor bootstrap key", step);
         if (step === "player") {
@@ -97,20 +100,40 @@ export function createDirectCaptionProvider(options: { fetch?: typeof fetch; dea
           const status = player?.playabilityStatus?.status;
           if (status && status !== "OK") throw new CaptionError(status === "LOGIN_REQUIRED" ? "blocked" : "unavailable",
             status === "LOGIN_REQUIRED" ? "Player requires sign-in; public extraction stopped" : "Player reports the video is not playable", step);
-          const tracks = (player?.captions?.playerCaptionsTracklistRenderer ?? player?.playerCaptionsTracklistRenderer)?.captionTracks;
-          const selected = Array.isArray(tracks) ? input.language ? tracks.find(t => t?.languageCode === input.language) : tracks[0] : undefined;
+          const tracklist = player?.captions?.playerCaptionsTracklistRenderer ?? player?.playerCaptionsTracklistRenderer;
+          const tracks = tracklist?.captionTracks;
+          // Select from this already-bounded player response: no extra language-list
+          // request/retry. The package then receives only the actual selected track.
+          const candidates = Array.isArray(tracks) ? tracks.filter(t => validLanguage(t?.languageCode)
+            && matchesCaptionLanguage(t.languageCode, input.language)) : [];
+          const exact = candidates.find(t => t.languageCode.toLowerCase() === input.language?.toLowerCase());
+          const selected = input.language ? exact ?? candidates.sort((a, b) => {
+            const x = a.languageCode.toLowerCase(), y = b.languageCode.toLowerCase();
+            return x < y ? -1 : x > y ? 1 : 0;
+          })[0] : candidates[0];
+          if (!selected) throw new CaptionError("no_captions", "Captions unavailable for the requested language", step);
           automatic = selected?.kind === "asr";
+          tracklist.captionTracks = [selected];
+          text = JSON.stringify(player);
         }
-        if (step === "transcript") checkTranscriptXml(text);
+        if (step === "transcript") xmlTexts = checkTranscriptXml(text);
         signal.throwIfAborted();
         return new Response(text, { status: 200 });
       };
       // Cache is opt-in in 2.0.3. No cache object, metadata request or language-list request.
-      const raw = await fetchTranscript(input.videoId, { lang: input.language, signal, retries: 0,
+      // Language selection occurs in the player hook. Omitting the package's exact-only
+      // selector preserves the regional tag it returns instead of relabeling it as en.
+      const raw = await fetchTranscript(input.videoId, { signal, retries: 0,
         videoDetails: false, videoFetch: hook("watch", captionBounds.watchBytes),
         playerFetch: hook("player", captionBounds.playerBytes), transcriptFetch: hook("transcript", captionBounds.transcriptBytes) });
       signal.throwIfAborted();
-      const transcript = normalizeSegments(raw, input.videoId);
+      if (!xmlTexts || raw.length !== xmlTexts.length) throw new CaptionError("malformed", "Caption parser segment count mismatch", "transcript");
+      const texts = xmlTexts;
+      // Package 2.0.3 decodes only a short allowlist once. Use the validated raw
+      // XML text to make depth independent of that lossy pass, retaining its
+      // timing/language parsing. Final size validation follows canonicalization.
+      const transcript = normalizeSegments(raw.map((segment, i) => ({ ...segment,
+        text: canonicalDirectCaptionText(texts[i]) })), input.videoId);
       if (automatic) transcript.trackType = "automatic";
       return { ok: true, transcript };
     } catch (error) {

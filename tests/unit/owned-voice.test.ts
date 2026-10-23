@@ -126,6 +126,22 @@ for (const kind of ["PDF", "YOUTUBE"]) test(`02D ${kind} complete structuredB; o
   const safe = JSON.stringify({ p, output });
   for (const secret of [config.apiKey, config.cookieSecret, f.visitor.owner, "ownerSessionHash", "activeSourceOwner"]) assert.equal(safe.includes(secret), false);
 });
+for (const kind of ["PDF", "YOUTUBE"]) for (const failure of [false, true])
+  test(`08P ${kind} exact larger issuance; provider failure=${failure} never downgrades`, async () => {
+    const f = fixture(kind), models: string[] = [];
+    f.mint(createVoiceMint(async (_url, init) => {
+      const session = JSON.parse(init!.body as string).session;
+      models.push(session.model); assert.equal(session.model, "gpt-realtime-2.1");
+      if (failure) return new Response(null, { status: 503 });
+      return Response.json({ value: "ek_synthetic08p", expires_at: Math.floor(f.now() / 1000) + 60, session });
+    }, f.now));
+    const p = await f.start();
+    assert.equal(p.input.policy.model, "gpt-realtime-2.1");
+    assert.equal(p.input.policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+    assert.equal((await f.credential(p)).status, failure ? 404 : 200);
+    assert.equal((await f.credential(p)).status, 404);
+    assert.deepEqual(models, ["gpt-realtime-2.1"]); clean(f);
+  });
 for (const [label, headers, status] of [
   ["missing visitor", { cookie: "" }, 401], ["forged visitor", { cookie: "__Host-td-visitor=forged" }, 401],
   ["foreign origin", { origin: "https://foreign.example" }, 403], ["cross-site metadata", { "sec-fetch-site": "cross-site" }, 403],

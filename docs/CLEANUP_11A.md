@@ -1,5 +1,7 @@
 # Task 11A — expired-row cleanup operator runbook and review
 
+**PM13D verification22October2026:** corrected harness passed all12 real PostgreSQL18.6 scenarios on an isolated migrated disposable target: zero owned fixtures remaining,4clients/pools released, container disposed. [Acceptance](PM_ACCEPTANCE_13D.md), logs `artifacts/local/13d/pm-sql/`. Earlier NOT_RUN statements are historical. No production cleanup/scheduler established by this test; operational plan remains a release action. Production cleanup/schema code unchanged; only invalid active-PDF fixtures and stage reporting corrected.
+
 **Current PM11A review:** local cleanup implementation accepted in3961af4; build0rWK8RA2kP8W59_6R1mUe, all11 hashes match, fresh52cleanup/641unit PASS. Real PostgreSQL cleanup/race validation remains NOT_RUN, no deployment/scheduling. Next single task `docs/WORKER_TASK_08A.md`: simulated voice lifecycle/controls using07B priming. Full08–10 remain unfinished;07 model binding/live gates remain blocked. Public03eb7d8 stays PDF-only.
 
 Worker proposes **READY_FOR_REVIEW** for this storage subcheck only. PM owns acceptance and production execution. Full Step 11, deployment and scheduling remain open. No schema/migration, existing repository/cache adapter, application route, client bundle import, UI or provider gate is changed.

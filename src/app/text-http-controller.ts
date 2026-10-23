@@ -96,9 +96,7 @@ export class HttpTextController implements TextController {
   private retain() {
     this.text = { ...this.text, phase: "stopped", turns: this.text.turns.map(turn => ({ ...turn,
       ...(turn.generation === "generating" ? { generation: "stopped" as const } : {}),
-      parts: turn.parts.map(part => ({ ...part, ...(part.state === "draft" ? { state: "unfinished" as const } : {}),
-        ...(part.evidence ? { evidence: part.evidence.map(unit => unit.state === "pending"
-          ? { ...unit, state: "incomplete" as const, references: [] } : unit) } : {}) })) })) };
+      parts: turn.parts.map(part => ({ ...part, ...(part.state === "draft" ? { state: "unfinished" as const } : {}) })) })) };
   }
   private finish(a: Attempt, failed: boolean, userStop = false) {
     if (this.active !== a || a.stopping) return;

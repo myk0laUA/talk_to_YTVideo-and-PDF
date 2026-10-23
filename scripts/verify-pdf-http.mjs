@@ -10,12 +10,13 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 const origin = "http://127.0.0.1:3105";
-const directory = path.resolve("artifacts/local/04a");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/04a`);
 await mkdir(directory, { recursive: true });
-const manifest = JSON.parse(await readFile(path.join(directory, "fixtures/manifest.json"), "utf8"));
+const fixtureDirectory = path.resolve(process.env.PDF_FIXTURE_DIRECTORY ?? "artifacts/local/04a/fixtures");
+const manifest = JSON.parse(await readFile(path.join(fixtureDirectory, "manifest.json"), "utf8"));
 const fixtures = new Map();
 for (const fixture of manifest.fixtures) {
-  const bytes = await readFile(path.join(directory, `fixtures/${fixture.name}.pdf`));
+  const bytes = await readFile(path.join(fixtureDirectory, `${fixture.name}.pdf`));
   assert.equal(bytes.length, fixture.bytes); assert.equal(createHash("sha256").update(bytes).digest("hex"), fixture.sha256);
   fixtures.set(fixture.name, { ...fixture, data: bytes });
 }

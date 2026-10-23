@@ -8,24 +8,24 @@ web
 
 ## Stack
 
-User-directed Next.js App Router, React and TypeScript; Node 24; Prisma/PostgreSQL; planned Render Node deployment. The source of truth is `docs/IMPLEMENTATION_PLAN.md`.
+Next.js App Router, React and TypeScript; pinned Node 24.22.0/npm 11.19.1; Prisma/PostgreSQL; Render hosting. Original Step 01–14 sequencing remains in [the plan](docs/IMPLEMENTATION_PLAN.md).
 
 ## Product Purpose
 
-Help a visitor understand one PDF or YouTube video through source inspection, live voice questions and a microphone-free text fallback. Current implementation is a local shell only.
+Help a visitor explore one PDF or YouTube caption source through source inspection, live WebRTC voice and microphone-free text. These flows are implemented. Both conversation modes use the larger gpt-realtime-2.1 default. Final current-candidate hosted/phone evidence remains separate from local verification.
 
 ## Users and operating context
 
-The supplied assessment calls for reviewers to complete the flow on a mobile browser around 390 px, with physical phone audio checks. A narrower audience specialization is undecided. Do not invent customer claims.
+Assessment reviewers use desktop and mobile browsers. The accepted cloud exception demonstrates YouTube in the local application; hosted YouTube acquisition remains disabled after blocked upstream requests. Physical phone audio and keyboard checks follow final deployment.
 
 ## Capabilities and constraints
 
-One source and conversation at a time. Anonymous visitor ownership; no accounts, permanent conversation history, embeddings, vector database, OCR or audio transcription. Full extractable source text and honest limits are required. Live providers, storage and deployment need separate evidence.
+One source and one active conversation in the workspace; anonymous one-hour visitor ownership/expiry, full extracted source context, bounded inputs and provider context rejection. No accounts, embeddings, vector database, OCR, video audio transcription or permanent chat history. Switching mode/source clears conversation state. Starting again retains unsent text drafts without automatic resend. Answers can be wrong; citations and perfect summaries are not requirements.
 
-## Accessibility
+## Accessibility and recovery
 
-Keyboard focus, accessible labels, readable source text, status beyond color, and usable mobile controls. Physical iOS/Android verification remains required by the plan.
+Light/dark themes, keyboard focus and source dialogs, reachable mobile controls, explicit status/error recovery, independent microphone/speaker mute and blocked-playback recovery. Browser emulation does not prove physical audio, interruption or native keyboard behavior.
 
 ## Evidence on hand
 
-Planning documents and the local scaffold. No live ingestion, voice, database or public deployment evidence. This concise context comes from the user's existing handoff, not a new design discovery exercise.
+[13C](docs/RELEASE_CANDIDATE_13C.md) is the current clean-export release review. [Project state](docs/PROJECT_STATE.md) preserves historical hosted PDF, local real-source reports, synthetic checks and semantic failures. Cleanup code exists; disposable PostgreSQL/races, production operation, final hosted paths, physical phone and public submission access remain explicit gates. No release completion is inferred from scaffold or test counts.

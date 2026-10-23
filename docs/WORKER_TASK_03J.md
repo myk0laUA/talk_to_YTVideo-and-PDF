@@ -1,0 +1,40 @@
+# Task03J — bounded live calibration of text model routing
+
+Sole active worker task under original Steps07/10/13. Follow WORKER_PROMPT and required repository handoffs.03I offline routing accepted; now obtain evidence for a conservative operational cutoff. PM owns final selection/acceptance/deployment. Do not modify prompts, estimator, source packing, model settings or production configuration during this comparison.
+
+## Starting point
+
+HEAD1d30684 plus accepted dirty work; root build TT0vHgJ-bEvCk1afwmjLM. Read MODEL_ROUTING_03I.md, YOUTUBE_LARGER_MODEL_COMPARISON.md and PM_03H_SEMANTIC_REVIEW.md.03I passes offline; no cutoff validated. Both model context windows128K; this tests answer quality versus measured input load. Older03H failures remain failures. Earlier ledgers closed; use a new03j ledger only.
+
+## One outcome
+
+Return a paired quality/latency/cost table, a supported conservative cutoff recommendation OR a finding that size alone is insufficient, plus local built-app proof of both routing branches. Do not infer a universal threshold or deploy from a small sample.
+
+## Corpus and freeze before calls
+
+Within30minutes choose six complete, substantive, nonrepeated sources covering both kinds and three approximate size bands. Use the original complete03H Cuddy and Urban caption snapshots as two caption fixtures; select a genuinely short caption source from already saved public evidence. Use three already available public/nonprivate PDFs or extracted PDF snapshots at short/medium/long sizes. Prefer roughly <=3K,5–12K,15–30K estimated model-visible tokens; record actual achieved sizes, not invented bins. The existing17.5K/25.8K caption cases are both above the desired middle band: disclose that coverage gap rather than calling one a5–12K source.
+
+Do not pad/repeat/truncate sources to manufacture sizes. No new paid acquisition, browsing for private documents or expansive corpus hunt. If a needed substantive fixture is unavailable within the timebox, return the precise corpus gap and freeze the available subset; do not replace it with repetition and claim calibration complete. Never publish source bodies/secrets in tracked docs.
+
+For each source freeze its full-text hash, provenance, size estimate/estimator revision, one whole-source question, a source-reviewed expected answer and support spans covering beginning/middle/end and the actual central conclusion. Preserve original03H summary questions and key. Also freeze original Cuddy1-4 follow-up with exact saved first three user/assistant turns for a separate paired diagnostic. No model-generated reference keys or answer-informed rubric changes. PM03H semantic review is the grading standard: useful faithful paraphrase, no unsupported material attribution; no mandatory citation/slogan/every-subtheme criteria.
+
+## Bounded execution
+
+New allocation **<=US$3 estimated**, at most **16 response starts /16 sessions**, no retries/resampling. Maximum plan:12 paired summaries (six sources x two models),2 Cuddy follow-ups,2 built-app route checks. Each session max60seconds, each answer max30seconds; max512output tokens/minimal reasoning, text only. Verify current official prices for both models before reserving costs. Reserve conservative input/output cost before each call, include history/metadata, and stop before allocation is exceeded. If fewer fixtures exist, reduce calls; do not spend spare capacity on prompt tuning. This is an estimate guard, not a hard provider billing cap. Record provider terminal usage, cached/uncached/text/reasoning categories without double counting; account invoice remains unknown.
+
+1. Use same complete sources/questions/instructions/representation on both allowlisted models. A task-owned diagnostic can reuse the existing manifest and accepted socket/priming components; no second production pipeline. Replaying saved public source snapshots is diagnostic evidence, not authorization to access expired database records. Cuddy follow-up uses the same historical visible turns for both candidates; disclose lack of hidden-state equivalence.
+2. Freeze run order. One sample/model/question. A Mini semantic failure is an intended calibration observation, not permission to retry; complete its paired larger comparison and remaining already-frozen independent cases within bounds. Stop the whole batch on a clear larger-model material failure, protocol/source-fidelity error, unknown cost exceeding reservation, resource leak or budget limit. Preserve all raw results, including failed/uncertain samples.
+3. After each case, independently grade against the complete source and frozen key. Record PASS/FAIL/UNRESOLVED with exact unsupported claims and support IDs. Do not score with keyword presence alone. Stop/close immediately, even on failure; always finally teardown. Capture confirmed model/source ACKs, terminal status/usage and elapsed time. No paid grader or provider calls beyond these starts.
+4. Before the final two app calls, use test-only cutoffs to force one below-cutoff Mini route and one at/above-cutoff larger route, preferably different source kinds. Use the actual built local app and real provider with isolated in-memory fixture repository and fresh anonymous owners, or a PM-designated disposable DB if already explicitly available. Do not write to a shared/production DB or reuse expired03H owner records. No need for new ingestion; clearly label synthetic repository versus real provider. Ensure harness fake-provider injection is removed and selected real model is evidenced. Verify an answer against source, Stop, actual Remove/Confirm remove, DELETE200/GET404 and resource closure. Use11D evidence helpers. If safe real-provider/in-memory isolation cannot be established within scope, record app checks BLOCKED; direct calls cannot substitute for app acceptance.
+
+## Cutoff decision rule
+
+Keep the same rule for PDF/captions. Recommend a candidate only if Mini passes all observed material assertions in a genuinely short region across BOTH kinds and larger passes above it including known regressions. Select a conservative boundary supported by measured observations; explicitly state the untested interval. Never call the first observed failure a precise universal failure boundary, or ignore a shorter Mini failure because a longer sample passed. If results are nonmonotonic, sparse, or ambiguous, report no defensible size-only cutoff; do not invent a number to finish. Do not weaken source-accuracy acceptance. All proposed cutoffs remain uncalibrated/unapproved in product configuration until PM review.
+
+## Scope / checks / return
+
+Target90minutes including fixture selection. No production code changes except a narrowly necessary task-owned evaluation helper; if an application defect appears, stop and return it. No voice changes, prompt repairs, model fallback, automatic retries, dependency upgrades, deployment or enabling hosted YouTube. Preserve existing dirty work, historical artifacts and closed ledgers.
+
+Pinned Node24.22.0/npm11.19.1. Read OpenAI Docs for current model/pricing facts; playwright-cli for actual-app browser checks. Verify current product/build hashes before calls, offline dry-run fake success/failure and spending gates, then execute only frozen cases. Do not overwrite old harness output. Full unchanged-product suite need not be repeated. Report actual commands/exits; run git diff --check for documentation/helper delivery. No physical-phone/audio claim.
+
+Return docs/MODEL_ROUTING_CALIBRATION_03J.md, concise PROJECT_STATE/TESTING entries and ignored artifacts/local/03j with frozen corpus/questions/keys/plan/hash, exact answers/scores, per-call usage/timing, socket/browser/server/source cleanup, model/size routing evidence, command ledger, final CLOSED cost ledger, changed-file hashes, and limitations. No secret or private source content in logs. Return READY_FOR_REVIEW then stop. PM accepts or rejects cutoff and sequences remaining release work; this task itself does not authorize deployment.

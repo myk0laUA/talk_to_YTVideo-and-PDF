@@ -7,10 +7,10 @@ test("shell loads, describes unavailable features, and fits the viewport", async
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await expect(page).toHaveTitle("Talk to a Document");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A little more understanding.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bring a source.Start a chat.");
   await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Add a YouTube video" })).toBeDisabled();
-  await expect(page.getByText("Voice and text conversations are not connected yet.")).toBeVisible();
+  await expect(page.getByText("Source import is unavailable right now. Please check again later.")).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to workspace" })).toBeFocused();
   await page.keyboard.press("Enter");
@@ -26,8 +26,8 @@ test("200% root text reflows the heading and source navigation at small widths",
   for (const width of [320, 390, 430]) {
     await page.setViewportSize({ width, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    for (const name of ["Source", "Conversation"]) {
-      const link = page.getByRole("link", { name, exact: true });
+    for (const name of ["About this temporary workspace"]) {
+      const link = page.getByText(name, { exact: true });
       await link.focus();
       await expect(link).toBeFocused();
       expect(await link.evaluate(el => { const b = el.getBoundingClientRect(); return b.left >= 0 && b.right <= innerWidth; })).toBe(true);

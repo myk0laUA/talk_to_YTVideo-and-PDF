@@ -3,9 +3,9 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/transcript-view",
   testMatch: "*.spec.ts",
-  outputDir: "artifacts/local/09b/browser-results",
+  outputDir: "artifacts/local/12e/regression/09b/browser-results",
   fullyParallel: true, forbidOnly: true, retries: 0,
-  reporter: [["list"], ["json", { outputFile: "artifacts/local/09b/browser-results.json" }]],
+  reporter: [["list"], ["json", { outputFile: "artifacts/local/12e/regression/09b/browser-results.json" }]],
   use: { baseURL: "http://127.0.0.1:3115", browserName: "chromium", trace: "on", video: "off" },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1000 } } },

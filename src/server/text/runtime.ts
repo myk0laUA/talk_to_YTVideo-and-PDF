@@ -8,9 +8,9 @@ import { createTextHandlers } from "./handlers";
 
 const state = globalThis as unknown as { ownedTextRegistry10d?: TextRegistry };
 const registry = state.ownedTextRegistry10d ??= new TextRegistry({ repository: createSourceRepository(getDatabase),
-  connect: (owner, signal) => {
+  connect: (owner, signal, policy) => {
     const config = parseTextConfig(process.env);
     if (!config) throw new Error("Text conversation unavailable");
-    return openTextSocket(config.apiKey, owner, signal);
+    return openTextSocket(config.apiKey, owner, signal, undefined, policy);
   } });
 export const textHandlers = createTextHandlers({ config: () => parseTextConfig(process.env), registry });

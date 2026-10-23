@@ -8,7 +8,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 
-const origin = "http://127.0.0.1:3108", directory = path.resolve("artifacts/local/03c");
+const origin = "http://127.0.0.1:3108", directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/03c`);
 await mkdir(directory, { recursive: true });
 const available = () => new Promise((resolve, reject) => {
   const server = net.createServer(); server.once("error", reject); server.listen(3108, "127.0.0.1", () => server.close(resolve));
@@ -16,7 +16,7 @@ const available = () => new Promise((resolve, reject) => {
 await available();
 const report = { startedUtc: new Date().toISOString(), runtime: process.version, buildId: (await readFile(".next/BUILD_ID", "utf8")).trim(),
   context: "local built Next HTTP, actual adapters and PDF parser; explicitly synthetic external upstream and Prisma repository; no real provider/database", scenarios: [] };
-const pdf = await readFile("artifacts/local/04a/fixtures/small.pdf");
+const pdf = await readFile(path.join(process.env.PDF_FIXTURE_DIRECTORY ?? "artifacts/local/04a/fixtures", "small.pdf"));
 const fullText = " FIRST synthetic marker \nMIDDLE synthetic marker\nLAST synthetic marker";
 const id = "dQw4w9WgXcQ";
 for (const scenario of ["disabled", "invalid-provider", "missing-key", "direct", "supadata", "youtube-only", "pdf-only", "security", "shared-admission"]) {

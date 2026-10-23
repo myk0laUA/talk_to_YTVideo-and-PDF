@@ -1,4 +1,5 @@
 import "server-only";
+import { SourceSizeError } from "../../shared/priming-failure.ts";
 import type { PreparationTrace } from "./diagnostics.ts";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { PROVIDER_VOICE_POLICY as policy } from "../../shared/priming-provider-policy.ts";
@@ -8,16 +9,19 @@ import { contextVariants, sourceContext } from "../context/document.ts";
 import { guardedAwait } from "../context/await.ts";
 import { requireLive, requireOwned, type SourceRepository } from "../sources/service.ts";
 import { onSourceChange } from "../sources/invalidation.ts";
-import { Admission, issuanceLimits, proofLimits, type Limits } from "../proof/admission.ts";
+import { Admission, type Limits } from "../proof/admission.ts";
+import { ownedVoicePreparations, ownedVoiceStarts, ownedVoiceReplayEntries } from "../session-policy.ts";
+import type { AdmissionRejection } from "../../shared/session-admission.ts";
 import type { Visitor } from "../proof/visitor.ts";
 import { validVoiceCredential, type VoiceMint } from "./provider.ts";
 
 export class VoiceError extends Error {
   readonly status: number;
-  constructor(status = 404) { super("Voice preparation unavailable"); this.status = status; }
+  readonly rejection?: AdmissionRejection;
+  constructor(status = 404, rejection?: AdmissionRejection) { super("Voice preparation unavailable"); this.status = status; this.rejection = rejection; }
 }
 export const VOICE_LIMITS = Object.freeze({ ticketMs: 30_000, preparationMs: 5000, acquisitionMs: 10_000,
-  entries: 4, replayEntries: 100 });
+  entries: 4, replayEntries: ownedVoiceReplayEntries });
 type Entry = { id: string; requestId: string; sourceId: string; visitor: Visitor; runId: string;
   expires: number; abort: AbortController; timer: ReturnType<typeof setTimeout>; input?: ProviderPrimingInput; consumed: boolean };
 type Deps = { repository: Pick<SourceRepository, "get">; mint: VoiceMint; now?: () => number;
@@ -37,7 +41,7 @@ export class VoiceRegistry {
   private unsubscribe: () => void;
   constructor(deps: Deps) {
     this.deps = deps; this.now = deps.now ?? Date.now; this.limits = { ...VOICE_LIMITS, ...deps.limits };
-    this.starts = new Admission(deps.preparations ?? proofLimits); this.issuance = new Admission(deps.issuance ?? issuanceLimits);
+    this.starts = new Admission(deps.preparations ?? ownedVoicePreparations); this.issuance = new Admission(deps.issuance ?? ownedVoiceStarts);
     this.unsubscribe = onSourceChange(owner => { const e = this.owners.get(owner); if (e) this.close(e); });
   }
   get resources() { return { entries: this.entries.size, timers: this.entries.size, replayEntries: this.seen.size, pendingMints: this.pendingMints }; }
@@ -67,10 +71,13 @@ export class VoiceRegistry {
   }
   async prepare(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal, freshVisitor: () => void, trace?: PreparationTrace) {
     const key = `${visitor.owner}:${requestId}`;
-    if (this.seen.has(key) || this.owners.has(visitor.owner)) throw new VoiceError(409);
-    if (this.entries.size >= this.limits.entries || this.seen.size >= this.limits.replayEntries) throw new VoiceError(429);
-    const release = this.starts.acquire(visitor.owner, "unverified-network", this.now());
-    if (!release) throw new VoiceError(429);
+    if (this.seen.has(key)) throw new VoiceError(409);
+    if (this.owners.has(visitor.owner)) throw new VoiceError(409, { reason: "busy" });
+    if (this.seen.size >= this.limits.replayEntries) throw new VoiceError(429, { reason: "capacity" });
+    if (this.entries.size >= this.limits.entries) throw new VoiceError(429, { reason: "busy" });
+    const admission = this.starts.attempt(visitor.owner, "unverified-network", this.now());
+    if ("rejection" in admission) throw new VoiceError(429, admission.rejection);
+    const { release } = admission;
     this.seen.add(key);
     const e: Entry = { id: randomBytes(32).toString("base64url"), sourceId, requestId, runId: randomUUID(),
       visitor: { owner: visitor.owner, expiresAt: visitor.expiresAt, token: "" }, abort: new AbortController(), consumed: false,
@@ -90,14 +97,17 @@ export class VoiceRegistry {
       const prepare = createProviderVoicePreparation({ repository, now: this.now });
       const result = await guardedAwait(() => prepare({ visitor: e.visitor, sourceId, signal: e.abort.signal, model: policy.model,
         mode: "voice", policyVersion: policy.policyVersion, runId: e.runId, variant: "B" }), e.abort.signal, () => this.guard(e, freshVisitor));
-      if (result.status !== "prepared") throw new VoiceError();
+      if (result.status !== "prepared") {
+        if (result.code === "source_too_large") { this.guard(e, freshVisitor); throw new SourceSizeError(); }
+        throw new VoiceError();
+      }
       e.input = result.input; trace?.mark("final_authorization");
       await this.authorize(e, freshVisitor, repository); this.guard(e, freshVisitor);
       this.deadline(e, Math.min(this.now() + this.limits.ticketMs, visitor.expiresAt * 1000, Date.parse(e.input.variant.source.expiresAt)));
       this.guard(e, freshVisitor);
       return { timingVersion: "owned-voice-time-v1", issuedAt: this.now(), preparationId: e.id, requestId,
         expiresAt: e.expires, conversationReady: false, providerConfirmed: false, input: e.input };
-    } catch { this.close(e); throw new VoiceError(); }
+    } catch (error) { this.close(e); throw error instanceof SourceSizeError ? error : new VoiceError(); }
     finally { signal.removeEventListener("abort", cancel); release(); }
   }
   async credential(visitor: Visitor, sourceId: string, requestId: string, preparationId: string, signal: AbortSignal,
@@ -110,8 +120,9 @@ export class VoiceRegistry {
     try {
       if (signal.aborted) throw new VoiceError();
       this.guard(e, freshVisitor); this.deadline(e, Math.min(e.expires, this.now() + this.limits.acquisitionMs));
-      release = this.issuance.acquire(visitor.owner, "unverified-network", this.now()) ?? undefined;
-      if (!release) throw new VoiceError(429);
+      const admission = this.issuance.attempt(visitor.owner, "unverified-network", this.now());
+      if ("rejection" in admission) throw new VoiceError(429, admission.rejection);
+      release = admission.release;
       await this.authorize(e, freshVisitor); this.guard(e, freshVisitor);
       const safetyIdentifier = createHash("sha256").update(`owned-voice-safety-v1:${visitor.owner}`).digest("hex");
       this.pendingMints++;

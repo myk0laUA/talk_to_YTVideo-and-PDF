@@ -17,6 +17,7 @@ import { openTextSocket, type TextSocket, type TextSocketConstructor } from "../
 import { EventEmitter } from "node:events";
 import { createSourceRepository } from "../../src/server/sources/repository.ts";
 import { SyntheticSourceDatabase } from "../sources/database.ts";
+import { captionBoundary } from "../context/caption-boundaries.ts";
 
 const config = { origin: "http://localhost:3000", cookieSecret: "a".repeat(64), secure: false, apiKey: "sk-synthetic10d-never-live" };
 const registries: TextRegistry[] = [];
@@ -31,7 +32,7 @@ function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = 
   let acquire: (() => Promise<TextConnection>) | undefined;
   const registry = new TextRegistry({ limits, repository: { get: async (id, owner) => { counts.reads++; return read ? read() : row && row.id === id && row.ownerSessionHash === owner ? structuredClone(row) : null; } },
     connect: async () => { counts.opens++; if (acquire) return acquire();
-      const transport = scriptedFullSource(kind, scenario, answers);
+      const transport = scriptedFullSource(kind, scenario, answers, "gpt-realtime-2.1");
       return { transport: { ...transport, send: raw => { counts.sends++; return transport.send(raw); } }, close: () => { counts.closes++; transport.close(); } }; } });
   registries.push(registry);
   const handlers = createTextHandlers({ config: () => config, registry });
@@ -52,8 +53,8 @@ function make(limits: ConstructorParameters<typeof TextRegistry>[0]["limits"] = 
   return { registry, visitor, counts, handlers, request, startId, begin, get row() { return row; }, setRow: (next: typeof row) => { row = next; },
     read: (next: typeof read) => { read = next; }, acquire: (next: typeof acquire) => { acquire = next; } };
 }
-test("03F registry projects only current owned source evidence across summary/follow-up/Stop", async () => {
-  const answers = ["  Authored attributed summary. [segment-1]\n", "Authored follow-up. [segment-unknown]\n"];
+test("03G registry retains ordinary and citation-looking text across summary/follow-up/Stop", async () => {
+  const answers = ["  Authored attributed summary.\n", "Authored follow-up. [segment-unknown]\n"];
   const f = make({}, "YOUTUBE", "success", answers), s = await f.begin();
   await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
   for (let n = 0; n < 2; n++) {
@@ -61,14 +62,19 @@ test("03F registry projects only current owned source evidence across summary/fo
     await wait(() => s.snapshots.at(-1)?.status.phase === "ready" && s.snapshots.at(-1)?.transcript.turns.length === (n + 1) * 2);
   }
   const parts = s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]);
-  assert.equal(parts[0].text, answers[0]); assert.equal(parts[0].evidence?.[0].state, "source_matched");
-  assert.equal(parts[0].evidence?.[0].references[0].startSeconds, captionFixture.segments[0].startSeconds);
-  assert.equal(parts[0].evidence?.[0].references[0].excerpt, captionFixture.segments[0].text);
-  assert.equal(parts[1].evidence?.[0].state, "unconfirmed");
+  assert.equal(parts[0].text, answers[0]);
+  assert.ok(parts.every(part => !Object.hasOwn(part, "evidence")));
   assert.equal(parts[1].text, answers[1]);
   f.registry.stop(f.visitor, f.startId); await s.consume;
   assert.deepEqual(s.snapshots.at(-1)!.transcript.turns.filter(t => t.role === "assistant").map(t => t.parts[0]), parts);
   assert.equal(f.registry.size, 0); assert.equal(f.counts.closes, 1);
+});
+
+test("13E 4097 captions reach text readiness through owned registry/stream and exact provider ACKs", async () => {
+  const f = fixture("YOUTUBE"); f.setRow(captionRecord(captionBoundary(), f.visitor));
+  const s = await f.begin(); await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
+  assert.equal(f.counts.opens, 1); assert.ok(f.counts.sends < 100);
+  f.registry.stop(f.visitor, f.startId); await s.consume; assert.equal(f.registry.size, 0); assert.equal(f.counts.closes, 1);
 });
 for (const kind of ["PDF", "YOUTUBE"] as const) test(`10D actual lifecycle and preparation ${kind}: full ACK, follow-up, Stop`, async () => {
   const f = fixture(kind), s = await f.begin();
@@ -140,7 +146,7 @@ for (const stage of ["initial", "preparation", "acquisition", "question"] as con
     const rejected = q ? assert.rejects(q) : undefined;
     sourceChanged(f.visitor.owner);
     if (resolve) resolve(f.row);
-    if (acquired) acquired({ transport: scriptedFullSource("PDF"), close: () => { f.counts.closes++; } });
+    if (acquired) acquired({ transport: scriptedFullSource("PDF", "success", undefined, "gpt-realtime-2.1"), close: () => { f.counts.closes++; } });
     await rejected; await s.consume; await delay(15);
     assert.equal(f.counts.closes, f.counts.opens); assert.equal(getEventListeners(s.abort.signal, "abort").length, 0);
   }
@@ -190,7 +196,7 @@ test("10D server socket auth/settings, bounded writes, once-only listener cleanu
   }
   const abort = new AbortController();
   const c = await openTextSocket(config.apiKey, "owner", abort.signal, Fake as unknown as TextSocketConstructor);
-  assert.ok(JSON.stringify(captured).includes("gpt-realtime-2.1-mini"));
+  assert.ok(JSON.stringify(captured).includes("gpt-realtime-2.1"));
   const remove = c.transport.subscribe(() => {}, () => {});
   await c.transport.send("{}"); remove(); c.close(); c.close(); await delay(0);
   assert.equal((sockets[0] as Fake).closes, 1); assert.equal(sockets[0].eventNames().length, 0);
@@ -207,10 +213,10 @@ test("10D concurrent cap and abandoned Start consume bounded admission before pr
 });
 test("10D visitor Start rate and process admission lifetime survive cleanup", async () => {
   const f = fixture();
-  for (let n = 0; n < 3; n++) { const requestId = randomUUID(); await f.registry.start(f.visitor, f.row.id, requestId, new AbortController().signal); f.registry.stop(f.visitor, requestId); }
+  for (let n = 0; n < 60; n++) { const requestId = randomUUID(); await f.registry.start(f.visitor, f.row.id, requestId, new AbortController().signal); f.registry.stop(f.visitor, requestId); }
   const before = f.counts.reads;
   await assert.rejects(f.registry.start(f.visitor, f.row.id, randomUUID(), new AbortController().signal), (e: unknown) => e instanceof RelayError && e.status === 429);
-  assert.equal(f.counts.reads, before); assert.equal(f.counts.opens, 0); assert.equal(f.registry.resources.replayEntries, 3);
+  assert.equal(f.counts.reads, before); assert.equal(f.counts.opens, 0); assert.equal(f.registry.resources.replayEntries, 60);
 });
 test("10D duplicate stream subscription is refused; cancelled body releases session", async () => {
   const f = fixture();
@@ -238,7 +244,7 @@ test("10D actual repository replacement invalidates only after commit; rollback 
   const repository = createSourceRepository(() => database.asClient()), original = uploadedRecord(pdfFixture, visitor);
   await repository.replace(original, () => {});
   let closes = 0;
-  const registry = new TextRegistry({ repository, connect: async () => { const transport = scriptedFullSource("PDF");
+  const registry = new TextRegistry({ repository, connect: async () => { const transport = scriptedFullSource("PDF", "success", undefined, "gpt-realtime-2.1");
     return { transport: { ...transport, send: raw => JSON.parse(raw).type === "response.create" ? undefined : transport.send(raw) }, close: () => { closes++; transport.close(); } }; } });
   registries.push(registry);
   const requestId = randomUUID(), id = await registry.start(visitor, original.id, requestId, new AbortController().signal);

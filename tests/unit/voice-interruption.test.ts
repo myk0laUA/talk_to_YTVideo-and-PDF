@@ -12,8 +12,8 @@ const originalFetch = globalThis.fetch, traces: unknown[] = [];
 before(() => { globalThis.fetch = async () => { providerCalls++; throw new Error("External requests forbidden"); }; });
 after(async () => {
   globalThis.fetch = originalFetch; assert.equal(providerCalls, 0);
-  await mkdir("artifacts/local/08b", { recursive: true });
-  await writeFile("artifacts/local/08b/interruption-matrix.json", JSON.stringify({
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08b`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08b/interruption-matrix.json`, JSON.stringify({
     environment: "local; actual composed lifecycle/07B with scripted schema projections, fake clock/media; no physical audio", providerCalls, traces,
   }, null, 2));
 });

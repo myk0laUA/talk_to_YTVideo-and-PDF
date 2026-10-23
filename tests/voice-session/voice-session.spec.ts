@@ -1,10 +1,10 @@
 import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 
-const start = (p: Page) => p.getByRole("button", { name: "Start voice session", exact: true });
-const stop = (p: Page) => p.getByRole("button", { name: "Stop session", exact: true });
-const interrupt = (p: Page) => p.getByRole("button", { name: "Interrupt answer", exact: true });
-const play = (p: Page) => p.getByRole("button", { name: "Enable speaker playback", exact: true });
+const start = (p: Page) => p.getByRole("button", { name: "Start voice", exact: true, includeHidden: true });
+const stop = (p: Page) => p.getByRole("button", { name: "End voice", exact: true, includeHidden: true });
+const interrupt = (p: Page) => p.getByRole("button", { name: "Interrupt answer", exact: true, includeHidden: true });
+const play = (p: Page) => p.getByRole("button", { name: "Tap to enable sound", exact: true, includeHidden: true });
 const media = (p: Page) => p.locator(".voice-device-status");
 const response = (p: Page) => p.locator(".voice-media-announcement");
 const turns = (p: Page) => p.locator(".transcript-turn");
@@ -26,14 +26,14 @@ async function prime(p: Page) { await act(p, "ACK initial"); await act(p, "ACK s
 async function begin(p: Page) { await start(p).click(); await prime(p); await expect(media(p)).toContainText("Outgoing microphone audio is on"); }
 async function answer(p: Page) { await act(p, "Begin answer"); await act(p, "Stream partial"); await act(p, "Output started"); }
 async function capture(p: Page, info: TestInfo, name: string) {
-  await mkdir("artifacts/local/08c/screenshots", { recursive: true });
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08c/screenshots`, { recursive: true });
   const details = p.locator("details").filter({ has: p.getByText("Fixture controls", { exact: true }) });
   const open = await details.count() && await details.getAttribute("open") !== null;
   if (open) await details.evaluate((e: HTMLDetailsElement) => { e.open = false; });
   // Property writes work under the fixture's strict style CSP; injected styles do not.
   const audits = p.locator('pre[aria-label="Fixture audit"], output[aria-label="Fixture revision"]');
   await audits.evaluateAll(elements => elements.forEach(e => { (e as HTMLElement).style.display = "none"; }));
-  await p.screenshot({ path: `artifacts/local/08c/screenshots/${info.project.name}-${name}.png`, fullPage: ["ready", "interrupted", "denied", "blocked", "retained", "production"].includes(name) });
+  await p.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08c/screenshots/${info.project.name}-${name}.png`, fullPage: ["ready", "interrupted", "denied", "blocked", "retained", "production"].includes(name) });
   await audits.evaluateAll(elements => elements.forEach(e => { (e as HTMLElement).style.display = ""; }));
   if (open) await details.evaluate((e: HTMLDetailsElement) => { e.open = true; });
 }
@@ -41,7 +41,7 @@ async function fits(p: Page) {
   expect(await p.evaluate(() => ({ page: document.documentElement.scrollWidth <= innerWidth,
     text: [...document.querySelectorAll(".transcript-text")].every(e => e.scrollWidth <= e.clientWidth + 1),
     controls: [...document.querySelectorAll(".voice-session button")].every(e => {
-      const box = e.getBoundingClientRect(), parent = e.closest(".voice-session")!.getBoundingClientRect();
+      if (!(e as HTMLElement).checkVisibility()) return true; const box = e.getBoundingClientRect(), parent = e.closest(".voice-session")!.getBoundingClientRect();
       return box.left >= parent.left - 1 && box.right <= parent.right + 1 && box.width <= innerWidth && box.height >= 48 && e.scrollWidth <= e.clientWidth + 1;
     }) }))).toEqual({ page: true, text: true, controls: true });
 }
@@ -103,7 +103,7 @@ test.afterEach(async ({ page }, info) => {
     }
   }
   const counters = await page.evaluate(() => ({ ...Reflect.get(window, "fixtureAudit"), localStorage: localStorage.length, sessionStorage: sessionStorage.length }));
-  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: new URL(page.url()).port === "3119" ? 0 : 1, abortListeners: 0, localStorage: 0, sessionStorage: 0 });
+  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: 0, abortListeners: 0, localStorage: 0, sessionStorage: 0 });
   const evidence = observations.get(page)!;
   await writeFile(info.outputPath("safe-counts.json"), JSON.stringify({ context: "actual08A/08B/09A/09B; test-only admission, simulated tracks/playback/transport/clock; no audio/device/provider", ...evidence, counters, records }, null, 2));
   expect(evidence.external).toEqual([]); expect(evidence.errors).toEqual([]);
@@ -121,7 +121,7 @@ test("explicit Start, full source ACK barrier, exact mute changes and independen
   await page.getByRole("button", { name: "Mute microphone", exact: true }).click();
   await expect(page.getByRole("button", { name: "Unmute microphone", exact: true })).toHaveAttribute("aria-pressed", "true");
   expect((await resource(page)).tracks.map(t => t.changes)).toEqual([[true, false], [true, false]]);
-  await play(page).click(); await expect(media(page)).toContainText("Playback enabled");
+  await expect(media(page)).toContainText("Playback enabled");
   await page.getByRole("button", { name: "Unmute microphone", exact: true }).click();
   expect((await resource(page)).tracks.map(t => t.changes)).toEqual([[true, false, true], [true, false, true]]);
   expect((await resource(page)).transport.commands).toEqual(before);
@@ -132,11 +132,11 @@ test("default admission refuses before any connection or microphone", async ({ p
   await mode(page, "source-default"); await start(page).click();
   await expect(page.locator(".voice-session-status")).toContainText("cannot be used");
   expect(await latest(page)).toMatchObject({ prepare: 1, connects: 0, media: 0, timers: 0 });
-  await expect(stop(page)).toBeDisabled(); await expect(page.getByRole("button", { name: "Start a fresh voice session" })).toBeEnabled();
+  await expect(stop(page)).toBeDisabled(); await expect(page.getByRole("button", { name: /^(Start|Retry) voice$/ })).toBeEnabled();
 });
 
 test("manual interrupt waits for both confirmations and retains unheard text", async ({ page }, info) => {
-  await begin(page); await answer(page); await play(page).click();
+  await begin(page); await answer(page);
   await interrupt(page).focus(); await page.keyboard.press("Enter");
   await interrupt(page).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); });
   expect(await commands(page)).toEqual([
@@ -182,6 +182,7 @@ for (const origin of ["manual", "vad"]) test(`${origin} timeout is honest and ne
   if (origin === "manual") await interrupt(page).click(); else await act(page, "Speech started");
   await act(page, "Generation cancelled"); await act(page, "Expire timers");
   await expect(response(page)).toContainText("Interruption could not be confirmed"); await expect(response(page)).toContainText("Audio output state is uncertain");
+  await expect(page.locator(".voice-state")).toHaveText("Audio output uncertain");
   await expect(interrupt(page)).toBeDisabled(); await expect(stop(page)).toBeEnabled();
   const before = await commands(page); await act(page, "Expire timers"); expect(await commands(page)).toEqual(before);
 });
@@ -211,6 +212,7 @@ test("new response during cancel write cannot clear newer audio", async ({ page 
 test("bounded response capacity pauses outgoing tracks and requires explicit fresh recovery", async ({ page }) => {
   await begin(page); await act(page, "Exhaust response capacity");
   await expect(media(page)).toContainText("microphone input is paused");
+  await expect(page.locator(".voice-state")).toHaveText("Microphone input paused");
   expect((await resource(page)).tracks.map(t => t.enabled)).toEqual([false, false]);
   await expect(interrupt(page)).toBeDisabled(); await expect(stop(page)).toBeEnabled();
   expect(await commands(page)).toEqual([]);
@@ -218,18 +220,18 @@ test("bounded response capacity pauses outgoing tracks and requires explicit fre
 
 test("denied microphone and ended track are separate from speaker playback", async ({ page }, info) => {
   await mode(page, "denied-microphone"); await start(page).click(); await prime(page);
-  await expect(page.locator(".voice-session-status")).toContainText("Text mode is a separate next step");
+  await expect(page.locator(".voice-session-status")).toContainText("retry or select Text mode");
   await expect(media(page)).toContainText("Access denied, unavailable, or timed out");
-  expect((await resource(page)).plays).toBe(0); await expect(play(page)).toBeDisabled();
+  expect((await resource(page)).plays).toBe(0); await expect(play(page)).toBeHidden();
   await expect(page.getByRole("button", { name: /switch|text mode/i })).toHaveCount(0); await capture(page, info, "denied");
   await mode(page, "success"); await begin(page); await act(page, "End microphone");
   await expect(page.locator(".voice-session-status")).toContainText("microphone ended"); await expect(media(page)).toContainText("Ended.");
 });
 
 test("blocked playback recovers explicitly with no new microphone or transport", async ({ page }, info) => {
-  await mode(page, "blocked-playback"); await begin(page); await answer(page); await play(page).click();
+  await mode(page, "blocked-playback"); await begin(page); await answer(page);
   await expect(media(page)).toContainText("Playback could not start"); await expect(media(page)).toContainText("Outgoing microphone audio is on");
-  await page.getByRole("button", { name: "Try speaker playback", exact: true }).focus(); await capture(page, info, "blocked");
+  await page.getByRole("button", { name: "Tap to enable sound", exact: true }).focus(); await capture(page, info, "blocked");
   expect((await resource(page)).plays).toBe(1); await act(page, "Stream partial"); expect((await resource(page)).plays).toBe(1);
   await page.keyboard.press("Enter"); await expect(media(page)).toContainText("Playback enabled");
   expect(await latest(page)).toMatchObject({ connects: 1, media: 1 }); expect((await resource(page)).plays).toBe(2);
@@ -238,9 +240,9 @@ test("blocked playback recovers explicitly with no new microphone or transport",
 test("pending microphone and playback are independent with duplicate playback rejected", async ({ page }) => {
   await mode(page, "hold-microphone"); await start(page).click(); await prime(page);
   await expect(media(page)).toContainText("Waiting for access"); expect((await resource(page)).tracks.map(t => t.enabled)).toEqual([false, false]);
-  await play(page).click(); await expect(media(page)).toContainText("Playback enabled"); await expect(media(page)).toContainText("Waiting for access");
+  expect((await resource(page)).plays).toBe(0); await expect(media(page)).toContainText("Waiting for access");
   await act(page, "Release microphone"); await expect(media(page)).toContainText("Outgoing microphone audio is on");
-  await mode(page, "hold-playback"); await begin(page); await play(page).click();
+  await mode(page, "hold-playback"); await begin(page);
   await play(page).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); });
   await expect(media(page)).toContainText("Waiting for playback"); expect((await resource(page)).plays).toBe(1);
   await act(page, "Release playback"); await expect(media(page)).toContainText("Playback enabled");
@@ -253,7 +255,6 @@ for (const stage of ["preparation", "connection", "initial-ack", "source-ack", "
     if (!["preparation", "connection", "initial-ack"].includes(stage)) await act(page, "ACK initial");
     if (!["preparation", "connection", "initial-ack", "source-ack"].includes(stage)) await act(page, "ACK source");
     if (!["preparation", "connection", "initial-ack", "source-ack", "final-ack"].includes(stage)) await act(page, "ACK final");
-    if (stage === "playback") await play(page).click();
     if (["cancel", "clear", "confirmation"].includes(stage)) { await answer(page); await interrupt(page).click(); }
     await expect(stop(page)).toBeEnabled(); await stop(page).click();
     const before = (await latest(page)).resources.map(x => x.transport.commands);
@@ -271,7 +272,7 @@ for (const operation of ["Replace source", "Remove source", "Unmount session"]) 
       await mode(page, stage); await start(page).click();
       if (stage !== "hold-connection") await prime(page);
       if (!["hold-connection", "hold-microphone"].includes(stage)) {
-        await answer(page); if (stage === "hold-playback") await play(page).click(); else await interrupt(page).click();
+        await answer(page); if (stage !== "hold-playback") await interrupt(page).click();
         await expect(turns(page)).toHaveCount(2);
       }
       await act(page, operation); await expect(turns(page)).toHaveCount(0);
@@ -291,9 +292,9 @@ test("Stop retains partial text, deliberate fresh Start clears it and never star
   await expect(page.locator(".transcript")).toContainText("Text unfinished when the conversation stopped");
   await capture(page, info, "retained"); const n = (await latest(page)).prepare;
   await act(page, "Deliver stale events"); expect((await latest(page)).prepare).toBe(n);
-  await page.getByRole("button", { name: "Start a fresh voice session" }).click(); await expect(turns(page)).toHaveCount(0);
+  await page.getByRole("button", { name: /^(Start|Retry) voice$/ }).click(); await expect(turns(page)).toHaveCount(0);
   expect((await latest(page)).prepare).toBe(n + 1); await prime(page);
-  await expect(page.locator(".transcript")).toContainText("No turns yet");
+  await expect(page.locator(".transcript")).toContainText("Ask about your source");
   await page.getByRole("button", { name: "Inspect source", exact: true }).click(); await expect(page.locator(".source-reader .page-text")).toBeVisible();
 });
 
@@ -315,12 +316,11 @@ for (const stage of ["hold-connection", "hold-microphone"]) test(`active B rejec
 for (const stage of ["preparation", "connection", "source", "microphone", "playback"]) test(`${stage} deadline gives an explicit recovery with no automatic retry`, async ({ page }) => {
   await mode(page, stage === "source" ? "success" : `hold-${stage}`); await start(page).click();
   if (["microphone", "playback"].includes(stage)) await prime(page);
-  if (stage === "playback") await play(page).click();
   await act(page, "Expire timers");
   if (stage === "playback") {
     await expect(media(page)).toContainText("Playback could not start"); await expect(stop(page)).toBeEnabled();
   } else {
-    await expect(page.getByRole("button", { name: "Start a fresh voice session" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /^(Start|Retry) voice$/ })).toBeEnabled();
     await expect(stop(page)).toBeDisabled();
   }
   const before = await latest(page); await act(page, "Expire timers");
@@ -355,9 +355,9 @@ test("four-width reflow, reduced motion and 200 percent text retain named touch 
 
 test("separate production retains disabled entry and excludes fixture routes and query activation", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3120/?fixture=voice&scenario=success");
-  await expect(page.getByRole("button", { name: "Voice mode", exact: true })).toBeEnabled();
-  await expect(page.getByRole("button", { name: "Start text session", exact: true })).toBeDisabled();
-  await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
+  await expect(page.locator(".conversation-panel")).toBeHidden();
+  await expect(page.getByRole("button", { name: "Start chat", exact: true, includeHidden: true })).toBeDisabled();
+  await expect(page.locator("textarea[name=question]")).toBeDisabled();
   await expect(page.locator(".voice-session")).toHaveCount(0); await expect(turns(page)).toHaveCount(0);
   for (const route of ["/voice-session-fixture", "/fixtures/voice", "/tests/voice-session", "/harness/fixture.js"]) expect((await page.request.get(`http://127.0.0.1:3120${route}`)).status()).toBe(404);
   await expect(page.locator("main")).not.toContainText(/FIXTURE08C|synthetic spoken question|Isolated voice controls/);

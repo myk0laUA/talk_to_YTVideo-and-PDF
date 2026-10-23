@@ -59,7 +59,7 @@ const badRows: Record<string, unknown>[] = [
   { expiresAt: new Date(0) }, { expiresAt: new Date(NaN) }, { fullText: "" }, { sections: [] }, { sections: null },
   { videoId: "Cache06a002" }, { languagePreference: "fr" }, { mode: "auto" }, { provider: "unknown" },
   { selectedLanguage: "fr" }, { selectedLanguage: null }, { fullText: "partial" }, { characterCount: 1 }, { wordCount: 999 },
-  { title: "unexpected" }, { providerMetadata: { version: 2 } }, { providerMetadata: { version: 1, trackType: "manual" } },
+  { title: "unexpected" }, { providerMetadata: { version: 3 } }, { providerMetadata: { version: 2, trackType: "manual" } },
   { providerMetadata: { version: 1, jobId: "pending" } },
   { sections: [{ id: "wrong", text: " FIRST ", startSeconds: 1, durationSeconds: 1 }] },
   ...[NaN, Infinity, -1, "1", null].map(startSeconds => ({ sections: [{ id: "segment-1", text: " FIRST ", startSeconds, durationSeconds: 1 }] })),

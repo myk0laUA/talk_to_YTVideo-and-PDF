@@ -8,7 +8,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 
-const directory = path.resolve("artifacts/local/05a");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/05a`);
 await mkdir(directory, { recursive: true });
 const available = () => new Promise((resolve, reject) => {
   const probe = net.createServer(); probe.once("error", reject);
@@ -39,7 +39,7 @@ try {
     if (ready) break; await delay(50);
   }
   assert.ok(ready, "production server ready");
-  const browser = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "playwright.source-ui.config.ts"], {
+  const browser = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--max-failures=3", "--config", "playwright.source-ui.config.ts"], {
     windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" },
   });
   report.exit = await new Promise(resolve => browser.once("exit", resolve));

@@ -1,7 +1,7 @@
 // Explicit simulation only. Never reachable from the live factory.
 import type { PrimingTransport } from "../../src/shared/priming-controller.ts";
 
-export function scriptedFullSource(kind: "PDF" | "YOUTUBE", scenario = "success", answers?: readonly string[]): PrimingTransport {
+export function scriptedFullSource(kind: "PDF" | "YOUTUBE", scenario = "success", answers?: readonly string[], model = "gpt-realtime-2.1-mini"): PrimingTransport {
   let receive: ((e: unknown) => void) | undefined, lost: (() => void) | undefined;
   let sequence = 0, turn = 0, open = true;
   const emit = (e: object) => { if (open) receive?.({ event_id: `scripted_${++sequence}`, ...e }); };
@@ -14,7 +14,7 @@ export function scriptedFullSource(kind: "PDF" | "YOUTUBE", scenario = "success"
         if (scenario === "missing") return;
         if (scenario === "error") { emit({ type: "error", error: { code: "invalid_request_error", message: "NEVER_REPORT_PROVIDER_BODY" } }); return; }
         if (scenario === "disconnect") { lost?.(); return; }
-        if (e.type === "session.update") emit({ type: "session.updated", session: { ...e.session, model: "gpt-realtime-2.1-mini", id: "session_scripted", object: "realtime.session" } });
+        if (e.type === "session.update") emit({ type: "session.updated", session: { ...e.session, model, id: "session_scripted", object: "realtime.session" } });
         if (e.type === "conversation.item.create") emit({ type: "conversation.item.done", previous_item_id: e.previous_item_id ?? null, item: { ...e.item, status: "completed" } });
         if (e.type === "response.create") {
           const n = ++turn, response_id = `response_${n}`, item_id = `answer_${n}`;

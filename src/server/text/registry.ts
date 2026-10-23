@@ -1,15 +1,17 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
+import { SourceSizeError } from "../../shared/priming-failure.ts";
+import { randomUUID, createHash } from "node:crypto";
 import { TextLifecycle, type TextConnection, type TextFailure, type TextStatus } from "../../shared/text-lifecycle.ts";
 import type { TextRelaySnapshot } from "../../shared/text-relay.ts";
-import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
+import { PROVIDER_TEXT_POLICY, type ProviderTextPolicy } from "../../shared/priming-provider-policy.ts";
+import { contextVariants, sourceContext } from "../context/document.ts";
 import { createProviderTextPreparation, matchesProviderPreparation } from "../context/model-measurement.ts";
 import { guardedAwait } from "../context/await.ts";
 import { requireLive, requireOwned, sourceDto, SourceError, type SourceRepository } from "../sources/service.ts";
 import type { YoutubeSourceContent } from "../../shared/source.ts";
-import { youtubeEvidenceTranscript } from "./youtube-evidence.ts";
 import type { Visitor } from "../proof/visitor.ts";
-import { Admission, issuanceLimits } from "../proof/admission.ts";
+import { Admission } from "../proof/admission.ts";
+import { ownedTextStarts, ownedTextCommands, ownedTextStops, ownedTextReplayEntries } from "../session-policy.ts";
 import { onSourceChange } from "../sources/invalidation.ts";
 
 export const TEXT_LIMITS = Object.freeze({ lifetimeMs: 600_000, idleMs: 120_000, attachMs: 5_000,
@@ -19,13 +21,14 @@ type Entry = { id: string; requestId: string; visitor: Visitor; sourceId: string
   release: () => void; life: TextLifecycle; closed: boolean; closing: boolean; attached: boolean;
   pending: boolean; questionId?: string; questions: Set<string>; expires: number; idle: Timer; absolute: Timer; watch?: Timer; flush?: Timer;
   output?: ReadableStreamDefaultController<Uint8Array>; removeAbort?: () => void; readyToStart: boolean;
-  evidenceSource?: YoutubeSourceContent };
+  sourceHash?: string; policy?: ProviderTextPolicy };
+const sourceHash = (serialized: string) => createHash("sha256").update(serialized, "utf16le").digest("hex");
 export class RelayError extends Error {
   readonly status: number;
   constructor(status: number) { super("Text session unavailable"); this.status = status; }
 }
 type Deps = { repository: Pick<SourceRepository, "get">;
-  connect: (owner: string, signal: AbortSignal) => Promise<TextConnection>; now?: () => number;
+  connect: (owner: string, signal: AbortSignal, policy: ProviderTextPolicy) => Promise<TextConnection>; now?: () => number;
   limits?: Partial<{ [K in keyof typeof TEXT_LIMITS]: number }> };
 
 /** Bounded process-local ownership around the accepted 07B/10A lifecycle.
@@ -34,9 +37,9 @@ type Deps = { repository: Pick<SourceRepository, "get">;
 export class TextRegistry {
   private entries = new Map<string, Entry>();
   private owners = new Map<string, Entry>();
-  private starts = new Admission({ ...issuanceLimits, concurrent: TEXT_LIMITS.concurrent });
-  private commands = new Admission({ visitor: 120, ip: 600, global: 600, lifetime: 3000, windowMs: 3600_000, concurrent: 20 });
-  private stops = new Admission({ visitor: 60, ip: 300, global: 300, lifetime: 1500, windowMs: 3600_000, concurrent: 20 });
+  private starts = new Admission(ownedTextStarts);
+  private commands = new Admission(ownedTextCommands);
+  private stops = new Admission(ownedTextStops);
   private seen = new Set<string>(); // lifetime admission bounds starts; cancellation tombstones capped below.
   private deps: Deps;
   private now: () => number;
@@ -65,6 +68,7 @@ export class TextRegistry {
     const row = await guardedAwait(() => this.deps.repository.get(e.sourceId, e.visitor.owner, new Date(this.now())), e.abort.signal, guard);
     guard(); requireOwned(row, e.visitor, this.now());
     if (row.id !== e.sourceId) throw new SourceError("unavailable");
+    if (e.sourceHash && e.sourceHash !== sourceHash(contextVariants(sourceContext(row)).B.serialized)) throw new SourceError("unavailable");
     // Independent source expiry can be sooner than visitor/session expiry.
     if (row.expiresAt.getTime() < e.expires) {
       e.expires = row.expiresAt.getTime(); clearTimeout(e.absolute);
@@ -76,7 +80,7 @@ export class TextRegistry {
   async start(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal) {
     const key = `${visitor.owner}:${requestId}`;
     if (this.owners.has(visitor.owner) || this.seen.has(key)) throw new RelayError(409);
-    if (this.size >= this.limits.concurrent || this.seen.size >= 512) throw new RelayError(429);
+    if (this.size >= this.limits.concurrent || this.seen.size >= ownedTextReplayEntries) throw new RelayError(429);
     const release = this.starts.acquire(visitor.owner, "unverified-network", this.now());
     if (!release) throw new RelayError(429);
     this.seen.add(key);
@@ -87,20 +91,24 @@ export class TextRegistry {
         const result = await prepare({ visitor: e.visitor, sourceId, signal: abort, model: PROVIDER_TEXT_POLICY.model,
           mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion, runId: identity.runId, variant: "B" });
         this.guard(e);
-        if (result.status !== "prepared" || !matchesProviderPreparation(result.input, { model: PROVIDER_TEXT_POLICY.model,
-          mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion, sourceId, runId: identity.runId }, this.now())) throw new RelayError(404);
+        if (result.status !== "prepared" && result.code === "source_too_large") throw new SourceSizeError();
+        if (result.status !== "prepared" || result.input.policy.mode !== "text"
+          || result.input.policy !== PROVIDER_TEXT_POLICY || !matchesProviderPreparation(result.input, { model: result.input.policy.model,
+          mode: "text", policyVersion: result.input.policy.policyVersion, sourceId, runId: identity.runId }, this.now())) throw new RelayError(404);
+        e.policy = result.input.policy;
+        e.sourceHash = sourceHash(result.input.variant.serialized);
         const row = await this.authorize(e); this.guard(e);
         if (row.kind === "YOUTUBE") {
           const source = sourceDto(row, true) as YoutubeSourceContent;
           if (source.id !== result.input.variant.source.id || JSON.stringify(source.sections) !== JSON.stringify(result.input.variant.source.sections)) throw new RelayError(404);
-          e.evidenceSource = structuredClone(source);
         }
         return result.input;
       },
       connect: async (_identity, abort) => {
         // Recheck after ALL asynchronous preparation, then again after acquisition.
         await this.authorize(e); this.guard(e);
-        const connection = await this.deps.connect(visitor.owner, abort);
+        if (!e.policy) throw new RelayError(404);
+        const connection = await this.deps.connect(visitor.owner, abort, e.policy);
         try { await this.authorize(e); this.guard(e); if (abort.aborted) throw new RelayError(404); return connection; }
         catch (error) { connection.close(); throw error; }
       },
@@ -131,7 +139,7 @@ export class TextRegistry {
     const status = e.pending && e.life.snapshot.phase === "ready"
       ? { ...e.life.snapshot, phase: "admitting" as const, protocolReady: false } : e.life.snapshot;
     return { status: failure ? { ...status, phase: "failed", failure, protocolReady: false } : status,
-      transcript: e.evidenceSource ? youtubeEvidenceTranscript(e.life.transcript, e.evidenceSource) : e.life.transcript, questionId: e.questionId };
+      transcript: e.life.transcript, questionId: e.questionId };
   }
   private emit(e: Entry, failure?: TextFailure) {
     if (!e.output) return;
@@ -194,7 +202,7 @@ export class TextRegistry {
     const e = this.owners.get(visitor.owner);
     if (e?.requestId === requestId) this.close(e);
     const key = `${visitor.owner}:${requestId}`;
-    if (this.seen.size < 512) this.seen.add(key);
+    if (this.seen.size < ownedTextReplayEntries) this.seen.add(key);
   }
   private close(e: Entry, failure?: TextFailure, notify = true) {
     if (e.closed || e.closing) return;
@@ -208,7 +216,7 @@ export class TextRegistry {
     if (notify) this.emit(e, failure);
     const output = e.output; e.output = undefined;
     try { output?.close(); } catch { /* Already cancelled. */ }
-    e.life.dispose(); e.evidenceSource = undefined; e.questions.clear(); e.closed = true; e.closing = false;
+    e.life.dispose(); e.questions.clear(); e.closed = true; e.closing = false;
   }
   dispose() { for (const e of this.entries.values()) this.close(e); this.unsubscribe(); }
 }

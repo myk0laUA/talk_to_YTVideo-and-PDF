@@ -4,7 +4,7 @@ import type { CaptionTranscript } from "../../shared/captions.ts";
 import { readBounded } from "./bounded-body.ts";
 import { validSupadataKey } from "./config.ts";
 import { CaptionError } from "./errors.ts";
-import { normalizeVideo, validLanguage } from "./input.ts";
+import { matchesCaptionLanguage, normalizeVideo, validLanguage } from "./input.ts";
 import { captionBounds, normalizeSegments, type CaptionProvider } from "./provider.ts";
 
 const endpoint = "https://api.supadata.ai/v1/transcript";
@@ -122,6 +122,9 @@ export function createSupadataCaptionProvider(options: {
         if (!completed) throw new CaptionError("timeout", "Caption job exceeded the proof polling limit");
       }
       const transcript = normalizeSupadata(raw, input.videoId);
+      if (!matchesCaptionLanguage(transcript.language, input.language)) {
+        throw new CaptionError("no_captions", "Captions unavailable for the requested language");
+      }
       check();
       return { ok: true, transcript };
     } catch (error) {

@@ -64,21 +64,16 @@ function Harness() {
       store.current.reset(); setSource(s => s === "A" ? "B" : "A"); setViewKey(`reset_${++sequence.current}`);
     }
     if (name === "Unavailable") { store.current.reset(); setAvailable(false); setViewKey(`unavailable_${++sequence.current}`); }
-    if (name === "Evidence states") {
+    if (name === "Citation-looking prose") {
       start(); exchange(); output("delta", "Scoped display fixture", 0, false);
       const value = store.current.snapshot;
       setSnapshot({ ...value, turns: value.turns.map(t => t.role !== "assistant" ? t : { ...t, parts: t.parts.map(p => ({ ...p,
-        text: 'An attributed claim. [segment-355]\nWords retained despite failed annotations. <script>inert</script> https://evil.invalid', evidence: [
-          { start: 21, end: 34, state: "source_matched", references: [{ segmentId: "segment-355", excerpt: 'Exact source excerpt 😀\n<script>inert</script>', startSeconds: 1040.594, url: "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s" }] },
-          { start: 0, end: 0, state: "pending", references: [] },
-          { start: 0, end: 0, state: "incomplete", references: [] },
-          { start: 0, end: 0, state: "unconfirmed", reason: "bounds", references: [] },
-        ],
+        text: 'An attributed claim. [segment-355]\nOrdinary words retained. <script>inert</script> https://evil.invalid',
       })) }) });
     } else setSnapshot(store.current.snapshot);
     setRevision(r => r + 1);
   }
-  const actions = ["Begin draft", "Append words", "Finalize", "Late question", "Long answer", "Append long", "Long final", "Next turn", "Second part", "Interrupt", "Stop", "Transcription failure", "Limit", "Provisional order", "Conflicted order", "Failed answer", "Output limit", "Evidence states", "New session", "Replace source", "Unavailable"];
+  const actions = ["Begin draft", "Append words", "Finalize", "Late question", "Long answer", "Append long", "Long final", "Next turn", "Second part", "Interrupt", "Stop", "Transcription failure", "Limit", "Provisional order", "Conflicted order", "Failed answer", "Output limit", "Citation-looking prose", "New session", "Replace source", "Unavailable"];
   return <div className="app-shell">
     <header className="fixture-heading"><h1>Isolated transcript presentation fixture</h1><p>Loopback only. Synthetic events; no microphone, transport or provider.</p></header>
     <details><summary>Scripted fixture controls</summary><div className="proof-controls">{actions.map(name => <button key={name} onClick={() => action(name)}>{name}</button>)}</div></details>

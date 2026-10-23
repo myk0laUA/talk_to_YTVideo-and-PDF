@@ -11,12 +11,13 @@ const fail = (route: Route, status: number, code: string) => reply(route, status
 // Exercise the actual chooser button: writing a hidden input immediately after navigation
 // can dispatch change before hydration has installed the React listener.
 const choose = async (page: Page, name = "Résumé 日本語.pdf", size = 10) => {
+  if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions", { exact: true }).click(); if (await page.locator(".source-menu button").count() && !await page.locator(".replacement-dialog").count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click();
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: /^(Upload a PDF|Replace PDF)$/ }).click();
   await (await chooser).setFiles({ name, mimeType: "application/pdf", buffer: Buffer.alloc(size, "x") });
 };
-async function load(page: Page) { await choose(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); }
-async function remove(page: Page) { await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove", exact: true }).click(); }
+async function load(page: Page) { await choose(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready"); }
+async function remove(page: Page) { if (await page.getByRole("dialog").count()) await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove", exact: true }).click(); }
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/*", route => new URL(route.request().url()).hostname === "127.0.0.1" ? route.continue() : route.abort());
@@ -40,29 +41,30 @@ test("mocked: one 401 retry, Unicode/safe filename, source navigation, keyboard,
   await page.goto("/");
   await page.keyboard.press("Tab"); await expect(page.getByRole("link", { name: "Skip to workspace" })).toBeFocused();
   await page.keyboard.press("Enter"); await expect(page.getByRole("main")).toBeFocused();
-  await expect(page.getByText("Up to 25 MB (25,000,000 bytes). Text PDFs only; no OCR.")).toBeVisible();
+  await expect(page.getByText("Up to 25 MB. Text PDFs only; no OCR.")).toBeVisible();
   await load(page); expect(posts).toBe(2); expect(gets).toBe(1);
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Remove", exact: true }).focus();
+  await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "Keep source", exact: true }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeFocused();
-  expect(await page.getByRole("button", { name: "Remove", exact: true }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
-  await page.getByRole("button", { name: "Inspect extracted text" }).focus(); await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Source actions", exact: true })).toBeFocused();
+  expect(await page.getByRole("button", { name: "Source actions", exact: true }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
+  await page.getByRole("button", { name: "View source" }).focus(); await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Page 2", exact: true })).toBeVisible();
   await expect(page.getByText("<script>alert('untrusted')</script>", { exact: false })).toBeVisible();
-  await expect(page.getByText("Synthetic extraction note")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.getByRole("heading", { name: "Extracted PDF text" })).toBeFocused();
   const focus = await page.getByRole("heading", { name: "Extracted PDF text" }).evaluate(el => getComputedStyle(el).outlineWidth);
   expect(focus).toBe("3px");
-  await page.screenshot({ path: `artifacts/local/05a/${info.project.name}-mocked-reader.png`, fullPage: true });
+  await expect(page.getByText("Extraction notes", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Synthetic extraction note")).toHaveCount(0);
+  await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/05a/${info.project.name}-mocked-reader.png`, fullPage: true });
   await page.getByRole("button", { name: "Close text and return" }).first().click();
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
-  await page.getByRole("link", { name: "Conversation", exact: true }).click();
+  await expect(page.getByRole("button", { name: "View source" })).toBeFocused();
+  await page.getByRole("heading", { name: "Conversation", exact: true }).focus();
   await expect(page.getByRole("heading", { name: "Conversation", exact: true })).toBeFocused();
-  await expect(page.getByRole("button", { name: "Start text session" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Start chat" })).toBeDisabled();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
   await page.reload(); await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeVisible(); expect(gets).toBe(1);
   expect(errors).toEqual([]);
@@ -81,11 +83,12 @@ for (const [code, status, text] of classes) test(`mocked: authored ${code} recov
     ? ++posts === 1 ? reply(route, 201, { ok: true, source: source() }) : fail(route, status, code)
     : reply(route, 200, { ok: true, source: source() }));
   await page.goto("/"); await load(page); await choose(page, "replacement.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText(text);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText(text);
   await expect(page.getByRole("button", { name: "Replace PDF" })).toBeEnabled();
-  await page.getByRole("button", { name: "Inspect extracted text" }).click();
+  if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "View source" }).click();
   await expect(page.getByText("Final marker", { exact: true })).toBeVisible();
-  await expect(page.locator(".source-panel").getByRole("status")).not.toContainText("PRIVATE"); expect(posts).toBe(2);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).not.toContainText("PRIVATE"); expect(posts).toBe(2);
 });
 
 test("mocked: second 401 stops retry and expired prior source is cleared", async ({ page }) => {
@@ -95,16 +98,16 @@ test("mocked: second 401 stops retry and expired prior source is cleared", async
     return posts === 1 ? reply(route, 200, { ok: true, source: source() }) : fail(route, 404, "unavailable");
   });
   await page.goto("/"); await load(page); await choose(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("cookies are unavailable");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("cookies are unavailable");
   await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeEnabled(); expect(posts).toBe(3);
 });
 
 test("mocked: byte boundary accepts exact limit; larger file and non-PDF do not upload", async ({ page }) => {
   let posts = 0;
   await page.route("**/api/sources/**", route => { if (route.request().method() === "POST") posts++; return route.request().method() === "POST" ? reply(route, 201, { ok: true, source: source() }) : reply(route, 200, { ok: true, source: source() }); });
-  await page.goto("/"); await choose(page, "limit.pdf", 25_000_000); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(1);
-  await choose(page, "over.pdf", 25_000_001); await expect(page.locator(".source-panel").getByRole("status")).toContainText("too large"); expect(posts).toBe(1);
-  await choose(page, "not.txt"); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Choose a PDF file"); expect(posts).toBe(1);
+  await page.goto("/"); await choose(page, "limit.pdf", 25_000_000); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready"); expect(posts).toBe(1);
+  await choose(page, "over.pdf", 25_000_001); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("too large"); expect(posts).toBe(1);
+  await choose(page, "not.txt"); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Choose a PDF file"); expect(posts).toBe(1);
 });
 
 test("mocked: replacement, text-fetch retry without reupload, remove and already removed", async ({ page }) => {
@@ -116,11 +119,11 @@ test("mocked: replacement, text-fetch retry without reupload, remove and already
     gets++; return gets === 2 ? fail(route, 503, "storage_unavailable") : reply(route, 200, { ok: true, source: source(route.request().url().endsWith(idA) ? idA : idB) });
   });
   await page.goto("/"); await load(page); await choose(page, "replacement.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF stored, but"); expect(posts).toBe(2);
-  await page.getByRole("button", { name: "Retry text" }).click(); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(posts).toBe(2);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF stored, but"); expect(posts).toBe(2);
+  await page.getByRole("button", { name: "Retry text" }).click(); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready"); expect(posts).toBe(2);
   await expect(page.getByText("replacement.pdf", { exact: true })).toBeVisible();
-  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
-  await load(page); await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2);
+  await remove(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable");
+  await load(page); await remove(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2);
 });
 
 test("mocked: uncertain committed replacement clears prior 404; deliberate retry recovers", async ({ page }) => {
@@ -130,7 +133,7 @@ test("mocked: uncertain committed replacement clears prior 404; deliberate retry
     return posts === 2 ? fail(route, 404, "unavailable") : reply(route, 200, { ok: true, source: source(posts === 1 ? idA : idB) });
   });
   await page.goto("/"); await load(page); await choose(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is no longer accessible"); expect(posts).toBe(2);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("previous source is no longer accessible"); expect(posts).toBe(2);
   await load(page); expect(posts).toBe(3);
 });
 
@@ -151,11 +154,11 @@ test("mocked: cancellation ignores late success while one mutation is active", a
   await page.route("**/api/sources/**", route => reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: source() }));
   await page.goto("/"); await load(page); await choose(page, "late.pdf");
   await expect(page.getByRole("button", { name: "Replace PDF" })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeDisabled();
-  await page.getByRole("button", { name: "Cancel import" }).click();
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("may still replace it");
+  await expect(page.getByRole("menuitem", { name: "Remove source", exact: true, includeHidden: true })).toBeDisabled();
+  await page.locator(".replacement-dialog").getByRole("button", { name: "Cancel import" }).click();
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("may still replace it");
   await page.evaluate(() => (window as unknown as { releaseLate: () => void }).releaseLate());
-  await page.getByRole("button", { name: "Check source" }).click(); await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
+  if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Retry text", exact: true }).click(); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready");
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await expect(page.getByText("late.pdf", { exact: true })).toHaveCount(0);
 });
@@ -164,16 +167,16 @@ for (const network of [false, true]) test(`mocked: removal ${network ? "network 
   await page.route("**/api/sources/**", route => route.request().method() === "DELETE" ? network ? route.abort("failed") : fail(route, 503, "storage_unavailable")
     : reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: source() }));
   await page.goto("/"); await load(page); await remove(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Removal is not confirmed");
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeEnabled();
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Removal is not confirmed");
+  await expect(page.getByRole("button", { name: "View source" })).toBeEnabled();
 });
 
 test("mocked: explicit content recheck handles generic expired 404", async ({ page }) => {
   let gets = 0;
   await page.route("**/api/sources/**", route => route.request().method() === "POST" ? reply(route, 201, { ok: true, source: source() })
-    : ++gets === 1 ? reply(route, 200, { ok: true, source: source() }) : fail(route, 404, "unavailable"));
-  await page.goto("/"); await load(page); await page.getByRole("button", { name: "Check source" }).click();
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("expired or is no longer available");
+    : ++gets === 1 ? fail(route, 503, "storage_unavailable") : fail(route, 404, "unavailable"));
+  await page.goto("/"); await choose(page); await expect(page.getByRole("button", { name: "Retry text" })).toBeVisible(); if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Retry text", exact: true }).click();
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("expired or is no longer available");
   await expect(page.getByRole("button", { name: "Upload a PDF" })).toBeEnabled();
 });
 
@@ -189,31 +192,97 @@ test("integrated: actual PDF parser + synthetic repository, full 384-line previe
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: "Upload a PDF" }).click();
   await (await chooser).setFiles("artifacts/local/04a/fixtures/small.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); const firstId = lastId;
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready"); const firstId = lastId;
+  if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions",{exact:true}).click();
+  await page.getByRole("menuitem",{name:"Replace source",exact:true}).click();
   await page.locator('input[type="file"]').setInputFiles("artifacts/local/04a/fixtures/multi.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready"); expect(lastId).not.toBe(firstId);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready"); expect(lastId).not.toBe(firstId);
   expect((await page.request.get(`/api/sources/${firstId}`)).status()).toBe(404);
-  await page.screenshot({ path: `artifacts/local/05a/${info.project.name}-integrated-loaded.png`, fullPage: true });
-  await page.getByRole("button", { name: "Inspect extracted text" }).click();
+  await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/05a/${info.project.name}-integrated-loaded.png`, fullPage: true });
+  if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "View source" }).click();
   const manifest = JSON.parse(await readFile("artifacts/local/04a/fixtures/manifest.json", "utf8"));
   const pages: string[][] = manifest.fixtures.find((f: { name: string }) => f.name === "multi").expectedPages;
   const actual = await page.locator(".page-text").allTextContents();
   expect(actual).toHaveLength(12);
   for (let index = 0; index < pages.length; index++) for (const line of pages[index]) expect(actual[index]).toContain(line);
   await page.getByRole("heading", { name: "Page 1", exact: true }).scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `artifacts/local/05a/${info.project.name}-integrated-first.png` });
+  await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/05a/${info.project.name}-integrated-first.png` });
   await page.getByRole("heading", { name: "Page 12", exact: true }).scrollIntoViewIfNeeded();
   await expect(page.getByText("PAGE 12 FINAL marker", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Close text and return" }).last().scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `artifacts/local/05a/${info.project.name}-integrated-final.png` });
+  await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/05a/${info.project.name}-integrated-final.png` });
   await page.getByRole("button", { name: "Close text and return" }).last().click();
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "View source" })).toBeFocused();
+  if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions",{exact:true}).click();
+  await page.getByRole("menuitem",{name:"Replace source",exact:true}).click();
   await page.locator('input[type="file"]').setInputFiles("artifacts/local/04a/fixtures/corrupt.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Export a fresh PDF");
-  await page.getByRole("button", { name: "Inspect extracted text" }).click(); await expect(page.getByRole("heading", { name: "Page 12", exact: true })).toBeVisible();
-  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Export a fresh PDF");
+  if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "View source" }).click(); await expect(page.getByRole("heading", { name: "Page 12", exact: true })).toBeVisible();
+  await remove(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable");
   expect((await page.request.get(`/api/sources/${lastId}`)).status()).toBe(404);
   expect(posts).toEqual([401, 201, 201, 422]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test("12B drawer contains keyboard focus, restores trigger and reflows long source at 320px and 200% text", async ({ page }, info) => {
+  const content = source();
+  await page.route("**/api/sources/**", route => reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: content }));
+  await page.goto("/");
+  await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/12b-correction/${info.project.name}-entry.png`, fullPage: true });
+  await choose(page, "A very long document title — " + "research-".repeat(16) + ".pdf");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready");
+  await expect(page.locator(".replacement-dialog")).toHaveCount(0);
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "View source" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Extracted PDF text" })).toBeFocused();
+    const closes = dialog.getByRole("button", { name: "Close text and return" });
+    await closes.last().focus();
+    await page.keyboard.press("Tab");
+    expect(await dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press("Shift+Tab");
+    expect(await dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
+    expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await page.getByRole("heading", { name: "Page 2", exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByText("Final marker", { exact: true })).toBeInViewport();
+    await page.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/12b-correction/${info.project.name}-${width}-zoom-drawer.png` });
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "View source" })).toBeFocused();
+    expect(await page.evaluate(() => document.body.style.overflow)).not.toBe("hidden");
+    await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).click();
+    await page.getByRole("button", { name: "Keep source" }).click();
+    await expect(page.getByRole("button", { name: "Source actions", exact: true })).toBeFocused();
+    await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
+  }
+});
+
+for (const system of ["light", "dark"] as const) test(`12C system ${system}, keyboard theme preference, reload and exact storage allowlist`, async ({page}) => {
+  await page.emulateMedia({colorScheme:system,reducedMotion:"reduce"}); await page.goto("/");
+  const toggle=page.getByRole("switch",{name:"Dark theme"});
+  await expect(toggle).toHaveAttribute("aria-checked",String(system==="dark"));
+  await toggle.focus(); await page.keyboard.press("Space");
+  const chosen=system==="dark"?"light":"dark";
+  await expect(toggle).toHaveAttribute("aria-checked",String(chosen==="dark"));
+  expect(await page.evaluate(()=>Object.entries(localStorage))).toEqual([["talk-to-document-theme-v1",chosen]]);
+  expect(await page.evaluate(()=>sessionStorage.length)).toBe(0);
+  expect(await page.locator(".theme-thumb").evaluate(e=>getComputedStyle(e).transitionDuration)).toBe("0s");
+  await page.reload(); await expect(toggle).toHaveAttribute("aria-checked",String(chosen==="dark"));
+  await page.emulateMedia({colorScheme:chosen==="dark"?"light":"dark"}); await expect(toggle).toHaveAttribute("aria-checked",String(chosen==="dark"));
+});
+test("12C unavailable preference storage retains keyboard theme operation",async({page})=>{
+  await page.addInitScript(()=>{Object.defineProperty(window,"localStorage",{get(){throw new Error("Storage unavailable");}});});
+  await page.emulateMedia({colorScheme:"light"});await page.goto("/");
+  const toggle=page.getByRole("switch",{name:"Dark theme"});await expect(toggle).toHaveAttribute("aria-checked","false");
+  await toggle.focus();await page.keyboard.press("Enter");await expect(toggle).toHaveAttribute("aria-checked","true");
+  expect(await page.locator("html").getAttribute("data-theme")).toBe("dark");
 });

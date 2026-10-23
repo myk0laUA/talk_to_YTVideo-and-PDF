@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
-import { PROVIDER_TEXT_POLICY } from "../../shared/priming-provider-policy.ts";
+import { PROVIDER_TEXT_POLICY, matchesProviderTextPolicy, type ProviderTextPolicy } from "../../shared/priming-provider-policy.ts";
 import type { TextConnection } from "../../shared/text-lifecycle.ts";
 import { MAX_ITEMS, MAX_WIRE_BYTES } from "../../shared/priming-manifest.ts";
 
@@ -22,10 +22,12 @@ export type TextSocketConstructor = new (url: string, options: { headers: Record
 /** Pinned Next 16.4.2's shipped ws, also used in 07D–F. No redirects or automatic retry.
  * Permanent authentication stays here. Native browser WebSocket cannot set this header.
  */
-export function openTextSocket(apiKey: string, owner: string, signal: AbortSignal, Constructor?: TextSocketConstructor): Promise<TextConnection> {
+export function openTextSocket(apiKey: string, owner: string, signal: AbortSignal, Constructor?: TextSocketConstructor,
+  policy: ProviderTextPolicy = PROVIDER_TEXT_POLICY): Promise<TextConnection> {
+  if (!matchesProviderTextPolicy(policy)) return Promise.reject(new Error("Text policy unavailable"));
   if (signal.aborted) return Promise.reject(new Error("Connection unavailable"));
   const WebSocket = Constructor ?? createRequire(import.meta.url)("next/dist/compiled/ws") as TextSocketConstructor;
-  const socket = new WebSocket(`wss://api.openai.com/v1/realtime?model=${PROVIDER_TEXT_POLICY.model}`, {
+  const socket = new WebSocket(`wss://api.openai.com/v1/realtime?model=${policy.model}`, {
     headers: { Authorization: `Bearer ${apiKey}`, "OpenAI-Safety-Identifier": createHash("sha256").update(`text-relay-v1:${owner}`).digest("hex") },
     maxPayload: 80_000, perMessageDeflate: false, followRedirects: false, handshakeTimeout: 10_000,
   });

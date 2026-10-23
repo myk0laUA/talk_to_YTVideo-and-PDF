@@ -2,9 +2,9 @@ import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 type Mode = "voice" | "text";
 const choose = (p: Page, m: Mode) => p.getByRole("button", { name: m === "voice" ? "Voice mode" : "Text mode", exact: true });
-const start = (p: Page, m: Mode) => p.getByRole("button", { name: `Start ${m} session`, exact: true });
+const start = (p: Page, m: Mode) => p.getByRole("button", { name: m === "voice" ? /^(Start|Retry) voice$/ : "Start chat", exact: true });
 const turns = (p: Page) => p.locator(".transcript-turn");
-const question = (p: Page) => p.getByRole("textbox", { name: "Your question" });
+const question = (p: Page) => p.getByRole("textbox", { name: "Your question", includeHidden: true });
 const selected = (p: Page, m: Mode) => p.locator(`.${m}-session-status`);
 async function act(p: Page, name: string) {
   const revision = await p.getByLabel("Fixture revision").textContent();
@@ -37,18 +37,18 @@ const exact = "FIXTURE10C question 日本語\nWhat does this source say?";
 async function ask(p: Page) { await question(p).fill(exact); await p.getByRole("button", { name: "Send question", exact: true }).click(); }
 async function textAnswer(p: Page, finish = false) { await act(p, "Text ACK receipt"); await act(p, "Text answer"); if (finish) await act(p, "Text finish"); }
 async function capture(p: Page, info: TestInfo, name: string) {
-  await mkdir("artifacts/local/10c/screenshots", { recursive: true });
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/10c/screenshots`, { recursive: true });
   await p.locator('pre[aria-label="Fixture audit"], output[aria-label="Fixture revision"]').evaluateAll(es => es.forEach(e => { (e as HTMLElement).style.display = "none"; }));
   const details = p.locator("details").filter({ has: p.getByText("Fixture controls", { exact: true }) });
   const wasOpen = await details.count() > 0 && await details.getAttribute("open") !== null;
   await details.evaluateAll(es => es.forEach(e => { (e as HTMLDetailsElement).open = false; }));
-  await p.screenshot({ path: `artifacts/local/10c/screenshots/${info.project.name}-${name}.png`, fullPage: !name.includes("200-text") });
+  await p.screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/10c/screenshots/${info.project.name}-${name}.png`, fullPage: !name.includes("200-text") });
   await p.locator('pre[aria-label="Fixture audit"], output[aria-label="Fixture revision"]').evaluateAll(es => es.forEach(e => { (e as HTMLElement).style.display = ""; }));
   if (wasOpen) await details.evaluateAll(es => es.forEach(e => { (e as HTMLDetailsElement).open = true; }));
 }
 async function fits(p: Page) {
   expect(await p.evaluate(() => ({ page: document.documentElement.scrollWidth <= innerWidth,
-    buttons: [...document.querySelectorAll(".conversation-area button")].every(e => { const b = e.getBoundingClientRect(); return b.width <= innerWidth && b.height >= 48 && e.scrollWidth <= e.clientWidth + 1; }),
+    buttons: [...document.querySelectorAll(".conversation-area button")].filter(e => e.getClientRects().length > 0).every(e => { const b = e.getBoundingClientRect(); return b.width <= innerWidth && b.height >= 48 && e.scrollWidth <= e.clientWidth + 1; }),
     text: [...document.querySelectorAll(".transcript-text")].every(e => e.scrollWidth <= e.clientWidth + 1) }))).toEqual({ page: true, buttons: true, text: true });
 }
 
@@ -117,14 +117,14 @@ test.afterEach(async ({ page }, info) => {
     for (const r of records.text) for (const t of r.transports) { expect(t.questions).toBeLessThanOrEqual(1); expect(t.responses).toBeLessThanOrEqual(1); }
   }
   const counters = await page.evaluate(() => ({ ...Reflect.get(window, "fixtureAudit"), localStorage: localStorage.length, sessionStorage: sessionStorage.length }));
-  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: new URL(page.url()).port === "3121" ? 0 : 1, abortListeners: 0, localStorage: 0, sessionStorage: 0 });
+  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: 0, abortListeners: 0, localStorage: 0, sessionStorage: 0 });
   const observed = observations.get(page)!;
   await writeFile(info.outputPath("safe-counts.json"), JSON.stringify({ context: "actual composed controllers; scripted adapters/answers/clock; no provider/device/audio", ...observed, counters, records }, null, 2));
   expect(observed.external).toEqual([]); expect(observed.errors).toEqual([]);
 });
 
 test("explicit mode, inert repeat selection, one owner, keyboard focus and no eager resources", async ({ page }) => {
-  await expect(page.getByRole("group", { name: "Conversation mode" })).toHaveAccessibleDescription(/ends the current session and clears/);
+  await expect(page.getByRole("group", { name: "Conversation mode" })).toHaveAccessibleDescription(/ends the session and clears/);
   await expect(choose(page, "text")).toHaveAttribute("aria-pressed", "true");
   const a = await audit(page); expect(a.voice).toHaveLength(0); expect(a.text.every(r => r.prepare === 0)).toBe(true);
   await choose(page, "text").dblclick(); expect((await audit(page)).text.length).toBe(a.text.length);
@@ -147,7 +147,7 @@ for (const failure of ["denied", "unavailable", "ended"]) test(`${failure} micro
   await mode(page, "voice", failure === "denied" ? "denied-microphone" : failure === "unavailable" ? "hold-microphone" : "success");
   await start(page, "voice").click(); await prime(page, "voice");
   if (failure === "unavailable") await act(page, "Expire timers"); if (failure === "ended") await act(page, "End microphone");
-  await expect(page.getByRole("button", { name: "Start a fresh voice session" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /^(Start|Retry) voice$/ })).toBeEnabled();
   expect((await audit(page)).voice.at(-1)!.resources[0].closes).toBe(1);
   if (failure === "denied") await capture(page, info, "denied");
   await choose(page, "text").click(); await expect(choose(page, "text")).toBeFocused(); await expect(question(page)).toHaveValue("");
@@ -166,7 +166,7 @@ for (const m of ["voice", "text"] as const) for (const state of ["partial", "sto
   await mode(page, m); await begin(page, m);
   if (m === "text") { await ask(page); await textAnswer(page); } else await act(page, "Voice answer");
   await expect(turns(page)).toHaveCount(2);
-  if (state === "stopped") { await page.getByRole("button", { name: m === "voice" ? "Stop session" : "Stop text session", exact: true }).click(); await expect(turns(page)).toHaveCount(2); }
+  if (state === "stopped") { await page.getByRole("button", { name: m === "voice" ? "End voice" : "Stop text session", exact: true }).click(); await expect(turns(page)).toHaveCount(2); }
   if (state === "error") await act(page, m === "voice" ? "End microphone" : "Fail text");
   await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(0);
   await choose(page, m).click(); await expect(turns(page)).toHaveCount(0); await expect(start(page, m)).toBeEnabled();
@@ -184,7 +184,7 @@ async function pending(p: Page, m: Mode, stage: string) {
   if (["preparation", "connection", "priming"].includes(stage)) return;
   await prime(p, m);
   if (m === "voice") {
-    if (stage === "playback") await p.getByRole("button", { name: "Enable speaker playback", exact: true }).click();
+    if (stage === "playback") await expect(p.getByRole("button", { name: "Mute speaker", exact: true })).toBeVisible();
     if (["cancel", "clear", "answer"].includes(stage)) await act(p, "Voice answer");
     if (["cancel", "clear"].includes(stage)) await p.getByRole("button", { name: "Interrupt answer", exact: true }).click();
   } else {
@@ -224,7 +224,7 @@ for (const m of ["voice", "text"] as const) for (const action of ["Replace sourc
   await pending(page, m, m === "voice" ? "microphone" : "write"); await act(page, action);
   await expect(turns(page)).toHaveCount(0);
   if (action === "Remove source") {
-    await expect(page.getByRole("button", { name: `Start ${m} session`, exact: true })).toBeDisabled();
+    await expect(start(page, m)).toBeDisabled();
     await choose(page, opposite(m)).click(); await expect(start(page, opposite(m))).toBeDisabled();
     const a = await audit(page); expect(a.ownership.owners).toBe(0);
     await act(page, "Replace source");
@@ -252,7 +252,7 @@ test("rapid voice text voice switches, duplicate Start and abandoned callbacks k
 
 for (const m of ["voice", "text"] as const) test(`${m} default source accounting refuses before connection; text default turn refuses`, async ({ page }) => {
   await mode(page, m, "source-default"); await start(page, m).click();
-  await expect(selected(page, m)).toContainText("cannot be used"); const a = await audit(page); expect(a[m].at(-1)!.connects).toBe(0);
+  await expect(selected(page, m)).toContainText(m === "text" ? "could not be loaded into chat within its limits" : "cannot be used"); const a = await audit(page); expect(a[m].at(-1)!.connects).toBe(0);
   if (m === "voice") expect(a.voice.at(-1)!.media).toBe(0);
   await mode(page, "text", "turn-default"); await begin(page, "text"); await ask(page);
   await expect(selected(page, "text")).toContainText("could not be checked"); await expect(question(page)).toHaveValue(exact);
@@ -270,7 +270,7 @@ for (const m of ["voice", "text"] as const) test(`${m} selected transcript keeps
   await page.getByRole("button", { name: "Jump to latest", exact: true }).focus(); await page.keyboard.press("Enter"); await expect(page.locator(".transcript-latest")).toBeFocused();
   await page.getByRole("button", { name: "Inspect source" }).click(); await expect(page.locator(".page-text")).toBeVisible();
   await fits(page); await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await fits(page);
-  await page.locator(".source-reader").screenshot({ path: `artifacts/local/10c/screenshots/${info.project.name}-${m}-source-preview-200.png` });
+  await page.locator(".source-reader").screenshot({ path: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/10c/screenshots/${info.project.name}-${m}-source-preview-200.png` });
   await page.keyboard.press("Tab"); await choose(page, m).focus(); await expect(choose(page, m)).toBeFocused(); expect(await choose(page, m).evaluate(e => getComputedStyle(e).outlineStyle)).not.toBe("none");
   await capture(page, info, `${m}-200-text-preview`);
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; document.body.style.zoom = "2"; }); await fits(page);
@@ -278,9 +278,9 @@ for (const m of ["voice", "text"] as const) test(`${m} selected transcript keeps
 
 test("separate production mode selection is real, both owners unavailable, fixture routes and queries inert", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3122/?fixture=mode-switch&scenario=success&mode=voice");
-  await expect(selected(page, "text")).toContainText("unavailable in this build"); await expect(start(page, "text")).toBeDisabled(); await expect(question(page)).toBeDisabled();
-  await choose(page, "voice").click(); await expect(selected(page, "voice")).toContainText("unavailable in this build"); await expect(start(page, "voice")).toBeDisabled();
-  await expect(page.locator(".text-session")).toHaveCount(0); await expect(turns(page)).toHaveCount(0);
+  await expect(page.locator(".text-session-status")).toContainText("unavailable in this build"); await expect(page.locator("textarea[name=question]")).toBeDisabled();
+  await expect(page.locator(".conversation-panel")).toBeHidden();
+  await expect(page.locator(".voice-session")).toHaveCount(0); await expect(turns(page)).toHaveCount(0);
   for (const route of ["/mode-switch-fixture", "/fixtures/voice", "/tests/mode-switch", "/harness/fixture.js"]) expect((await page.request.get(`http://127.0.0.1:3122${route}`)).status()).toBe(404);
   await expect(page.locator("main")).not.toContainText(/FIXTURE10C|Isolated mode switching|Complete synthetic answer/); await fits(page); await capture(page, info, "production");
 });

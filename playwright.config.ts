@@ -2,6 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/smoke",
+  outputDir: process.env.VERIFICATION_ROOT ? `${process.env.VERIFICATION_ROOT}/smoke` : "test-results",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,

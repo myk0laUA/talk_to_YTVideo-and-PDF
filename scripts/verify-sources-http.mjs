@@ -11,9 +11,9 @@ import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 
 const origin = "http://127.0.0.1:3106";
-const directory = path.resolve("artifacts/local/04b");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/04b`);
 await mkdir(directory, { recursive: true });
-const fixtureDir = path.resolve("artifacts/local/04a/fixtures");
+const fixtureDir = path.resolve(process.env.PDF_FIXTURE_DIRECTORY ?? "artifacts/local/04a/fixtures");
 const manifest = JSON.parse(await readFile(path.join(fixtureDir, "manifest.json"), "utf8"));
 const fixtures = new Map();
 for (const fixture of manifest.fixtures) {

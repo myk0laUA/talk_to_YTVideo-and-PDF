@@ -9,7 +9,7 @@ type Turn = TranscriptSnapshot["turns"][number];
 export type TranscriptViewSnapshot = Pick<TranscriptSnapshot, "phase" | "incomplete" | "ordering"> & {
   turns: readonly (Pick<Turn, "itemId" | "role" | "ordering" | "generation" | "terminal" | "interrupted" | "playback" | "parts">)[];
 };
-type Props = { snapshot: TranscriptViewSnapshot | null; headingId: string; helpId: string };
+type Props = { snapshot: TranscriptViewSnapshot | null; headingId: string; helpId: string; empty?: { title: string; detail: string } };
 type Anchor = { element?: Element; top: number; follow: boolean; scrollY: number };
 
 function status(snapshot: TranscriptViewSnapshot | null) {
@@ -39,36 +39,41 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
   private surface = createRef<HTMLDivElement>();
   private end = createRef<HTMLParagraphElement>();
   private latest = createRef<HTMLParagraphElement>();
+  private scroller = () => this.root.current && ["auto", "scroll"].includes(getComputedStyle(this.root.current).overflowY) ? this.root.current : null;
+  private bounds = () => this.scroller()?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
   private nearEnd = () => {
     const top = this.end.current?.getBoundingClientRect().top;
-    return top !== undefined && top >= 0 && top <= window.innerHeight + 48;
+    return top !== undefined && top >= this.bounds().top && top <= this.bounds().bottom + 48;
   };
   private onScroll = () => { if (this.state.unread && this.nearEnd()) this.setState({ unread: false }); };
   componentDidMount() {
     window.addEventListener("scroll", this.onScroll, { passive: true });
+    this.root.current?.addEventListener("scroll", this.onScroll, { passive: true });
     // A keyed source/session replacement starts at its own beginning if the
     // visitor was deep in the preceding transcript. Never moves keyboard focus.
     if ((this.root.current?.getBoundingClientRect().top ?? 0) < 0) this.root.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }
-  componentWillUnmount() { window.removeEventListener("scroll", this.onScroll); }
+  componentWillUnmount() { this.root.current?.removeEventListener("scroll", this.onScroll); window.removeEventListener("scroll", this.onScroll); }
   getSnapshotBeforeUpdate(previous: Props, previousState: { unread: boolean }): Anchor | null {
     if (previous.snapshot === this.props.snapshot && previousState.unread === this.state.unread) return null;
     const element = [...(this.surface.current?.querySelectorAll("[data-reading-anchor]") ?? [])]
-      .find(node => { const box = node.getBoundingClientRect(); return box.bottom > 0 && box.top < window.innerHeight; });
-    return { element, top: element?.getBoundingClientRect().top ?? 0, follow: this.nearEnd(), scrollY: window.scrollY };
+      .find(node => { const box = node.getBoundingClientRect(); return box.bottom > this.bounds().top && box.top < this.bounds().bottom; });
+    return { element, top: element?.getBoundingClientRect().top ?? 0, follow: this.nearEnd(), scrollY: this.scroller()?.scrollTop ?? window.scrollY };
   }
   componentDidUpdate(_previous: Props, _state: { unread: boolean }, anchor: Anchor | null) {
     if (!anchor) return;
     if (anchor.follow) {
       const bottom = this.end.current?.getBoundingClientRect().bottom ?? 0;
-      if (bottom > window.innerHeight) window.scrollBy({ top: bottom - window.innerHeight + 16, behavior: "instant" });
+      if (bottom > this.bounds().bottom) (this.scroller() ?? window).scrollBy({ top: bottom - this.bounds().bottom + 16, behavior: "instant" });
     } else {
-      if (anchor.element?.isConnected) window.scrollTo({ top: anchor.scrollY + anchor.element.getBoundingClientRect().top - anchor.top, behavior: "instant" });
+      if (anchor.element?.isConnected) (this.scroller() ?? window).scrollTo({ top: anchor.scrollY + anchor.element.getBoundingClientRect().top - anchor.top, behavior: "instant" });
       if (this.props.snapshot?.turns.length && !this.state.unread) this.setState({ unread: true });
     }
   }
   private jump = () => {
-    this.end.current?.scrollIntoView({ block: "end", behavior: "instant" });
+    const scroller = this.scroller();
+    if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "instant" });
+    else this.end.current?.scrollIntoView({ block: "end", behavior: "instant" });
     // An explicit keyboard/click action may move focus; subsequent updates never do.
     this.latest.current?.focus({ preventScroll: true });
     this.setState({ unread: false });
@@ -77,49 +82,38 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
     const { snapshot, headingId, helpId } = this.props;
     const turns = snapshot?.turns ?? [];
     return <section ref={this.root} className="transcript" aria-labelledby={headingId}>
-      <h3 id={headingId}>Transcript</h3>
-      <p className="note transcript-summary">{status(snapshot)}</p>
+      <h3 className="transcript-heading" id={headingId}>Transcript</h3>
+      <p className={`note transcript-summary ${snapshot?.phase === "limited" ? "transcript-notice" : "routine-summary"}`}>{status(snapshot)}</p>
       <p className="visually-hidden" role={snapshot ? "status" : undefined} aria-live="polite" aria-atomic="true">{announcement(snapshot)}{this.state.unread ? " Updates below. Jump to latest to follow." : ""}</p>
       {!turns.length ? <div className="conversation-empty">
-        <p className="empty-title">{snapshot ? "No turns yet." : "Room for your questions."}</p>
-        <p>{snapshot ? "Earlier sessions are not carried into this view." : "You can inspect your source here. Connecting its text to a conversation is still being built."}</p>
+        <p className="empty-title">{this.props.empty?.title ?? (snapshot ? "No turns yet." : "Room for your questions.")}</p>
+        <p>{this.props.empty?.detail ?? (snapshot ? "Earlier sessions are not carried into this view." : "Start a session to explore your source. Ask for the main idea, or dig into a detail.")}</p>
       </div> : <>
-        <div className="transcript-navigation">
-          <p className="note" id={helpId}>Scroll the page to read earlier turns or return to your source. {this.state.unread ? "Updates below." : "At the end, new text stays in view."}</p>
+        <div className={`transcript-navigation ${this.state.unread ? "has-updates" : ""}`}>
+          <p className="note" id={helpId}>Scroll to read earlier turns. {this.state.unread ? "Updates below." : "At the end, new text stays in view."}</p>
           <button type="button" onClick={this.jump}>Jump to latest</button>
         </div>
         {snapshot?.ordering !== "established" ? <p className="note transcript-notice">{snapshot?.ordering === "conflict" ? "Turn order could not be confirmed. Read this sequence with care." : "Turn order is provisional while earlier turns arrive."}</p> : null}
         <div ref={this.surface}>
           <ol className="transcript-turns" aria-label="Conversation turns" aria-live="off">
-            {turns.map(turn => <li key={turn.itemId} className="transcript-turn">
+            {turns.map(turn => <li key={turn.itemId} className={`transcript-turn transcript-turn-${turn.role}`}>
               <h4 data-reading-anchor="role">{turn.role === "user" ? "You" : "Assistant"}</h4>
               {turn.interrupted ? <p className="note transcript-notice">Interrupted. Words shown may include speech you did not hear.</p> : null}
-              {turn.playback === "unconfirmed" && !turn.interrupted ? <p className="note">Generated speech text; playback is unconfirmed.</p> : null}
+              {turn.playback === "unconfirmed" && !turn.interrupted ? <p className="visually-hidden">Generated speech text; playback is unconfirmed.</p> : null}
               {turn.generation === "failed" || turn.generation === "incomplete" || turn.generation === "cancelled" ? <p className="note transcript-notice">{turn.generation === "failed" ? "Answer failed." : turn.generation === "cancelled" ? "Answer cancelled." : "Answer incomplete."} Any text received stays below.</p> : null}
               {responseTerminalMessage(turn.terminal) ? <p className="note transcript-notice">{responseTerminalMessage(turn.terminal)}</p> : null}
-              {turn.terminal ? <details className="note"><summary>Answer completion details</summary>
-                <p>Reason: {turn.terminal.reason}</p>
-                <p>Output tokens: {turn.terminal.usage.outputTokens ?? "unavailable"}; audio: {turn.terminal.usage.outputAudioTokens ?? "unavailable"}; text: {turn.terminal.usage.outputTextTokens ?? "unavailable"}.</p>
-              </details> : null}
+
               {!turn.parts.length ? <p className="note">{snapshot?.phase === "active" ? "Waiting for text…" : "No text was received for this turn."}</p> : null}
               {turn.parts.map(part => <div key={`${part.index}:${part.kind}`} className="transcript-part" data-reading-anchor="part">
                 <p className="transcript-text" dir="auto">{part.text}</p>
-                {part.evidence ? part.evidence.map((unit, i) => <div key={i}>
-                  {unit.references.map((reference, at) => <details className="note" key={`${reference.segmentId}:${at}`}>
-                    <summary>Source excerpt [{reference.segmentId}] · {reference.startSeconds}s</summary>
-                    <blockquote className="transcript-text" dir="auto">{reference.excerpt}</blockquote>
-                    <a href={reference.url} target="_blank" rel="noopener noreferrer">Open video at {reference.startSeconds}s</a>
-                    <p>Excerpt found in this source. Check whether it supports the statement beside its marker.</p>
-                  </details>)}
-                </div>) : null}
-                {part.evidence?.some(unit => unit.state === "pending") ? <p className="note transcript-notice">Source references pending.</p> : null}
-                {part.evidence?.some(unit => unit.state === "incomplete") ? <p className="note transcript-notice">Source references incomplete. Check the source preview.</p> : null}
-                {part.evidence?.some(unit => unit.state === "unconfirmed") ? <p className="note transcript-notice">Source references unconfirmed. Check the source preview.</p> : null}
-                {part.evidence?.some(unit => unit.reason === "bounds") ? <p className="note transcript-notice">Further source references exceeded the display limit. The answer text is retained.</p> : null}
                 {part.state === "draft" ? <p className="note">{snapshot?.phase === "limited" ? "Text incomplete at transcript limit." : "Text updating…"}</p> : null}
                 {part.state === "unfinished" ? <p className="note">Text unfinished when the conversation stopped.</p> : null}
                 {part.state === "transcription_failed" ? <p className="note transcript-notice">Speech could not be transcribed. Any earlier words above may be incomplete.</p> : null}
               </div>)}
+              {turn.terminal && turn.terminal.reason !== "completed" ? <details className="note"><summary>Answer completion details</summary>
+                <p>Reason: {turn.terminal.reason}</p>
+                <p>Output tokens: {turn.terminal.usage.outputTokens ?? "unavailable"}; audio: {turn.terminal.usage.outputAudioTokens ?? "unavailable"}; text: {turn.terminal.usage.outputTextTokens ?? "unavailable"}.</p>
+              </details> : null}
             </li>)}
           </ol>
         </div>
@@ -132,8 +126,8 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
 
 /** Caller must change viewKey for every source or session. Keyed reset clears all
  * presentation state before paint, even when the next session already has turns. */
-export function TranscriptView({ snapshot, viewKey }: { snapshot: TranscriptViewSnapshot | null; viewKey: string }) {
+export function TranscriptView({ snapshot, viewKey, empty }: { snapshot: TranscriptViewSnapshot | null; viewKey: string; empty?: Props["empty"] }) {
   const id = useId();
   const phaseKey = !snapshot || snapshot.phase === "idle" || snapshot.phase === "disposed" ? "empty" : "session";
-  return <TranscriptPresentation key={`${viewKey}:${phaseKey}`} snapshot={snapshot} headingId={`${id}-transcript`} helpId={`${id}-scroll-help`} />;
+  return <TranscriptPresentation key={`${viewKey}:${phaseKey}`} snapshot={snapshot} empty={empty} headingId={`${id}-transcript`} helpId={`${id}-scroll-help`} />;
 }

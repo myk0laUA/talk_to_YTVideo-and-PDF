@@ -3,6 +3,7 @@ import { isProviderInput, type AdmissionInput, type WireBudget } from "./priming
 import { isContextLimit, matchesProviderTextPolicy, type ProviderTextPolicy } from "./priming-provider-policy.ts";
 import { bytes, freeze } from "./priming-manifest.ts";
 import { TranscriptStore, type TranscriptIdentity } from "./transcript.ts";
+import { SourceSizeError } from "./priming-failure.ts";
 
 export const TEXT_QUESTION_LIMIT = 1000;
 export type TextIdentity = TranscriptIdentity;
@@ -11,7 +12,7 @@ export type TextStatus = Readonly<{
   identity?: TextIdentity; protocolReady: boolean; productionReady: false;
   revision: number; basis?: PrimingStatus["basis"]; failure?: TextFailure;
 }>;
-export type TextFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "turn_budget_unavailable" | "stale_admission" | "timeout" | "protocol" | "provider" | "limit" | "context_limit";
+export type TextFailure = "source_too_large" | "budget_unavailable" | "preparation" | "connection" | "priming" | "turn_budget_unavailable" | "stale_admission" | "timeout" | "protocol" | "provider" | "limit" | "context_limit";
 export interface TextConnection { transport: PrimingTransport; close(): void }
 export interface TextAdapters {
   // Partial acquisitions remain adapter-owned until successful return; rejection MUST release them.
@@ -137,7 +138,7 @@ export class TextLifecycle {
     return new Promise((resolve, reject) => {
       let settled = false;
       const clear = () => { a.abort.signal.removeEventListener("abort", cancel); this.clock.clearTimeout(timer); };
-      const cancel = () => { if (!settled) { settled = true; clear(); reject(new Error("Unavailable")); } };
+      const cancel = (error?: unknown) => { if (!settled) { settled = true; clear(); reject(error instanceof SourceSizeError ? error : new Error("Unavailable")); } };
       const timer = this.clock.setTimeout(cancel, ms);
       a.abort.signal.addEventListener("abort", cancel, { once: true });
       pending.then(value => {
@@ -194,7 +195,7 @@ export class TextLifecycle {
       a.connection = connection;
       this.update({ phase: "priming", basis: a.priming.snapshot.basis });
       if (this.current(a)) a.bridge.bind(connection);
-    } catch { if (this.current(a)) this.finish(a, failure); }
+    } catch (error) { if (this.current(a)) this.finish(a, error instanceof SourceSizeError ? "source_too_large" : failure); }
   }
   /** Draft changes invalidate awaited admission, including change-away-and-back. Never trim submitted text. */
   setQuestion(text: string): boolean {

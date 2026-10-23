@@ -13,6 +13,7 @@ import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { fakeBrowserVoice } from "../voice-adapter/fakes.mjs";
 import { VoiceResponseController } from "../../src/shared/voice-response.ts";
 import { VoiceEventDiagnostics } from "../../src/shared/voice-event-diagnostics.ts";
+import { captionBoundary, oversizedCaptions } from "../context/caption-boundaries.ts";
 
 const config = { origin: "https://08d.invalid", cookieSecret: "08".repeat(32), secure: true, apiKey: "sk-synthetic08d-never-live" };
 const cleanups: (() => void)[] = [];
@@ -20,13 +21,48 @@ afterEach(() => { for (const clean of cleanups.splice(0)) clean(); });
 const until = async (fn: () => boolean) => { for (let i = 0; i < 200; i++) { if (fn()) return; await new Promise(r => setTimeout(r, 1)); } assert.fail("condition deadline"); };
 const tick = () => new Promise(r => setImmediate(r));
 
+test("13E 4097 captions cross actual voice HTTP/adapter/ACK barrier with one credential and one microphone", async () => {
+  // Use the unchanged production priming deadline for this larger source; most
+  // small fault fixtures intentionally use a shortened two-second test deadline.
+  const f = fixture("YOUTUBE", "", "", 2000, 25_000);
+  Object.assign(f.row, captionRecord(captionBoundary(), { owner: f.row.ownerSessionHash, expiresAt: Math.floor(f.row.expiresAt.getTime() / 1000), token: "" }), { id: f.row.id });
+  f.start(); await until(() => f.controller.snapshot.microphone === "available" || f.controller.snapshot.phase === "failed");
+  assert.equal(f.controller.snapshot.microphone, "available", JSON.stringify({ status: f.controller.snapshot, counts: f.native.counts }));
+  assert.equal(f.calls(), 1); assert.equal(f.native.counts.media, 1); assert.ok(f.native.counts.items < 100);
+  assert.equal(f.native.counts.violations, 0); await f.stopped();
+});
+
+test("13E actual size rejection reaches voice adapter without mint, peer, microphone, retry or retained ticket", async () => {
+  const f = fixture("YOUTUBE");
+  Object.assign(f.row, captionRecord(oversizedCaptions(), { owner: f.row.ownerSessionHash, expiresAt: Math.floor(f.row.expiresAt.getTime() / 1000), token: "" }), { id: f.row.id });
+  f.start(); await until(() => f.controller.snapshot.phase === "failed");
+  assert.equal(f.controller.snapshot.failure, "source_too_large");
+  assert.equal(f.calls(), 0); assert.equal(f.native.counts.peers + f.native.counts.media, 0);
+  assert.equal(f.registry.resources.entries, 0); await f.stopped(); assert.equal(f.cancel(), 0);
+});
+
+for (const phase of ["preparation", "credential"] as const) for (const reason of ["window", "busy", "capacity"] as const)
+  test(`12D ${phase} ${reason}: safe reason reaches lifecycle, no media or extra preparation cancellation`, async () => {
+    const f = fixture(), base = f.deps.fetch;
+    f.deps.fetch = async (url, init) => {
+      if (url === (phase === "preparation" ? "/api/voice-preparations" : "/api/voice-preparations/credential"))
+        return Response.json({code:"session_admission",reason}, {status:429,headers:{"Retry-After":"15"}});
+      return base(url, init);
+    };
+    f.start();await until(()=>f.controller.snapshot.phase==="failed");
+    assert.equal(f.controller.snapshot.failure,"admission");
+    assert.deepEqual(f.controller.snapshot.admission, reason==="window"?{reason,retryAfterSeconds:15}:{reason});
+    assert.equal(f.native.counts.media+f.native.counts.peers,0);assert.equal(f.calls(),0);
+    await f.stopped();assert.equal(f.cancel(),phase==="preparation"?0:1);
+  });
+
 test("08N only the acquired mic reaches sender; duplicate remote delivery never rebinds or replays", async () => {
   const f = fixture(); f.start(); await until(() => f.controller.snapshot.microphone === "available");
   const mic = f.native.tracks.find(t => !t.remote)!, remote = f.native.tracks.find(t => t.remote)!;
   const sender = f.native.senders[0], speaker = f.native.speakers[0];
   assert.equal(sender.track, mic); assert.notEqual(sender.track, remote);
   assert.deepEqual(speaker.srcObject.getTracks(), [remote]); assert.equal(speaker.assignments, 1);
-  await f.controller.playAudio(); const plays = f.native.counts.plays;
+  await until(() => f.controller.snapshot.playback === "available"); const plays = f.native.counts.plays;
   const e = new Event("track"); Object.assign(e, { track: remote, streams: [speaker.srcObject] });
   f.native.peers[0].dispatchEvent(e); f.native.peers[0].dispatchEvent(e);
   assert.deepEqual(speaker.srcObject.getTracks(), [remote]); assert.equal(speaker.assignments, 1);
@@ -96,7 +132,7 @@ test("08N native chronology distinguishes automatic generation, optional effecti
   const media = f.deps.media;
   f.deps.media = async () => { const stream = await media(); stream.getTracks()[0].getSettings = () =>
     ({ echoCancellation: false, noiseSuppression: true, deviceId: "PRIVATE08N", groupId: "PRIVATE08N" }); return stream; };
-  f.start(); await until(() => f.controller.snapshot.microphone === "available"); await f.controller.playAudio();
+  f.start(); await until(() => f.controller.snapshot.microphone === "available"); await until(() => f.controller.snapshot.playback === "available");
   const emit = (type: string, fields: object = {}) => f.native.emit({ type, ...fields });
   emit("response.created", { response: { id: "resp08n_A", status: "in_progress", conversation_id: "conv08n" } });
   emit("output_audio_buffer.started", { response_id: "resp08n_A" });
@@ -126,7 +162,7 @@ test("08N native chronology distinguishes automatic generation, optional effecti
   assert.equal(f.controller.eventDiagnostics?.counts.session_start, 1);
   assert.equal(f.controller.eventDiagnostics?.responseOrdinals, 0); await f.stopped();
 });
-function fixture(kind = "PDF", fault = "", hold = "") {
+function fixture(kind = "PDF", fault = "", hold = "", mediaMs = 2000, primingMs = 2000) {
   const visitor = createVisitor(config, Date.now()), row = kind === "PDF" ? uploadedRecord(pdfFixture, visitor) : captionRecord(captionFixture, visitor);
   let calls = 0, cancel = 0, preparation: Record<string, unknown> | undefined, httpHold = "";
   let releaseHttp: (() => void) | undefined;
@@ -174,7 +210,7 @@ function fixture(kind = "PDF", fault = "", hold = "") {
   const deps = { ...native.deps, fetch: fetcher } as unknown as BrowserVoiceDependencies;
   const adapters = browserVoiceAdapters(deps);
   const clock = { now: Date.now, setTimeout: (f: () => void, ms: number) => setTimeout(f, ms), clearTimeout: (id: unknown) => clearTimeout(id as ReturnType<typeof setTimeout>) };
-  const controller = new VoiceLifecycle(clock, adapters, () => {}, { primingMs: 2000, mediaMs: 2000 });
+  const controller = new VoiceLifecycle(clock, adapters, () => {}, { primingMs, mediaMs });
   cleanups.push(() => { controller.dispose(); registry.dispose(); });
   const start = () => controller.start(row.id);
   const stopped = async () => { controller.stop(); native.release(); releaseHttp?.(); await tick(); await tick();
@@ -308,7 +344,7 @@ for (const kind of ["PDF", "YOUTUBE"]) test(`08D ${kind} actual boundary → nat
   const input = f.preparation()!.input as { manifest: { runId: string; items: unknown[] } };
   assert.equal(f.controller.snapshot.identity!.runId, input.manifest.runId); assert.equal(f.native.counts.items, input.manifest.items.length);
   f.controller.mute(); assert.equal(f.native.snapshot().enabledTracks, 0); f.controller.unmute(); assert.equal(f.native.snapshot().enabledTracks, 1);
-  f.native.control.blockedPlayback = true; await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "blocked");
+  await until(() => f.controller.snapshot.playback === "available"); f.native.control.blockedPlayback = true; await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "blocked");
   f.native.control.blockedPlayback = false; await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "available");
   await f.stopped();
   f.start(); await until(() => f.controller.snapshot.microphone === "available"); assert.equal(f.calls(), 2); await f.stopped();
@@ -325,8 +361,8 @@ test("08F speaker stream is first bound after its remote track exists", async ()
     return audio;
   };
   f.start(); await until(() => f.controller.snapshot.microphone === "available");
-  assert.equal(binds, 1); assert.equal(f.native.counts.plays, 0);
-  await f.controller.playAudio(); assert.equal(f.controller.snapshot.playback, "available");
+  assert.equal(binds, 1); assert.equal(f.native.counts.plays, 1);
+  await until(() => f.controller.snapshot.playback === "available"); assert.equal(f.controller.snapshot.playback, "available");
   await f.stopped(); assert.equal(f.native.counts.plays, 1);
 });
 
@@ -552,4 +588,56 @@ test("08D Stop between cancellation-wait settlement and prepare continuation mak
   const pending = f.adapters.prepare({ sourceId: f.row.id, runId: "local", connectionId: "local" }, abort.signal);
   queueMicrotask(() => abort.abort()); await assert.rejects(pending);
   assert.equal(calls, 0); assert.equal(getEventListeners(abort.signal, "abort").length, 0);
+});
+
+for (const finish of ["bind", "stop"] as const) test(`12C late track ${finish}: one automatic play, independent mute, no revival`, async () => {
+  const f = fixture(); f.native.control.holdTrack = true;
+  f.start(); await until(() => f.controller.snapshot.microphone === "available");
+  assert.equal(f.native.counts.plays, 0); assert.equal(f.controller.snapshot.playback, "pending");
+  f.controller.setSpeakerMuted(true);
+  assert.equal(f.native.speakers[0].muted, true); assert.equal(f.native.snapshot().enabledTracks, 1);
+  const pc = f.native.peers[0];
+  if (finish === "stop") f.controller.stop();
+  pc.dispatchEvent(pc.pendingTrack); await tick();
+  assert.equal(f.native.counts.plays, finish === "bind" ? 1 : 0);
+  assert.equal(f.native.speakers[0].muted, true);
+  if (finish === "bind") {
+    await until(() => f.controller.snapshot.playback === "available");
+    f.controller.mute(); f.controller.setSpeakerMuted(false);
+    assert.equal(f.native.snapshot().enabledTracks, 0); assert.equal(f.native.counts.plays, 1);
+    f.controller.setSpeakerMuted(true); pc.dispatchEvent(pc.pendingTrack);
+    assert.equal(f.native.speakers[0].muted, true); assert.equal(f.native.counts.plays, 1);
+  }
+  await f.stopped();
+});
+
+test("12C mute survives pending play settlement without new response or acquisition", async () => {
+  const f = fixture("PDF", "", "play"); f.start();
+  await until(() => f.native.counts.plays === 1);
+  const sends = f.native.counts.sends;
+  f.controller.setSpeakerMuted(true); await f.controller.playAudio();
+  f.native.release("play"); await until(() => f.controller.snapshot.playback === "available");
+  assert.equal(f.native.speakers[0].muted, true); assert.equal(f.controller.snapshot.speakerMuted, true);
+  assert.equal(f.native.snapshot().enabledTracks, 1); assert.equal(f.native.counts.sends, sends);
+  assert.equal(f.native.counts.plays, 1); assert.equal(f.native.counts.media, 1);
+  await f.stopped();
+});
+
+for (const pending of ["track", "play"] as const) test(`12C ${pending} deadline cancels work and late completion cannot enable playback`, async () => {
+  const f = fixture("PDF", "", pending === "play" ? "play" : "", 100);
+  f.native.control.holdTrack = pending === "track";
+  f.start(); await until(() => f.controller.snapshot.playback === "pending");
+  f.controller.setSpeakerMuted(true);
+  await until(() => f.controller.snapshot.playback === "blocked");
+  if (pending === "track") f.native.peers[0].dispatchEvent(f.native.peers[0].pendingTrack);
+  else f.native.release("play");
+  await tick(); await tick();
+  assert.equal(f.controller.snapshot.playback, "blocked");
+  assert.equal(f.native.counts.plays, pending === "track" ? 0 : 1);
+  assert.equal(f.native.speakers[0].muted, true);
+  assert.equal(f.native.snapshot().enabledTracks, 1);
+  if (pending === "play") assert.equal(f.native.counts.pauses, 1);
+  f.native.control.hold = ""; await f.controller.playAudio();
+  assert.equal(f.controller.snapshot.playback, "available"); assert.equal(f.native.speakers[0].muted, true);
+  await f.stopped();
 });

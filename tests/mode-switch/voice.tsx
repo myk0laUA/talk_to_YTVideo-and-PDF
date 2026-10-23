@@ -4,6 +4,9 @@ import { type VoiceControllerFactory } from "../../src/app/voice-session";
 import { VoiceLifecycle, type VoiceConnection, type VoiceMedia, type VoiceTrack } from "../../src/shared/voice-lifecycle";
 import { PrimingController, type PrimingClock, type PrimingStatus } from "../../src/shared/priming-controller";
 import { encodeManifest, type SessionEvent } from "../../src/shared/priming-manifest";
+import { SessionAdmissionError, type AdmissionRejection } from "../../src/shared/session-admission";
+let nextAdmission: AdmissionRejection | undefined;
+export function rejectNextStart(value: AdmissionRejection) { nextAdmission = value; }
 import type { PrimingInput } from "../../src/shared/priming-admission";
 
 type Fixture = { variant: Parameters<typeof encodeManifest>[0]; input: PrimingInput; id: string };
@@ -50,10 +53,10 @@ class Transport {
   items(withhold = false) { for (const c of this.commands.filter(c => c.item).slice(withhold ? 1 : 0)) this.emit({ type: "conversation.item.done", previous_item_id: c.previous_item_id ?? null, item: { ...c.item, status: "completed" } }); }
   get ids() { return { response_id: this.response, item_id: `${this.response}_item`, output_index: 0, content_index: 0 }; }
   created(id = this.response, conversation = "conv_10c") { this.emit({ type: "response.created", response: { id, conversation_id: conversation, status: "in_progress", output: [] } }); }
-  answer() {
+  answer(question = "FIXTURE10C synthetic spoken question.") {
     this.created();
     this.emit({ type: "input_audio_buffer.committed", item_id: `${this.response}_user`, previous_item_id: this.commands.filter(c => c.item).at(-1)!.item!.id });
-    this.emit({ type: "conversation.item.input_audio_transcription.completed", item_id: `${this.response}_user`, content_index: 0, transcript: "FIXTURE10C synthetic spoken question." });
+    this.emit({ type: "conversation.item.input_audio_transcription.completed", item_id: `${this.response}_user`, content_index: 0, transcript: question });
     this.emit({ type: "response.output_item.added", ...this.ids, item: { id: this.ids.item_id, type: "message", role: "assistant", content: [] } });
     this.emit({ type: "conversation.item.added", previous_item_id: `${this.response}_user`, item: { id: this.ids.item_id, type: "message", role: "assistant", content: [] } });
   }
@@ -74,8 +77,9 @@ class Transport {
 function resources(mode: string) {
   const transport = new Transport(), tracks = [new Track(), new Track()], playGate = deferred();
   transport.holdCancel = mode === "hold-cancel"; transport.holdClear = mode === "hold-clear";
-  const counts = { closes: 0, playbackReleases: 0, plays: 0, mediaReleases: 0, attaches: 0 };
+  const counts = { closes: 0, playbackReleases: 0, plays: 0, speakerMuted: false, mediaReleases: 0, attaches: 0 };
   const connection: VoiceConnection = { transport, close() { counts.closes++; transport.close(); }, playback: {
+    setMuted(muted) { counts.speakerMuted = muted; },
     async play() { counts.plays++; if (mode === "blocked-playback" && counts.plays === 1) throw new Error("PRIVATE10C_ERROR");
       if (mode === "hold-playback") await playGate.promise; }, release() { counts.playbackReleases++; } } };
   const media: VoiceMedia = { tracks, attach() { if (tracks.some(t => t.enabled)) throw new Error("Attached enabled tracks"); counts.attaches++; }, release() { counts.mediaReleases++; } };
@@ -104,6 +108,7 @@ export const factory: VoiceControllerFactory = notify => {
   }
   r.controller = new Fixture10cVoice(r.clock, {
     prepare: async identity => { r.prepare++; chronology.push({ event: "prepare", owner, source: identity.sourceId, run: identity.runId }); if (mode === "hold-preparation") await r.prepareGate.promise;
+      if (nextAdmission) { const rejection = nextAdmission; nextAdmission = undefined; throw new SessionAdmissionError(rejection); }
       const f = fixtures.find(f => f.id === identity.sourceId)!;
       const manifest = encodeManifest(f.variant, identity.runId, "voice", 2048);
       return { ...f.input, manifest, wireBudget: { ...f.input.wireBudget, representation: manifest.representation, measured: manifest.bytes } }; },

@@ -5,18 +5,21 @@ import { VoiceResponseController, emptyResponse, type ResponseState } from "./vo
 import { TranscriptStore } from "./transcript.ts";
 import { VoiceSetupDiagnostics, type VoiceSetupDiagnostic, type VoiceSetupReporter } from "./voice-diagnostics.ts";
 import { VoiceEventDiagnostics } from "./voice-event-diagnostics.ts";
+import { SessionAdmissionError, type AdmissionRejection } from "./session-admission.ts";
+import { SOURCE_SIZE_MESSAGE, SourceSizeError } from "./priming-failure.ts";
 
 export type VoiceIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 export type VoiceStatus = Readonly<{
   phase: "idle" | "connecting" | "priming" | "ready" | "ended" | "failed";
-  identity?: VoiceIdentity; muted: boolean; protocolReady: boolean; productionReady: false;
+  identity?: VoiceIdentity; muted: boolean; speakerMuted: boolean; protocolReady: boolean; productionReady: false;
   microphone: "none" | "pending" | "available";
   playback: "none" | "pending" | "available" | "blocked";
   response: ResponseState;
   basis?: PrimingStatus["basis"]; failure?: VoiceFailure; message: string;
   diagnostics?: readonly VoiceSetupDiagnostic[];
+  admission?: AdmissionRejection;
 }>;
-export type VoiceFailure = "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider";
+export type VoiceFailure = "source_too_large" | "admission" | "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider";
 export interface VoiceTrack {
   enabled: boolean; readonly readyState: string; stop(): void;
   subscribeEnded(callback: () => void): () => void;
@@ -25,7 +28,7 @@ export interface VoiceConnection {
   transport: PrimingTransport;
   // Sole owner of peer/channel/transport close, including transport-owned listeners.
   close(): void;
-  playback: { play(): Promise<void>; release(): void };
+  playback: { play(signal: AbortSignal): Promise<void>; setMuted(muted: boolean): void; release(): void };
 }
 export interface VoiceMedia {
   // Exclusive outgoing microphone audio tracks, initially disabled. Coordinator owns stop().
@@ -47,6 +50,8 @@ export type VoiceDeadlines = { preparationMs: number; connectionMs: number; prim
 const defaults: VoiceDeadlines = { preparationMs: 25_000, connectionMs: 15_000, primingMs: 25_000, mediaMs: 30_000, interruptionMs: 5_000 };
 const safely = (action: () => void) => { try { action(); } catch { /* Continue releasing other resources. */ } };
 const messages: Record<VoiceFailure, string> = {
+  source_too_large: SOURCE_SIZE_MESSAGE,
+  admission: "Voice cannot start right now. Text mode is available separately.",
   budget_unavailable: "Verified source budgets are unavailable. Setup needs review before starting voice.",
   preparation: "Source preparation failed or timed out. Start again to retry.",
   connection: "Connection failed, closed or timed out. Start again to retry.",
@@ -132,7 +137,7 @@ export class VoiceLifecycle {
   private adapters: VoiceAdapters;
   private notify: (status: VoiceStatus) => void;
   private deadlines: VoiceDeadlines;
-  private status: VoiceStatus = Object.freeze({ phase: "idle", muted: false, protocolReady: false,
+  private status: VoiceStatus = Object.freeze({ phase: "idle", muted: false, speakerMuted: false, protocolReady: false,
     productionReady: false, microphone: "none", playback: "none", response: emptyResponse(), message: "Voice has not started." });
   constructor(clock: PrimingClock, adapters: VoiceAdapters, notify: (status: VoiceStatus) => void, deadlines: Partial<VoiceDeadlines> = {}) {
     this.clock = clock; this.adapters = adapters; this.notify = notify; this.deadlines = { ...defaults, ...deadlines };
@@ -168,7 +173,7 @@ export class VoiceLifecycle {
   private releaseConnection(connection: VoiceConnection) {
     safely(() => connection.playback.release()); safely(() => connection.close());
   }
-  private finish(a: Attempt, failure?: VoiceFailure) {
+  private finish(a: Attempt, failure?: VoiceFailure, admission?: AdmissionRejection) {
     if (!this.current(a)) return;
     a.diagnostics.finish(failure ? a.diagnostics.snapshot.at(-1)?.stage.endsWith("_validation") ? "invalid" : "unavailable" : "cancelled");
     // Invalidate first: abort/close/track callbacks and observers cannot revive this run.
@@ -185,8 +190,8 @@ export class VoiceLifecycle {
     if (media) this.releaseMedia(media);
     if (connection) this.releaseConnection(connection);
     this.cleaning = false;
-    this.update({ phase: failure ? "failed" : "ended", identity: undefined, basis: undefined, failure,
-      muted: false, protocolReady: false, microphone: "none", playback: "none", response: emptyResponse(),
+    this.update({ phase: failure ? "failed" : "ended", identity: undefined, basis: undefined, failure, admission,
+      muted: false, speakerMuted: false, protocolReady: false, microphone: "none", playback: "none", response: emptyResponse(),
       diagnostics: a.diagnostics.snapshot,
       message: failure ? messages[failure] : "Ended. Microphone and connection released." });
   }
@@ -201,7 +206,7 @@ export class VoiceLifecycle {
       pending.then(value => {
         if (settled || !this.current(a)) { safely(() => late(value)); cancel(); return; }
         settled = true; clear(); resolve(value);
-      }, () => { if (!settled) { settled = true; clear(); reject(new Error("Unavailable")); } });
+      }, error => { if (!settled) { settled = true; clear(); reject(error instanceof SessionAdmissionError || error instanceof SourceSizeError ? error : new Error("Unavailable")); } });
       if (!this.current(a)) cancel();
     });
   }
@@ -217,8 +222,8 @@ export class VoiceLifecycle {
     this.eventTrace = a.trace; a.trace.mark("session_start");
     this.attempt = a;
     this.transcriptStore.reset();
-    this.update({ phase: "connecting", identity: a.identity, muted: false, protocolReady: false, productionReady: false,
-      microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, diagnostics: a.diagnostics.snapshot, message: "Preparing voice setup; questions are disabled." });
+    this.update({ phase: "connecting", identity: a.identity, muted: false, speakerMuted: false, protocolReady: false, productionReady: false,
+      microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, admission: undefined, diagnostics: a.diagnostics.snapshot, message: "Preparing voice setup; questions are disabled." });
     if (this.current(a)) void this.setup(a);
     return true;
   }
@@ -309,7 +314,8 @@ export class VoiceLifecycle {
       this.report(a)("initial_settings_ack", "pending");
       this.update({ phase: "priming", basis: a.priming.snapshot.basis, message: "Waiting for complete source acknowledgment; questions are disabled." });
       if (this.current(a)) bridge.bind(connection);
-    } catch { if (this.current(a)) this.finish(a, failure); }
+    } catch (error) { if (this.current(a)) this.finish(a, error instanceof SourceSizeError ? "source_too_large" : error instanceof SessionAdmissionError ? "admission" : failure,
+      error instanceof SessionAdmissionError ? error.rejection : undefined); }
   }
   private async media(a: Attempt) {
     try {
@@ -333,7 +339,7 @@ export class VoiceLifecycle {
       this.report(a)("microphone_attach", "ok");
       a.trace.mark("session_ready");
       this.update({ microphone: "available", message: "Lifecycle ready. Audio and provider behavior require separate verification." });
-      if (this.current(a)) this.applyMute(a);
+      if (this.current(a)) { this.applyMute(a); void this.playAudio(); }
     } catch { if (this.current(a)) this.finish(a, "microphone"); }
   }
   private applyMute(a: Attempt) {
@@ -347,15 +353,25 @@ export class VoiceLifecycle {
     return !!a && this.current(a) && this.status.protocolReady && this.status.microphone === "available"
       && this.status.phase === "ready" && (a.response?.interrupt() ?? false);
   }
+  setSpeakerMuted(muted: boolean) {
+    const a = this.attempt;
+    if (!a?.connection || !this.current(a)) return;
+    a.connection.playback.setMuted(muted);
+    this.update({ speakerMuted: muted });
+  }
   async playAudio() {
     const a = this.attempt;
     if (!a?.connection || !this.current(a) || this.status.phase !== "ready" || this.status.playback === "pending") return;
     a.trace.mark("play_requested");
     this.update({ playback: "pending" });
     if (!this.current(a)) return;
-    try { await this.wait(a, a.connection.playback.play(), this.deadlines.mediaMs);
+    const playbackAbort = new AbortController();
+    const abortPlayback = () => playbackAbort.abort();
+    a.abort.signal.addEventListener("abort", abortPlayback, { once: true });
+    try { await this.wait(a, a.connection.playback.play(playbackAbort.signal), this.deadlines.mediaMs);
       if (this.current(a)) this.update({ playback: "available" }); }
     catch { if (this.current(a)) this.update({ playback: "blocked" }); }
+    finally { playbackAbort.abort(); a.abort.signal.removeEventListener("abort", abortPlayback); }
   }
   stop() { if (this.attempt) this.finish(this.attempt); }
   /** Source replacement: existing Stop cleanup plus immediate release of old transcript text. */

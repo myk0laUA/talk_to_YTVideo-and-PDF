@@ -1,4 +1,5 @@
 import "server-only";
+import { SourceSizeError } from "../../shared/priming-failure.ts";
 import { createHash } from "node:crypto";
 import { setImmediate } from "node:timers/promises";
 import { bytes, encodeManifest, freeze, MAX_WIRE_BYTES, type Manifest, type Mode } from "../../shared/priming-manifest.ts";
@@ -67,6 +68,7 @@ export function matchesProviderPreparation(input: ProviderPrimingInput, expected
   model: string; mode: Mode; policyVersion: string; sourceId: string; runId: string }, at: number): boolean {
   try {
     return Number.isFinite(at) && Date.parse(input?.variant?.source.expiresAt) > at
+      && input.policy.model === expected.model && input.policy.mode === expected.mode && input.policy.policyVersion === expected.policyVersion
       && !!(input.policy.mode === "text" ? resolveProviderTextPolicy : resolveProviderVoicePolicy)(expected.model, expected.mode, expected.policyVersion)
       && input?.manifest?.runId === expected.runId && input.variant.source.id === expected.sourceId
       && providerPreparations.get(input) === hash(JSON.stringify(input)) && validateProviderAdmission(input);
@@ -100,9 +102,21 @@ function createProviderPreparation(preparationMode: Mode, deps: ProviderPreparat
       if (prepared.status !== "prepared") return freeze({ ...preparationOnly, status: "unavailable", code: prepared.code } as const);
       const live = () => { guard(); if (now() >= Date.parse(prepared.context.source.expiresAt)) throw new SourceError("unavailable"); };
       await guardedAwait(() => setImmediate(undefined, { signal }), signal, live);
+      let manifest: Manifest;
+      try {
+        manifest = encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes,
+          preparationMode === "text" ? true : "voice");
+      } catch (error) {
+        if (!(error instanceof SourceSizeError)) throw error;
+        // Reauthorize even a local rejection: a replaced/expired/foreign source
+        // must keep the same nondisclosing unavailable result as a missing one.
+        const current = await guardedAwait(() => deps.repository.get(sourceId, visitor.owner, new Date(now())), signal, live);
+        live(); requireOwned(current, visitor, now());
+        if (current.id !== sourceId || contextVariants(sourceContext(current)).B.serialized !== prepared.variants.B.serialized) throw new SourceError("unavailable");
+        return freeze({ ...preparationOnly, status: "unavailable", code: "source_too_large" } as const);
+      }
       const projection: ProviderPrimingInput = freeze({ basis: "provider_enforced", policy,
-        variant: prepared.variants[variant], manifest: encodeManifest(prepared.variants[variant], runId, mode, maxEventBytes,
-          preparationMode === "text" ? true : "voice") });
+        variant: prepared.variants[variant], manifest });
       if (!validateProviderAdmission(projection)) throw new SourceError("unavailable");
       const current = await guardedAwait(() => deps.repository.get(sourceId, visitor.owner, new Date(now())), signal, live);
       live(); requireOwned(current, visitor, now());

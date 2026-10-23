@@ -1,7 +1,6 @@
 import type { RunIdentity } from "./priming-controller.ts";
 import type { ResponseState } from "./voice-response.ts";
 import { projectResponseTerminal, type ResponseTerminal } from "./response-terminal.ts";
-import type { YoutubeEvidenceUnit } from "./youtube-evidence.ts";
 
 export type TranscriptIdentity = RunIdentity & Readonly<{ sourceId: string }>;
 type Kind = "input_audio" | "input_text" | "output_audio" | "output_text";
@@ -22,7 +21,7 @@ export type TranscriptSnapshot = Readonly<{
   turns: readonly Readonly<{ itemId: string; role: "user" | "assistant"; responseId?: string; outputIndex?: number;
     previousItemId?: string | null; ordering: "established" | "provisional" | "conflict";
     generation?: Terminal; terminal?: ResponseTerminal; interrupted: boolean; interruption?: Response["interruption"]; playback: "unconfirmed" | "not_applicable";
-    serverOutput?: Response["output"]; parts: readonly Readonly<{ index: number; kind: Kind; text: string; state: Part["state"]; evidence?: readonly YoutubeEvidenceUnit[] }>[] }>[];
+    serverOutput?: Response["output"]; parts: readonly Readonly<{ index: number; kind: Kind; text: string; state: Part["state"] }>[] }>[];
 }>;
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const id = (v: unknown): v is string => typeof v === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(v);

@@ -18,8 +18,8 @@ before(() => { globalThis.fetch = async () => { providerCalls++; throw new Error
 after(async () => {
   globalThis.fetch = originalFetch;
   assert.equal(providerCalls, 0);
-  await mkdir("artifacts/local/08a", { recursive: true });
-  await writeFile("artifacts/local/08a/lifecycle-matrix.json", JSON.stringify({ environment: "local; deterministic scripted transport/media/clock; no browser or device media",
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08a`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08a/lifecycle-matrix.json`, JSON.stringify({ environment: "local; deterministic scripted transport/media/clock; no browser or device media",
     providerCalls, traces }, null, 2));
 });
 

@@ -2,6 +2,7 @@
 
 import { Component, createRef, useId } from "react";
 import { TEXT_QUESTION_LIMIT, type TextStatus } from "../shared/text-lifecycle";
+import { SOURCE_SIZE_MESSAGE } from "../shared/priming-failure";
 import type { TextController } from "../shared/text-relay";
 import { TranscriptView, type TranscriptViewSnapshot } from "./transcript-view";
 import { BrowserSession, browserSessionMessage, initialBrowserSession, type BrowserSessionState } from "./browser-session";
@@ -9,12 +10,12 @@ import { BrowserSession, browserSessionMessage, initialBrowserSession, type Brow
 type Source = { id: string; title: string };
 export type TextControllerFactory = (notify: (status: TextStatus) => void) => TextController;
 type Props = { source: Source | null; createController?: TextControllerFactory; fieldId: string };
-type State = { browser: BrowserSessionState; status: TextStatus | null; transcript: TranscriptViewSnapshot | null; draft: string; attempted: boolean; session: number; receipt: boolean };
+type State = { browser: BrowserSessionState; status: TextStatus | null; transcript: TranscriptViewSnapshot | null; draft: string; attempted: boolean; session: number; receipt: boolean; hasBeenReady: boolean };
 const active = new Set<TextStatus["phase"]>(["connecting", "priming", "ready", "admitting", "sending", "awaiting-response", "responding"]);
 
-function message(status: TextStatus | null, available: boolean) {
+function message(status: TextStatus | null, available: boolean, firstStart: boolean) {
   if (!available) return "Text conversation is unavailable in this build. You can still inspect your source.";
-  if (!status || status.phase === "idle") return "Start a text session to ask about your selected source. No microphone is needed.";
+  if (!status || status.phase === "idle") return "Start a session, then ask about your source.";
   switch (status.phase) {
     case "connecting": return "Connecting. You can stop while the connection is being prepared.";
     case "priming": return "Loading your source into the conversation. Wait before sending a question.";
@@ -25,12 +26,20 @@ function message(status: TextStatus | null, available: boolean) {
     case "sending": return "Sending your question. Receipt has not been confirmed.";
     case "awaiting-response": return "Question received. Waiting for an answer.";
     case "responding": return "Answer arriving. You can stop and keep the text received so far.";
-    case "ended": return "Session ended. Any received text stays here. A question without confirmed receipt may not have arrived.";
+    case "ended": return firstStart ? "Chat setup stopped. Select Start chat when you’re ready." : "Session ended. Any received text stays here. A question without confirmed receipt may not have arrived.";
     case "failed":
+      if (status.failure === "source_too_large") return SOURCE_SIZE_MESSAGE;
+      if (status.failure === "context_limit" && firstStart) return "The provider rejected this source because it exceeds its context limit. You can still use View source. Choose a smaller source to continue.";
+      if (firstStart) {
+        if (status.failure === "budget_unavailable" || status.failure === "context_limit") return "This source could not be loaded into chat within its limits. You can still inspect it with View source.";
+        if (status.failure === "connection") return "The text connection failed or closed. Select Start chat to try again, or choose Voice mode.";
+        if (status.failure === "timeout") return "Chat setup timed out. Select Start chat to try again.";
+        return "Chat setup failed. Your source is still here. Select Start chat to try again.";
+      }
       if (status.failure === "context_limit") return "The provider rejected this conversation because it exceeds its context limit. Your full source preview and received text stay here. Start a fresh session explicitly to recover; nothing is shortened or resent automatically.";
       if (status.failure === "budget_unavailable") return "This source cannot be used for a conversation in this build. No question was sent. You can inspect the source.";
       if (status.failure === "turn_budget_unavailable" || status.failure === "stale_admission") return "This question could not be checked for this conversation. It was not sent. Your draft stays below.";
-      if (status.failure === "connection") return "The text connection failed or closed. This does not establish network loss. Received text and an unconfirmed draft stay here. Start a fresh session to retry; nothing is resent automatically.";
+      if (status.failure === "connection") return "The text connection failed or closed. Received text and an unconfirmed draft stay here. Start a fresh session to retry; nothing is resent automatically.";
       if (status.failure === "timeout") return "The session timed out. An unconfirmed question may have arrived. Nothing will be sent again automatically.";
       return "The text session failed. Any received text stays here. An unconfirmed question may have arrived. Nothing will be sent again automatically.";
   }
@@ -39,13 +48,15 @@ function message(status: TextStatus | null, available: boolean) {
 /** The source key clears UI before paint. Mount owns one controller; cleanup detaches
  * observers before dispose. Start is always a user action, including in StrictMode. */
 class OwnedTextSession extends Component<Props, State> {
-  state: State = { browser: initialBrowserSession, status: null, transcript: null, draft: "", attempted: false, session: 0, receipt: false };
+  state: State = { browser: initialBrowserSession, status: null, transcript: null, draft: "", attempted: false, session: 0, receipt: false, hasBeenReady: false };
   private controller?: TextController;
   private browser?: BrowserSession;
   private mounted = false;
   private composing = false;
   private pending?: { text: string; earlier: Set<string> };
   private question = createRef<HTMLTextAreaElement>();
+  private focusAfterStart = false;
+  private startControl: Element | null = null;
   componentDidMount() {
     this.mounted = true;
     if (this.props.source) this.controller = this.props.createController?.(status => {
@@ -55,9 +66,18 @@ class OwnedTextSession extends Component<Props, State> {
       const pending = this.pending;
       const received = pending !== undefined && transcript.turns.some(t => !pending.earlier.has(t.itemId) && t.role === "user" && t.parts.some(p => p.text === pending.text && p.state === "final"));
       if (received) this.pending = undefined;
-      this.setState(previous => ({ status, transcript, draft: received ? "" : previous.draft, receipt: received || previous.receipt }));
+      this.setState(previous => ({ status, transcript, draft: received ? "" : previous.draft, receipt: received || previous.receipt, hasBeenReady: previous.hasBeenReady || status.phase === "ready" }));
     });
     this.browser = new BrowserSession(() => this.controller?.stop(), browser => this.setState({ browser }));
+  }
+  componentDidUpdate() {
+    if (!this.focusAfterStart) return;
+    if (this.state.status?.phase === "failed" || this.state.status?.phase === "ended") this.focusAfterStart = false;
+    if (this.state.status?.phase !== "ready") return;
+    this.focusAfterStart = false;
+    // Explicit Start may focus the newly available field, unless the visitor
+    // moved elsewhere while connecting. Answer updates never move focus.
+    if (document.activeElement === this.startControl || document.activeElement === document.body) this.question.current?.focus({ preventScroll: true });
   }
   componentWillUnmount() {
     this.mounted = false;
@@ -68,10 +88,12 @@ class OwnedTextSession extends Component<Props, State> {
   }
   private start = () => {
     if (!this.browser?.allowsAction() || !this.controller || !this.props.source || active.has(this.controller.snapshot.phase)) return;
+    this.startControl = document.activeElement;
+    this.focusAfterStart = true;
     if (this.controller.start(this.props.source.id)) {
       this.browser.started(); this.pending = undefined;
-      this.setState(previous => ({ draft: "", attempted: false, transcript: null, receipt: false, session: previous.session + 1 }));
-    }
+      this.setState(previous => ({ attempted: false, transcript: null, receipt: false, session: previous.session + 1 }));
+    } else this.focusAfterStart = false;
   };
   private send = () => {
     if (!this.browser?.allowsAction() || this.composing || !this.controller?.canSubmit) return;
@@ -92,28 +114,32 @@ class OwnedTextSession extends Component<Props, State> {
     const phase = status?.phase ?? "idle";
     const running = active.has(phase);
     const ready = !blocked && available && phase === "ready";
+    const firstStart = !this.state.hasBeenReady && !transcript?.turns.length && !draft;
     const invalid = draft.length > TEXT_QUESTION_LIMIT ? `Your question is too long (${draft.length}/${TEXT_QUESTION_LIMIT} text units). Shorten it before sending; nothing has been cut off.`
       : attempted && !draft.trim() ? "Type a question before sending. Spaces alone cannot be sent." : "";
     return <div className="text-session">
-      {source ? <p className="text-source">Using source: {source.title}</p> : null}
-      <p id="text-session-guidance" className="text-session-status" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : phase === "sending" && this.state.receipt ? "Question received. Finishing the send before requesting an answer." : message(status, available)}</p>
+      {source ? <p className="text-source visually-hidden">Using source: {source.title}</p> : null}
+      {!firstStart ? <TranscriptView snapshot={transcript} viewKey={`${source?.id ?? "none"}:${session}`} empty={{ title: phase === "failed" ? "Your source is still here" : phase === "ended" ? "Ready when you are" : "What would you like to know?", detail: phase === "ready" ? "Ask for a summary, or dig into a detail from your source." : "Start a fresh session to continue. Your unsent draft stays below." }} /> : null}
+      <div className={firstStart ? "text-start" : "session-dock"}>
+      {firstStart ? <div className="text-start-invitation"><h3>{phase === "failed" ? "Your source is still here" : running ? "Getting your chat ready" : "What would you like to know?"}</h3>{phase === "idle" ? <p>Start a chat to explore a summary or a specific detail. Prefer to talk? Choose Voice mode.</p> : null}</div> : null}
+      <p id="text-session-guidance" className={`text-session-status ${!recovery && ["idle", "ready"].includes(phase) && available ? "visually-hidden" : ""}`} role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{available && recovery ? recovery : phase === "sending" && this.state.receipt ? "Question received. Finishing the send before requesting an answer." : message(status, available, firstStart)}</p>
       <div className="source-actions text-session-actions" aria-describedby="text-session-guidance">
-        <button type="button" aria-describedby="text-session-guidance" disabled={blocked || !available || running} onClick={this.start}>{phase === "ended" || phase === "failed" ? "Start a fresh text session" : "Start text session"}</button>
-        <button type="button" aria-describedby="text-session-guidance" disabled={blocked || !available || !running} onClick={() => this.controller?.stop()}>Stop text session</button>
+        <button type="button" className={firstStart ? "primary start-chat" : undefined} aria-describedby="text-session-guidance" hidden={running || status?.failure === "source_too_large"} disabled={blocked || !available || running || status?.failure === "source_too_large"} onClick={this.start}>{firstStart ? "Start chat" : phase === "ended" || phase === "failed" ? "Start a fresh text session" : "Start text session"}</button>
+        <button type="button" aria-describedby="text-session-guidance" hidden={!running} disabled={blocked || !available || !running} onClick={() => this.controller?.stop()}>Stop text session</button>
       </div>
-      <p className="note">Starting again clears this conversation and draft. Questions are never resent automatically. An internet connection is required.</p>
-      <div className="text-composer">
-        <label htmlFor={fieldId}>Your question</label>
-        <p className="note" id={`${fieldId}-help`}>Enter and Shift+Enter add a new line. Use Send question to submit. Limit: 1,000 text units; some symbols use more than one.</p>
-        <textarea ref={this.question} id={fieldId} name="question" autoComplete="off" rows={4} dir="auto"
+      {!firstStart ? <p className={running || phase === "idle" ? "visually-hidden" : "note restart-warning"}>Restarting clears the conversation. Your unsent draft stays; nothing resends automatically.</p> : null}
+      <div className="text-composer" hidden={firstStart}>
+        <label className="visually-hidden" htmlFor={fieldId}>Your question</label>
+        <p className="visually-hidden" id={`${fieldId}-help`}>Enter adds a new line. Send submits. Limit: 1,000 text units.</p>
+        <textarea ref={this.question} id={fieldId} name="question" autoComplete="off" placeholder="Ask about your source…" rows={2} dir="auto"
           disabled={!available} readOnly={!ready} value={draft} aria-invalid={!!invalid}
           aria-describedby={`${fieldId}-help ${fieldId}-validation text-session-guidance`}
           onCompositionStart={() => { this.composing = true; }} onCompositionEnd={() => { this.composing = false; }}
           onChange={event => { this.setState({ draft: event.target.value, attempted: false }); }} />
-        <p className="note text-validation" id={`${fieldId}-validation`}><span aria-live="polite">{invalid}</span>{!invalid ? `${draft.length}/${TEXT_QUESTION_LIMIT} text units. Your draft clears only after receipt is confirmed.` : null}</p>
+        <p className={invalid ? "note text-validation" : "visually-hidden"} id={`${fieldId}-validation`}><span aria-live="polite">{invalid}</span>{!invalid ? `${draft.length}/${TEXT_QUESTION_LIMIT} text units. Your draft clears only after receipt is confirmed.` : null}</p>
         <button type="button" className="primary" aria-describedby="text-session-guidance" disabled={!ready || draft.length > TEXT_QUESTION_LIMIT} onClick={this.send}>Send question</button>
       </div>
-      <TranscriptView snapshot={transcript} viewKey={`${source?.id ?? "none"}:${session}`} />
+      </div>
     </div>;
   }
 }

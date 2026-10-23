@@ -14,8 +14,8 @@ const originalFetch = globalThis.fetch;
 before(() => { globalThis.fetch = async () => { providerCalls++; throw new Error("External calls forbidden"); }; });
 after(async () => {
   globalThis.fetch = originalFetch; assert.equal(providerCalls, 0);
-  await mkdir("artifacts/local/09a", { recursive: true });
-  await writeFile("artifacts/local/09a/transcript-matrix.json", JSON.stringify({ checkedUtc: new Date().toISOString(),
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/09a`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/09a/transcript-matrix.json`, JSON.stringify({ checkedUtc: new Date().toISOString(),
     context: "fixture-only, actual 07B/08A/08B composition, fake media/clock; no grounding/audibility evidence", providerCalls, traces, limits }, null, 2));
 });
 const event = (type: string, fields: object = {}) => ({ event_id: `transcript_${++sequence}`, type, ...fields });
@@ -267,7 +267,7 @@ test("actual composition excludes every manifest source item and raw errors with
   h.emit(text("delta", "safe draft"), input("failed"));
   assert.equal(h.controller.transcript.counts.items, 2); assert.doesNotMatch(JSON.stringify(h.controller.transcript), /source-priming-v1|PRIVATE_ERROR|clientSecret|ownerHash/);
   assert.deepEqual(h.a.row, sourceBefore); assert.deepEqual(h.r.tracks.map(t => t.enabled), tracks);
-  assert.equal(h.r.transport.outbound.length, h.baseline); assert.equal(h.r.counts.attaches, 1); assert.equal(h.r.counts.plays, 0);
+  assert.equal(h.r.transport.outbound.length, h.baseline); assert.equal(h.r.counts.attaches, 1); assert.equal(h.r.counts.plays, 1);
   h.clean(); traces.push({ scenario: "manifest-exclusion-no-commands", cleanup: h.trace("manifest-exclusion") });
 });
 for (const action of ["stop", "replacement", "source-reset", "dispose"] as const) test(`composed ${action} rejects late A events and releases all resources`, async () => {

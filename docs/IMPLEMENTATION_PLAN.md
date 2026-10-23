@@ -1,4 +1,67 @@
+**PM 13F — 22 October 2026 — ACCEPTED offline.** Caption entity normalization and direct-cache versioning accepted on hdDQACZgIfajgeL0RF7GG. Fresh 224 tests and built fresh/cache-hit previews PASS 0; 55 task/evidence/reference hashes match and 716 preserved arrival entries reconcile. No blocking findings or active worker task. Reimport existing videos to replace stored encoded text. No deployment/live provider/DB calls or spend; original payload, phone/audio and other release gates remain unverified. Next PM release freeze/operations/deployment, bounded hosted checks, user phone and submission. [PM review](PM_ACCEPTANCE_13F.md).
+
+**Worker 13F — 22 October 2026 — READY_FOR_REVIEW:** bounded raw-XML caption entity canonicalization and direct cache representation v2 implemented. Decimal/hex and one extra escaping layer corrected; Supadata/PDF, English policy, models and UI preserved. Existing owned sources require explicit reimport. Local build **hdDQACZgIfajgeL0RF7GG**; 554 focused tests, lint/typecheck/build and actual built fresh/cache-hit previews PASS/exit 0. Synthetic upstream/Prisma only; no deployment/provider/DB operations. PM acceptance pending; original steps and release/device gates unchanged. [Report](CAPTION_ENTITY_DECODING_13F.md), [hashes](CAPTION_ENTITY_DECODING_13F_HASHES.json).
+
+**Latest PM — 22 October 2026:** sole Task 13F corrects the user-reported caption entity leak (visible &#39;). Offline actual-parser reproduction proves nested apostrophe and hex-reference gaps; exact user upstream payload not captured. Fix canonical direct-caption text plus cache freshness, preserve inert rendering and accepted 13E. No model/UI redesign, live spend or deployment. [Worker brief](WORKER_TASK_13F.md).
+
+**PM 13E accepted offline, 22 October 2026:** bounded English/caption-preparation/copy scope complete on Olc_TqoFi9G8zHh4fCcAo; no active worker task. See [review](PM_ACCEPTANCE_13E.md). Original Steps 01–14 and live/device/release gates retained. Resume exact release freeze, PM cleanup operations/deployment, bounded hosted checks, physical phone and submission; no new speculative experiment.
+
 # Talk to a Document and YouTube Project Plan
+
+**Worker 13E — 22 October 2026 — READY_FOR_REVIEW:** the sole bounded task under original Steps03/07/08/10/11/13 is implemented and locally verified on **Olc_TqoFi9G8zHh4fCcAo**. English-only caption selection, English response instructions, shared lossless caption packing, actionable local size recovery and PDF helper copy are ready for PM evidence review. [Report](ENGLISH_CAPTION_PREPARATION_13E.md) / [hashes](ENGLISH_CAPTION_PREPARATION_13E_HASHES.json). PM acceptance and any separately bounded exact-source/live check remain pending. Step IDs, 13D acceptance, historical failures and release/device gates are preserved; no new active implementation task or completion decision.
+
+**Latest user22October:** sole [13E](WORKER_TASK_13E.md) follows accepted13D: English captions/answers, reproduced caption-count preparation defect and clear limits, remove “no OCR” copy. Local synthetic4097segment404 proven; exact13hsource/model capacity unknown. Preserve full-source design/transport bounds; no live experiment or new architecture. Review this targeted correction before release operations resume.
+
+**PM13D accepted22October:** real disposable SQL cleanup/races12scenarios PASS0; centered voice/start and clutter removal plus latest polish accepted locally on JITbvR6CHVJWu4TdniqAZ, fresh138state UI pass. No active worker task. Next PM exact release commit, production cleanup operational plan/deployment and bounded hosted checks; then user physical phone, recording/access. See [acceptance](PM_ACCEPTANCE_13D.md). Original Step11 implementation SQL gate now verified; operational retention and full Steps13–14 completion remain open.
+
+**Latest user addition22October:**13D also removes explicitly circled routine clutter: Early preview, Voice help, PDF-reader page-order/expiry-cookie-reload/extraction-notes boilerplate. Preserve actionable error/recovery UI and all backend protections. Same task and bounded visual pass as voice-start alignment; see revised [brief](WORKER_TASK_13D.md).
+
+**User addition22October:** sole13D now also matches voice initial/empty-ended Start placement to text mode's centered invitation/action group. Preserve active dock and received transcripts. Revised [brief](WORKER_TASK_13D.md) includes focused rendered/build verification; cleanup correction and PM SQL gate remain. No parallel worker assignment or general redesign.
+
+**Latest SQL result22October:** Docker recovered; real PostgreSQL18.6 migrations pass but cleanup harness fixture setup fails23514. Sole [13D](WORKER_TASK_13D.md) corrects invalid active PDF test fixtures without weakening constraints; PM then reruns real SQL before deployment. Both isolated containers removed, shared DB untouched.13C offline acceptance and feature freeze retained. See [evidence](PM_SQL_VERIFICATION_13C.md).
+
+**PM13C accepted22October:** offline candidate review complete; no active implementation task. See [release review](PM_RELEASE_REVIEW_13C.md). PM now owns isolated PostgreSQL cleanup/races and operational plan, exact release commit/deployment and bounded hosted checks. Local Docker engine unavailable at preflight; SQL check remains NOT_RUN. User phone and recording/access follow deployment. Full audit retains the explicitly accepted dev-tool residual; feature/UI freeze continues. Original Steps11–14 remain incomplete until these gates have evidence.
+
+**Closeout22October:** user authorizes finish; freeze new features/UI. Sole13C covers current candidate reproducibility, focused security/recovery/dependency checks and final reviewer/demo preparation under original Steps11/13/14. PM release review then hosted/DB verification and deployment; user physical-phone test and final recording/access checks follow. No declaration of completion from scaffold, offline tests or stale hosted identity.
+
+**Latest PM22October:**12E first-use polish accepted locally after F05 clipping correction;467hashes/fresh targeted geometry checks pass. Build wJ_EUQCGyDbjGCabxha5E. No active implementation task. Remaining release/security/storage/recovery checks precede deployment; user physical-phone test follows deployment, then demo/submission. Original step IDs and historical gaps remain.
+
+**Latest PM22October:**12D accepted locally for expanded assessment budgets, truthful recovery and supplied-style UI polish.275hashes/fresh413tests/viewport harness pass. No active implementation task; proceed toward remaining release/security/storage/recovery gates and deployment, then user-deferred physical-phone check and submission. Cosmetic residual and unreproduced dev warning remain documented; original step IDs unchanged.
+
+**Latest PM22October:**12C accepted for local component styling/themes/mobile/source controls and automatic playback/output-mute implementation; fresh402hash verification, viewport harness and247voice tests pass. No active worker task. Next real-device verification, then outstanding recovery/storage/security/release/submission gates. Cross-mode history unchanged; hosted YouTube remains deferred bonus. See PROJECT_STATE for evidence limitations.
+
+**Latest22October:**12B correction accepted for local UI scope,22hashes/fresh viewport checks PASS. No active worker task; short user live larger-voice/UI check next, then remaining storage/security/recovery/release/submission gates. No automatic further design loop or deployment.
+
+**Latest22October PM12B:** functional evidence retained; visual completion requires the sole12B correction. Finish reachable composer/voice dock and compact source/status UI before acceptance. No new redesign direction; preserve backend and remaining release gates.
+
+**Latest22October:**08P accepted offline; sole12B focused UI/mobile polish. Larger live voice verification pending; independent UI work proceeds while user checks it. Retain remaining recovery/storage/security/final release/submission gates. See latest PROJECT_STATE.
+
+**Worker08P —22October: READY_FOR_REVIEW.** Fixed larger owned-voice default implemented and verified offline on build9plm_yr0fscZi-VDwACfo; separate voice v7 identity and settings preserved. See [08P report](DEFAULT_VOICE_MODEL_08P.md). No live audio/accuracy/device or deployment claim; original Step01–14 and historical failures retained. PM reviews before the bounded live check/UI polish/release sequence.
+
+
+**Current sequence, 22 October:** sole08P larger voice default and offline verification; then brief user voice check, one focused UI/mobile polish task, remaining recovery/storage/security/release and submission gates. User local PDF/YouTube text and source lifecycle passed by report. No new comparative model experiments. See latest PROJECT_STATE and WORKER_TASK_08P.
+
+**Worker 03M — 22 October: READY_FOR_REVIEW.** Fixed larger owned-text default implemented and verified offline; size routing retired. See [03M handoff](DEFAULT_TEXT_MODEL_03M.md). PM review pending; no deployment, model calls or next task. Original Step 01–14 IDs and historical FAIL grades remain.
+
+**User-approved delivery criteria, 22 October:** larger default plus documented residual answer errors is the accepted route. The specific 03L PDF exception omission stays FAIL but is an accepted limitation, not a mandatory fix before delivery. Perfect answers and further size calibration are not release gates. Sole03M remains active; next verify actual app integration and outstanding recovery/security/device/release requirements. Historical evidence and original Step01–14 IDs remain unchanged.
+
+**User decision22October:** default larger model for PDF/YouTube text replaces automatic size-routing goal; no cutoff calibration gate for this chosen default. Sole03M implements/verifies offline with voice unchanged. Accuracy/recovery/security/liveapp/release gates remain; no historicalFAIL converted toPASS. See latest PROJECT_STATE.
+
+**Latest PM03L review22October:** partial evidence/stop accepted, targetedPDFaccuracy failure remains even on larger model. Video larger samples pass; no cutoff approved/livePDFapp proof. No active task/new allocation. Preserve prior accepted routing/output correction and refer to latest PROJECT_STATE before further work.
+
+**Latest22October:**03K output correction accepted; sole03L completes remaining frozen user-source checks with accepted2048policy. No size cutoff or release approval. Follow latest PROJECT_STATE/WORKER_TASK_03L; older assignments historical.
+
+**Latest22October:**03J user-fixture partial evidence accepted; both PDF answers hit512output cap, no cutoff accepted. Sole Task03K corrects text cap2048, validates policies/offline, then one bounded unchanged pair. No deployment/voice/prompt change; see latest PROJECT_STATE.
+
+**Latest PM03J review22October:** partial calibration/app-route evidence accepted; no cutoff approved. Missing short/middle/PDF coverage must be assembled before further bounded calls. No active worker task or spend allocation; routing disabled, voice unchanged. Older current-task entries are historical.
+
+**Latest review22October:**03I offline size-based routing accepted after17matching hashes/fresh157checks. No active implementation task. Live cutoff calibration across real sources and complete-app acceptance remain pending; repeated synthetic fixtures do not validate quality. Routing remains disabled and voice unchanged. See latest PROJECT_STATE.
+
+**Latest assignment22October:** Task03I under Steps07/10/13 implements offline source-independent input-size routing for both PDF/YouTube text; no empirically validated cutoff yet. Follow latest PROJECT_STATE and WORKER_TASK_03I.md over older assignments. Voice remains unchanged pending separate validation; no spend/deployment in03I.
+
+**Current22October review:**11D offline preview/harness accepted; no active worker assignment.03H whole-source accuracy remains failed/unresolved, with four cases not run. Next priority is resolving that blocker without automatically repeating model/prompt experiments. Remaining device/recovery, SQL-cleanup, security/release and submission gates stay open. Hosted YouTube is deferred bonus. Older active-task statements are historical; see latest PROJECT_STATE.
+
+**Approved scope correction —21October2026Toronto:** user accepted `PM_REQUIREMENTS_REASSESSMENT.md`. Preserve original Step01–14 IDs. Deliver accurate full-source Realtime conversation without citation handling; historical03F failures remain failures. Local complete-app YouTube ingestion/conversation under the assessment's cloud-block exception is the delivery path; hosted YouTube is deferred bonus. This supersedes older mandatory hosted-both/citation-specific clauses, not accuracy/security/mobile/release requirements. Sole current task `WORKER_TASK_03G.md` is offline simplification; live validation remains separate and required. Keep voice enabled/public YouTube disabled.
 
 **Current PM14A review:** walkthrough preparation accepted in `6b28ea9`; estimated13:00 final/5:30 progress scripts, no recording or live-success claim. Four hashes matched; fresh PM verification passed with421 protected files unchanged. No active worker assignment: next is prerequisite resolution for model/accounting and live integration; disposable-PostgreSQL cleanup validation is an independent no-key path once PM selects a target. Full live/device/release gates remain open. Older summaries below are historical.
 

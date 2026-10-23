@@ -31,7 +31,7 @@ export function createPreparationDiagnostics(write: (line: string) => void, cloc
       finish(status) {
         if (closed) return;
         closed = true;
-        emit("exit", [201, 400, 401, 403, 404, 405, 409, 429, 503].includes(status) ? status : 0);
+        emit("exit", [201, 400, 401, 403, 404, 405, 409, 413, 429, 503].includes(status) ? status : 0);
       },
     };
     trace.mark("entry");

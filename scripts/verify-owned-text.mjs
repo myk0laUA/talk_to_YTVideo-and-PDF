@@ -12,7 +12,7 @@ import { createVisitor, visitorCookie } from "../src/server/proof/visitor.ts";
 import { uploadedRecord, captionRecord, sourceDto } from "../src/server/sources/service.ts";
 import { pdfFixture, captionFixture } from "../tests/context/fixtures.ts";
 
-const directory = path.resolve("artifacts/local/10d"); await mkdir(directory, { recursive: true });
+const directory = path.resolve(process.env.OWNED_TEXT_EVIDENCE_DIRECTORY ?? "artifacts/local/10d"); await mkdir(directory, { recursive: true });
 const port = 3126, origin = `http://127.0.0.1:${port}`;
 const report = { startedUtc: new Date().toISOString(), runtime: process.version, buildId: (await readFile(".next/BUILD_ID", "utf8")).trim(),
   environment: "local built Next routes/UI/HTTP proxy/server lifecycle/real WS adapter; injected fake ws and synthetic Prisma; no real keys/DB/provider/phone", checks: [], groups: [], forbiddenNetwork: 0 };
@@ -23,13 +23,17 @@ await available();
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ["flow", "denials", "cleanup", "browser-recovery"]) {
+  for (const group of ["flow", "denials", "cleanup", "browser-recovery", "obsolete-mini", "obsolete-invalid"]) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString("hex") };
     const env = { ...process.env, NODE_OPTIONS: "", NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic",
       OWNED_SOURCE_TEXT_ENABLED: "true", OPENAI_API_KEY: "sk-synthetic10d-no-live-contact", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "",
+      // Obsolete settings must never affect the fixed production default.
+      ...(group.startsWith("obsolete-") ? { OWNED_TEXT_MODEL_ROUTING_ENABLED: group === "obsolete-mini" ? "true" : "invalid",
+        OWNED_TEXT_MODEL_ROUTING_CUTOFF: group === "obsolete-mini" ? "1000000" : "invalid" } : {}),
       PDF_INGESTION_ENABLED: "true", PDF_INGESTION_LOCAL_HTTP: "true", YOUTUBE_INGESTION_ENABLED: "true", YOUTUBE_INGESTION_LOCAL_HTTP: "true", YOUTUBE_INGESTION_PROVIDER: "direct",
       PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", TEXT_PROOF_ENABLED: "false", PDF_PROOF_ENABLED: "false", CAPTION_PROOF_ENABLED: "false" };
+    if (!group.startsWith("obsolete-")) { delete env.OWNED_TEXT_MODEL_ROUTING_ENABLED; delete env.OWNED_TEXT_MODEL_ROUTING_CUTOFF; }
     const server = spawn(process.execPath, ["--require", path.resolve("tests/text-relay/network.cjs"), "--import", pathToFileURL(path.resolve("tests/text-relay/server.mjs")).href,
       "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(port)], { env, windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"] });
     let log = "", seq = 0;
@@ -72,7 +76,7 @@ try {
     };
     try {
       await wait(async () => { try { return (await fetch(origin, { signal: AbortSignal.timeout(300) })).ok; } catch { return false; } });
-      if (group === "flow") {
+      if (group === "flow" || group.startsWith("obsolete-")) {
         for (const kind of ["PDF", "YOUTUBE"]) {
           const f = await seed(kind), id = await start(f), s = await stream(f, id);
           await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
@@ -86,7 +90,7 @@ try {
           check(`${kind} Stop retains 2 user/2 assistant`, s.snapshots.at(-1).transcript.turns.length, 4);
           check(`${kind} stream ended`, s.snapshots.at(-1).status.phase, "ended");
         }
-        for (const kind of ["PDF", "YOUTUBE"]) for (const width of [1440, 390]) {
+        if (group === "flow") for (const kind of ["PDF", "YOUTUBE"]) for (const width of [1440, 390]) {
           const f = await seed(kind), context = await browser.newContext({ viewport: { width, height: 900 } });
           await context.addCookies([{ name: "td-visitor", value: f.visitor.token, url: origin, httpOnly: true, sameSite: "Strict" }]);
           const page = await context.newPage(), pageErrors = [];
@@ -104,23 +108,33 @@ try {
             const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Upload a PDF", exact: true }).click();
             await (await chooser).setFiles({ name: "Synthetic10D.pdf", mimeType: "application/pdf", buffer: Buffer.from("seeded-source-acquisition") });
           } else { await page.getByLabel("YouTube URL", { exact: true }).fill("https://www.youtube.com/watch?v=Context07A1"); await page.getByRole("button", { name: "Import YouTube video", exact: true }).click(); }
-          await page.getByRole("button", { name: "Inspect extracted text", exact: true }).waitFor();
-          await page.getByRole("button", { name: "Inspect extracted text", exact: true }).click();
+          await page.getByRole("button", { name: "View source", exact: true }).waitFor();
+          await page.getByRole("button", { name: "View source", exact: true }).click();
           check(`${kind}/${width} complete preview`, await page.locator(".source-reader .page-text").allTextContents(), (kind === "PDF" ? f.row.sections : f.row.sections.segments).map(s => s.text || "No extractable text on this page."));
           await page.getByRole("button", { name: "Close text and return", exact: true }).first().click();
-          await page.getByRole("button", { name: "Start text session", exact: true }).click();
+          await page.getByRole("button", { name: "Start chat", exact: true }).click();
           await page.getByText("Ready for your question.", { exact: true }).waitFor();
+          await ipc("scenario", { scenario: "success", answerDelay: 500 });
           for (let n = 0; n < 2; n++) {
             await page.getByLabel("Your question", { exact: true }).fill(`Browser synthetic question ${n} 雪`);
             await page.getByRole("button", { name: "Send question", exact: true }).click();
+            await page.getByText(n === 0 ? "Synthetic10D answer begins" : "Synthetic10D follow-up end", { exact: false }).first().waitFor();
+            check(`${kind}/${width}/${n} partial answer streamed`, await page.locator(".transcript-part > .transcript-text").last().textContent(), n === 0 ? "Synthetic10D answer begins" : "Synthetic10D follow-up end");
             await page.getByText("Ready for your question.", { exact: true }).waitFor();
           }
           await page.getByRole("button", { name: "Stop text session", exact: true }).click();
           check(`${kind}/${width} retained rendered answers`, (await page.locator(".transcript").textContent()).includes("Full history retained."));
+          check(`${kind}/${width} literal locators retained`, (await page.locator(".transcript").textContent()).includes("[segment-355] [segment-unknown] <script>inert</script>"));
+          check(`${kind}/${width} no citation notices`, !/Source references|Source excerpt|text is verified/.test(await page.locator(".transcript").textContent()));
+          check(`${kind}/${width} no generated links or executable markup`, await page.locator(".transcript a, .transcript blockquote, .transcript script").count(), 0);
           check(`${kind}/${width} native media/socket APIs untouched`, await page.evaluate(() => window.__media10d), 0);
           check(`${kind}/${width} no page errors`, pageErrors, []);
           check(`${kind}/${width} viewport fits`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-          await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}.png`), fullPage: true });
+          await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}.png`), fullPage: true });
+          await page.getByRole("button", { name: "View source", exact: true }).click();
+          check(`${kind}/${width} Stop retains full preview`, await page.locator(".source-reader .page-text").allTextContents(), (kind === "PDF" ? f.row.sections : f.row.sections.segments).map(s => s.text || "No extractable text on this page."));
+          await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-stopped-preview.png`), fullPage: false });
+          await page.getByRole("button", { name: "Close text and return", exact: true }).first().click();
           await page.getByRole("button", { name: "Start a fresh text session", exact: true }).click();
           await page.getByText("Ready for your question.", { exact: true }).waitFor();
           await ipc("scenario", { scenario: "success", answerDelay: 500 });
@@ -131,7 +145,7 @@ try {
             await page.getByRole("button", { name: "Voice mode", exact: true }).click();
             await page.getByRole("button", { name: "Text mode", exact: true }).click();
             check(`${kind} mode switch empties transcript`, await page.locator(".transcript-turn").count(), 0);
-            check(`${kind} mode switch requires explicit fresh Start`, await page.getByRole("button", { name: "Start text session", exact: true }).isEnabled());
+            check(`${kind} mode switch requires explicit fresh Start`, await page.getByRole("button", { name: "Start chat", exact: true }).isEnabled());
           } else await page.goto(origin); // Real pagehide/unmount, no synthetic event.
           await context.close(); await wait(async () => (await ipc("snapshot")).active === 0);
           await ipc("scenario", { scenario: "success", answerDelay: 100 });
@@ -153,7 +167,8 @@ try {
         await post("", f, { sourceId: "invalid", requestId: randomUUID() }, 400);
         await post("", f, { sourceId: f.row.id, requestId: "invalid" }, 400);
         await post("", f, { sourceId: f.row.id, requestId: randomUUID(), extra: "x".repeat(9000) }, 400);
-        for (const extra of [{ model: "other" }, { policy: {} }, { sourceText: "override" }, { providerEvent: {} }, { owner: other.visitor.owner }])
+        for (const extra of [{ model: "other" }, { policy: {} }, { sourceText: "override" }, { providerEvent: {} }, { owner: other.visitor.owner },
+          { inputSize: 1 }, { cutoff: 1000000 }, { calibration: "verified" }])
           await post("", f, { sourceId: f.row.id, requestId: randomUUID(), ...extra }, 400);
         await post("", other, { sourceId: f.row.id, requestId: randomUUID() }, 404);
         const id = await start(f), s = await stream(f, id); await wait(() => s.snapshots.at(-1)?.status.phase === "ready");
@@ -244,14 +259,16 @@ try {
             await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, source: sourceDto(f.row) }) });
           });
           const upload = async () => { const loaded = page.waitForResponse(r => /\/api\/sources\/[a-f0-9-]{36}$/.test(r.url()) && r.request().method() === "GET" && r.status() === 200);
+            if (uploads && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions", { exact: true }).click(); if (uploads && await page.locator(".source-menu button").count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click();
             const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: uploads ? "Replace PDF" : "Upload a PDF", exact: true }).click();
             await (await chooser).setFiles({ name: "Synthetic10D.pdf", mimeType: "application/pdf", buffer: Buffer.from("synthetic acquisition") });
-            await loaded; await page.getByRole("button", { name: "Inspect extracted text", exact: true }).waitFor(); };
+            await loaded; await page.getByRole("button", { name: "View source", exact: true }).waitFor(); };
           await ipc("scenario", { scenario: scenario === "replacement" ? "success" : scenario, answerDelay: 200 });
-          await page.goto(origin); await upload(); await page.getByRole("button", { name: "Start text session", exact: true }).click();
+          await page.goto(origin); await upload(); await page.getByRole("button", { name: "Start chat", exact: true }).click();
           if (scenario === "withheld-source") {
             await page.getByText("Loading your source into the conversation. Wait before sending a question.", { exact: true }).waitFor();
-            check("composer blocked before complete ACK", await page.getByRole("button", { name: "Send question", exact: true }).isDisabled());
+            check("composer hidden before complete ACK", await page.locator(".text-composer").isHidden());
+            check("composer blocked before complete ACK", await page.getByRole("button", { name: "Send question", exact: true, includeHidden: true }).isDisabled());
             await page.getByRole("button", { name: "Stop text session", exact: true }).click(); await ipc("release");
           } else {
             await page.getByText("Ready for your question.", { exact: true }).waitFor();
@@ -259,9 +276,9 @@ try {
             if (scenario === "context") {
               await page.getByText(/The provider rejected this conversation because it exceeds its context limit/).waitFor();
               check("UI capacity error keeps received partial", (await page.locator(".transcript").textContent()).includes("Synthetic10D answer begins"));
-              await page.getByRole("button", { name: "Inspect extracted text", exact: true }).click();
+              await page.getByRole("button", { name: "View source", exact: true }).click();
               check("UI capacity error complete preview retained", await page.locator(".source-reader .page-text").count(), pdfFixture.pageCount);
-              await page.screenshot({ path: path.join(directory, "context-recovery-390.png"), fullPage: true });
+              await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, "context-recovery-390.png"), fullPage: false });
             } else {
               await page.getByText("Answer arriving. You can stop and keep the text received so far.", { exact: true }).waitFor(); await upload();
               await wait(async () => await page.locator(".transcript-turn").count() === 0);
@@ -273,6 +290,8 @@ try {
       }
       await wait(async () => (await ipc("snapshot")).registry.sessions === 0);
       const resources = await ipc("snapshot"); check(`${group} no active providers`, resources.active, 0);
+      const expectedModel = "gpt-realtime-2.1";
+      check(`${group} selected URL model retained for every session`, resources.models.every(model => model === expectedModel));
       check(`${group} opens equal closes`, resources.opens, resources.closes); check(`${group} detached provider listeners`, resources.listeners, 0);
       report.groups.push({ group, resources });
       check(`${group} no sensitive app log`, ![config.cookieSecret, env.OPENAI_API_KEY, "PRIVATE10D_PROVIDER_BODY"].some(v => log.includes(v)));

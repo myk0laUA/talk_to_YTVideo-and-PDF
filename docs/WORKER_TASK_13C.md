@@ -1,0 +1,37 @@
+# Task13C — release candidate verification and submission handoff
+
+Sole active implementation task under original Steps11/13/14. User explicitly says finish the project. Freeze features and optional UI polish. PM accepted12E/F05 on local build wJ_EUQCGyDbjGCabxha5E, main HEAD1d30684 plus extensive accepted dirty changes. Read AGENTS, START_HERE, IMPLEMENTATION_PLAN, PROJECT_STATE, TESTING, SKILLS and WORKER_PROMPT. Inspect current status and latest evidence. No blanket reset/clean/stage/delete; the current working files, including intentional experimental-code deletions, are the candidate, not HEAD alone.
+
+## Outcome
+
+Return one reproducible candidate ready for PM release review: verified from a clean snapshot, relevant security/recovery evidence, accurate README and a usable final demo/submission pack. Fix only concrete blockers found during this process. No new model experiments, design iterations, cross-mode history feature or hosted-YouTube work. Preserve both larger defaults,60voice/60text starts/hour, anonymous ownership/expiry, PostgreSQL, WebRTC, genuine text fallback and one source/conversation.
+
+## 1. Freeze and reproduce the candidate
+
+Inventory tracked modifications/deletions and intended untracked source/config/tests/docs/assets. Create a manifest with hashes and an isolated disposable export of the actual candidate. Do not archive HEAD and call that current. Do not copy .env, secrets, node_modules, .next, .tools, artifacts/local, test-results or ignored application fixture inputs. Use the existing pinned runtime externally; do not alter the user's active dev server. Preserve the original checkout and all historical artifacts. Record snapshot path, source identity and any later repair overlays.
+
+From the export with no real configuration, run pinned npm ci, lint, typecheck, npm test, db:validate, build, test:smoke and test:boundaries. Install/use the existing browser as needed. Required schema validation may use an explicitly inert syntactically valid loopback URL if tooling needs one; no DB connection/migration. Registry/advisory access is allowed; provider/DB calls are not. Make fixtures reproducible from committed source; do not borrow old10C/other ignored inputs. If a test fails because data generation is missing, fix the repository's preparation path and rerun affected checks. Tests must preserve prior evidence and direct new outputs to artifacts/local/13c in the candidate/export.
+
+On the final candidate run the existing relevant owned-text, owned-voice, voice-adapter, mode-switch and recovery suites with synthetic boundaries, plus focused source/YouTube HTTP ownership/expiry checks and cleanup units. Inspect exact scripts/package commands first and avoid duplicate unit runs already included in a script. Run only final affected checks again if a concrete fix changes inputs. Distinguish final built HTTP evidence from separately bundled UI and historical successes. Record each command/executable/exit/build; no skipped check marked pass.
+
+## 2. Security and dependency review
+
+Run fresh full and production-only npm audits, preserve JSON/exit status, and revisit DEPENDENCY_TRIAGE_13B.md using current primary advisory/upstream evidence. No automatic npm audit fix --force or framework downgrade. Apply a compatible focused remedy only if available and validate it; otherwise report reachability, dev/runtime scope and residual for PM decision. Audit is one input, not a security guarantee.
+
+Check candidate and tracked history for accidental secrets using redacted findings (path/type only, never values), client/server boundaries and source/credential logs; review actual owned routes for origin/method/ownership/expiry, bounded bodies and cancellation, client-safe DTOs, temporary credential handling and public feature flags. Preserve permanent keys only server-side. Do not rewrite functioning security architecture or remove limits merely to make a test pass. Inspect deletion/import/package reachability to ensure abandoned experiments are absent from runtime and no needed module was removed. Retain historic reports; clean only demonstrably obsolete runtime/dead links within candidate scope.
+
+## 3. Reconcile remaining gates and reviewer documentation
+
+Create docs/RELEASE_CANDIDATE_13C.md with a concise gate matrix: original requirement, current evidence/build, PASS/FAIL/NOT_RUN, remaining action and owner. Later accepted decisions supersede obsolete13A checklist gates: citations and perfect summaries are not required; hosted YouTube is deferred bonus and the documented local application path is accepted scope. Historical semantic failures stay failures/known limitations. User local success/emulation reports are evidence with those limits, not physical phone or final hosted proofs.
+
+Specific open gates must be explicit: real disposable-PostgreSQL cleanup/race suite and operational cleanup plan; final hosted PDF/voice/text and near-limit affected paths; real connectivity/recovery and user phone/audio/keyboard; exact release/deploy identities and accessible public repository/app/video. Cleanup code EXISTS despite stale AGENTS wording. Verify its runbook and prepare exact PM commands/required isolated target; do not run it against the user's configured/shared database. PM owns provisioning, migrations, production cleanup/scheduling and deployment. Do not infer all historic live fixtures must be repeated or silently waive necessary final checks.
+
+Rewrite README's current overview/setup around the implemented app: pinned runtime, no-key verification, enabled local configuration using environment names only, actual text/voice models and limits, one-source/session/expiry behavior, supported PDF/caption inputs, full-source/context limitations, disabled hosted YouTube and local demo route, known accuracy limits, theme and recovery behavior, AI-use disclosure. Link detailed historical research rather than overwhelming the reviewer. Correct clearly stale current statements in AGENTS/PRODUCT and reviewer entry docs, preserving historical evidence. Verify links. Do not claim transcript browser state is permanent history or promise guaranteed grounded answers.
+
+Update docs/WALKTHROUGH_14A.md to a practical10–15minute final recording script with demo sequence, architecture explanation, tests/security/limits/AI assistance and honest local YouTube/cloud exception. Create a short submission checklist/template with app/repo/recording placeholders only where not verified. No fake recording or public-link accessibility claim. The user records or provides the final video; PM verifies access.
+
+## Return and stop
+
+Applicable skills: React Best Practices and Web Design Guidelines only for affected fixes/boundaries, Playwright for browser verification; no further design-skill cycle. Use installed Next version-matched docs if framework behavior changes. No worker commit/push/deploy, real provider spend, live import or DB mutations. PM will inspect/freeze the release commit and run the authorized hosted sequence after review.
+
+Target one focused release pass (about3hours). Do not spend the budget on cosmetic residuals or repeated experiments. Stop on a substantive blocker with reproduction and remaining independent checks completed. Return READY_FOR_REVIEW with release report, candidate manifest/hash inventory, isolated path, command logs/build, concise actual fixes and unresolved gates. Update PROJECT_STATE/TESTING. Maintain one active task; no next assignment or self-approved final completion.

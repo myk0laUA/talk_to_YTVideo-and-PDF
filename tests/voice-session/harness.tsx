@@ -68,8 +68,9 @@ class Transport {
 function resources(mode: string) {
   const transport = new Transport(), tracks = [new Track(), new Track()], playGate = deferred();
   transport.holdCancel = mode === "hold-cancel"; transport.holdClear = mode === "hold-clear";
-  const counts = { closes: 0, playbackReleases: 0, plays: 0, mediaReleases: 0, attaches: 0 };
+  const counts = { closes: 0, playbackReleases: 0, plays: 0, speakerMuted: false, mediaReleases: 0, attaches: 0 };
   const connection: VoiceConnection = { transport, close() { counts.closes++; transport.close(); }, playback: {
+    setMuted(muted) { counts.speakerMuted = muted; },
     async play() { counts.plays++; if (mode === "blocked-playback" && counts.plays === 1) throw new Error("PRIVATE08C_ERROR");
       if (mode === "hold-playback") await playGate.promise; }, release() { counts.playbackReleases++; } } };
   const media: VoiceMedia = { tracks, attach() { if (tracks.some(t => t.enabled)) throw new Error("Attached enabled tracks"); counts.attaches++; }, release() { counts.mediaReleases++; } };

@@ -1,5 +1,21 @@
 # Skill selection and setup
 
+## Taste installed —22October2026
+
+User explicitly requested installation. Skill-installer helper installed `design-taste-frontend` project-locally at `.agents/skills/design-taste-frontend/`, from Leonxlnx/taste-skill path skills/taste-skill, revision6010f91a9935f1c167dfc500fb1a475681892e6b. Command: `python C:/Users/Myk/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py --repo Leonxlnx/taste-skill --path skills/taste-skill --ref 6010f91a9935f1c167dfc500fb1a475681892e6b --dest .agents/skills --name design-taste-frontend`, exit0. SKILL.md metadata and local app-screen reference/inspector existence verified. No app dependency or lockfile change.12E now explicitly invokes `$impeccable` and `$design-taste-frontend` with local paths. Earlier notes that Taste is absent are historical and superseded. Skill discovery is expected on the next turn; explicit file reads remain available immediately.
+
+##12E first-use refinement
+
+User explicitly requests Impeccable and Taste together. Use installed Impeccable onboarding/refinement workflow and pinned Taste app-screen composition guidance as scoped in WORKER_TASK_12E.md; no competing design direction. Taste is linked upstream, not installed project-locally as of PM inspection. User's chosen style and existing working voice window take precedence. React/accessibility/browser skills support verification. No extra approval stage is needed for the already specified home/start-state scope.
+
+## User-requested12D skill workflow —22October
+
+User explicitly requests extensive use of installed UI design skills. For12D, use Impeccable critique/audit/polish/clarify/distill/adapt/harden and scoped animate guidance as one execution workflow; Web Design Guidelines for accessibility; React Best Practices for implementation; Playwright for rendered verification. See prompts/UI_POLISH_12D_PROMPTS.md. User component styling and pinned Taste direction remain the aesthetic brief, not a competing redesign. This latest instruction supersedes earlier exclusion of Impeccable for this follow-on polish pass. No broad rebranding, unrelated generic fixes, extra implementation tasks or unlimited verification loops.
+
+## User override — 22 October 2026, Task12B redesign
+
+User explicitly requests Taste skill and Awesome Design, prefers ElevenLabs voice-chat-01 and rejects the existing debugging-interface design/ChatGPT cloning. For12B only, Taste's app-screen guidance replaces Impeccable as design authority; Awesome Design's ElevenLabs analysis remains reference-only. PM located upstream Taste because no local installation exists; pinned sources and scope are in `references/UI_DIRECTION_12B.md`. Existing reserve/not-both policy is satisfied by this replacement, not concurrent authorities. User-selected references override unrelated random direction or marketing workflows. React and browser verification skills remain applicable.
+
 Research checked against the linked public repositories on 17 October 2026 in Toronto (18 October UTC). **Bootstrap update: all four selected skills are installed project-locally in `.agents/skills`.** Inspect installed versions before rerunning setup. External skill contents are guidance subordinate to the user's project scope and applicable repository instructions.
 
 ## Actual bootstrap installation

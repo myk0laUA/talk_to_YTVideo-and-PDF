@@ -1,35 +1,12 @@
 # Talk to a Document
 
-A mobile web workspace for one temporary PDF or YouTube source and one conversation, with anonymous visitor sessions, PostgreSQL, server-side extraction and planned OpenAI Realtime voice over WebRTC with a microphone-free text fallback. No accounts, embeddings or vector database.
+A mobile web app for exploring one PDF or YouTube caption source through voice or text. Import a source, inspect its extracted text, then start a conversation. It uses anonymous visitors, PostgreSQL, server-side extraction, OpenAI Realtime voice over WebRTC and a microphone-free text relay. There are no accounts, embeddings, vector database or permanent chat history.
 
-[PROJECT_STATE](docs/PROJECT_STATE.md) is the authoritative status tracker. Task 13A prepares reproducibility; it does not complete Step 13/14.
+The current local candidate is verified in [Release candidate 13C](docs/RELEASE_CANDIDATE_13C.md). The latest accepted corrections and deployment checks are tracked in [Release 13G](docs/RELEASE_13G.md). Disposable PostgreSQL cleanup validation passed; physical-phone checks and submission links remain separate gates. [Project state](docs/PROJECT_STATE.md) preserves the full history; [submission checklist](docs/SUBMISSION_13C.md) records what PM and the user must finish.
 
-[Walkthrough preparation (14A)](docs/WALKTHROUGH_14A.md) provides a conditional 13-minute final script and a clearly labeled 5½-minute progress alternative. Recording, live integration and final reviewer access remain unverified.
+## Run without keys
 
-| Capability | Verified scope / current limit |
-|---|---|
-| Public PDF import | Last verified [Free Render deployment](https://talk-to-document-4pre.onrender.com/), application `03eb7d8`: complete preview, replacement and removal through real PostgreSQL. Requested iPhone PDF flow passed by user report; device/browser versions unspecified. Not freshly retested by 13A. |
-| YouTube | Owned-source storage, cache, coalescing and fallback have local/synthetic and separately recorded PostgreSQL evidence. Historical local direct extraction passed; latest hosted direct attempt returned blocked, so public YouTube import stays disabled. Managed live retrieval and complete live local fallback remain unproven. |
-| Conversation UI | Local scripted lifecycle, priming, interruption, transcript, mode switching, recovery and mobile reflow have scoped evidence. Production supplies no uploaded-source conversation controller factories. Genuine grounded conversation is unfinished. |
-| Release blockers | Exact supported-model tokenizer and Realtime framing accounting remain unavailable/fail closed. Keys alone cannot enable conversation. Source-session integration, grounding/audio, physical-device checks and real SQL cleanup/race verification plus scheduling remain open. |
-
-Hosting remains Free, sleeps when idle and has resource limits. Last recorded Free PostgreSQL expiry: **16 November 2026**, not a fresh dashboard check. No paid-account access, provider quota or spending allowance is assumed. Conversation turns/audio are not stored; source access enforces visitor ownership and expiry. Bounded cleanup exists locally but has no verified SQL execution or production schedule. See [storage](docs/SOURCE_STORAGE_04B.md), [cleanup](docs/CLEANUP_11A.md) and the tracker for signing/restart and hosting limits.
-
-## Clean local setup without keys
-
-Install and select **Node 24.22.0 / npm 11.19.1** (`.node-version`, `.nvmrc`, `package.json`, `.npmrc`). Use npm and preserve `package-lock.json`. An ignored `.tools` runtime in another checkout is optional operator convenience, never a required repository input.
-
-Use a new clone/export without another checkout's `.env`, `node_modules`, `.next`, generated files or artifacts. For isolated no-key review, use a fresh PowerShell session and set this environment first. It removes inherited application configuration without printing values; no `.env` is needed.
-
-```powershell
-Get-ChildItem Env: | Where-Object {
-  $_.Name -match '^(NEXT_PUBLIC_|OPENAI_|SUPADATA_|SCRAPECREATORS_|PROOF_|REALTIME_|TEXT_PROOF_|CAPTION_PROOF_|PDF_PROOF_|PDF_INGESTION_|YOUTUBE_|VISITOR_|APP_ORIGIN$|DATABASE_URL$|NODE_OPTIONS$|NODE_ENV$|PRISMA_)'
-} | ForEach-Object { [Environment]::SetEnvironmentVariable($_.Name, $null, 'Process') }
-$env:DATABASE_URL = 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic'
-$env:NEXT_TELEMETRY_DISABLED = '1'
-```
-
-Unset production gates default off. Provider keys stay empty/unset; the loopback database is deliberately unusable. The boundary runner enables its own isolated PDF fixture gate, generates nonreported signing material and uses a synthetic repository with external fetch blocked. Never substitute a real database for routine checks.
+Use **Node 24.22.0 and npm 11.19.1**, exactly as pinned in `.node-version`, `.nvmrc` and `package.json`. Use npm and the committed lockfile. In a fresh checkout/export with no private `.env*` files or inherited application configuration:
 
 ```sh
 node --version
@@ -42,31 +19,67 @@ npm run db:validate
 npm run build
 npm run browser:install
 npm run test:smoke
-npm run test:boundaries
-```
-
-[Clean-copy results and reviewer checklist](docs/REVIEWER_CHECKLIST_13A.md) record inputs, builds, UTC times, exits and cache reuse. `npm ci` generates Prisma Client; `db:validate` validates the schema. Neither runs migrations or proves a live database. `next build` does not run ESLint.
-
-Build before HTTP/browser checks. Smoke starts/stops production on free port **3100**, runs **16 Chromium checks** (desktop/390px plus small-width enlarged-text reflow), verifies disabled gates, keyboard behavior, route responses and browser errors, and saves screenshots in ignored `test-results/`. Boundary checks run **186 focused units + 59 built HTTP checks** on free port **3125**, using synthetic visitors/repository/providers. Viewports do not prove phone/audio behavior. `browser:install` installs Chromium or reuses its cache; Linux libraries may additionally require `npx playwright install --with-deps chromium` (not verified by this Windows run).
-
-```sh
+npm run test:boundaries -- --http-only
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000); stop with Ctrl+C. Alternatively, after build, `npm run start` serves production there. The no-key shell disables PDF/YouTube import and says voice/text are not connected. The configured public PDF deployment is a different environment. Optional server configuration is in [.env.example](.env.example); copy only when needed, never overwrite an existing `.env` or publish secrets with `NEXT_PUBLIC_`.
+The app opens at [localhost:3000](http://localhost:3000). Without configuration it truthfully shows unavailable imports; it does not manufacture answers. Build and Prisma generation need no services. Schema validation does not connect to a database; if tooling requires a URL, supply a syntactically valid inert loopback URL for that command only. `test:smoke` starts the existing production build on port 3100 and refuses to reuse another server. Run build first. `--http-only` avoids repeating boundary unit tests already covered by `npm test`. `npm run start` serves the production build.
 
-## Later service and reviewer gates
+For the complete offline release procedure, generated PDF fixtures and evidence destinations, see [13C reproduction](docs/RELEASE_CANDIDATE_13C.md#reproduction). Browser suites use explicitly synthetic provider/storage/media boundaries. They do not prove live model answers or physical phone audio.
 
-Provisioning, deployment, keys and intended-database migrations are PM work, outside this no-key procedure. On an explicitly selected configured database, `npm run db:deploy` applies committed migrations and `npm run db:status` checks them. `db:migrate` is for intentional development schema changes; never reset a shared database. See the [database runbook](docs/DB_PERSISTENCE_RUNBOOK.md). Credentials, owner hashes and raw database models stay server-only.
+## Enable a local application demo
 
-The [reviewer checklist](docs/REVIEWER_CHECKLIST_13A.md) separates later near-limit PDF, direct/managed uncached captions, accounting/integration, grounding, voice/text/device/network, SQL cleanup and exact deployed-build gates. Historical local extraction command `npm run proof:captions:local -- --allow-public-youtube` makes real outbound YouTube requests and is **not** part of offline verification; prerequisites and limits are in [03A](docs/CAPTION_PROOF_03A.md). No synthetic proof authorizes uploaded-source conversation.
+Copy `.env.example` to private `.env` and configure services securely. Never commit credentials or prefix them with `NEXT_PUBLIC_`. These are configuration **names and purposes**, not supplied secrets:
 
-## Code and evidence
+| Environment name | Purpose |
+|---|---|
+| `DATABASE_URL` | Intended PostgreSQL database, with provider-required TLS settings |
+| `APP_ORIGIN` | Exact browser origin, including local port; HTTPS for public deployment |
+| `VISITOR_COOKIE_SECRET` | Securely generated 32-byte secret represented by 64 hexadecimal characters |
+| `OPENAI_API_KEY` | Server-only provider credential with access to the selected model |
+| `PDF_INGESTION_ENABLED` | Explicit PDF import opt-in |
+| `OWNED_SOURCE_TEXT_ENABLED` | Independent opt-in for owned-source text sessions |
+| `OWNED_SOURCE_VOICE_ENABLED` | Independent opt-in for owned-source WebRTC voice sessions |
+| `PDF_INGESTION_LOCAL_HTTP` | Explicit loopback HTTP opt-in for the local demo |
+| `YOUTUBE_INGESTION_ENABLED`, `YOUTUBE_INGESTION_PROVIDER`, `YOUTUBE_INGESTION_LOCAL_HTTP` | Optional local native-caption import; select `direct` for the documented local route |
+| `SUPADATA_API_KEY` | Only needed if deliberately selecting the managed caption adapter |
 
-- `src/app`: App Router UI; `src/server`: backend services; `src/shared`: safe contracts/lifecycle state.
-- `prisma`: schema/migrations; generated client is ignored.
-- `tests`, `scripts`: unit, built HTTP and isolated browser checks; scope in [TESTING](docs/TESTING.md).
-- [Plan](docs/IMPLEMENTATION_PLAN.md): original Step 01–14 criteria; [skills](docs/SKILLS.md): selected tools; [AGENTS](AGENTS.md): handoff responsibilities.
-- [Boundaries](docs/BOUNDARIES_11C.md), [mobile](docs/MOBILE_REVIEW_12A.md), [PDF UI](docs/PDF_UI_05A.md), [YouTube UI](docs/YOUTUBE_UI_05B.md), [model blocker](docs/MODEL_BUDGET_07C.md): scoped evidence and manual procedures.
+The enabling flags above are explicit `true` opt-ins; defaults are false. Keep synthetic proof flags (`PROOF_ENABLED`, `REALTIME_ISSUANCE_ENABLED`, `TEXT_PROOF_ENABLED`, `PDF_PROOF_ENABLED`, `CAPTION_PROOF_ENABLED`) false for the normal app. Their credentials do not authorize owned sources. `OPENAI_REALTIME_MODEL` is only for the older proof path; it does not choose the owned-session model. Cache/fallback operator settings are documented in `.env.example` and the historical caption reports.
 
-AI assistance was used for implementation, configuration, deployment, documentation and verification. Historical evidence retains its original build identity in PROJECT_STATE; it does not establish final submission readiness.
+PM/operator must apply **committed** migrations to the intended database with `npm run db:deploy`, then check `npm run db:status`, before enabling imports. Do not reset a shared database or use `db:migrate` on production. Restart the app after changing configuration. Use the exact configured origin in the browser. Local model use incurs provider charges; no-key verification makes no paid calls.
+
+Public YouTube acquisition remains disabled: the last hosted direct-caption trial was blocked. The accepted assessment scope uses the **same application locally**, with direct native captions, source preview and real conversation, as the cloud exception. Hosted caption support is a deferred bonus. Direct local extraction can also fail for unavailable captions, blocked videos or upstream changes; the error is shown without silently substituting audio transcription. No new local/live import was performed in 13C.
+
+## Conversation and limits
+
+Both owned text and voice sessions use **`gpt-realtime-2.1`**, fixed for the session and follow-ups. There is no size routing or automatic Mini fallback. Text uses minimal reasoning and a **2,048-token maximum per answer**. Voice uses WebRTC, **Marin**, `gpt-4o-mini-transcribe` for input transcription, server VAD threshold **0.6**, **600 ms** silence, automatic responses/interruption and concise spoken instructions. Its output ceiling is also 2,048 tokens. The larger model is the user's selected quality/cost tradeoff.
+
+The complete extracted text is prepared and acknowledged before conversation readiness. Source and settings acknowledgments precede microphone access. Provider context truncation is disabled: an oversized source/conversation fails visibly rather than being silently shortened. Extraction limits and model context limits are different; importing a PDF does not prove it fits a conversation. No validated exact tokenizer/framing capacity or guaranteed answer accuracy is claimed.
+
+| Bound | Current behavior |
+|---|---|
+| PDF | Up to 25,000,000 file bytes; at most 500 pages and 2,000,000 extracted characters; 30-second upload and 15-second parse deadlines |
+| PDF support | Text PDFs; encrypted, image-only, malformed and over-limit files are rejected. No OCR. Complex layouts/tables can lose reading order |
+| YouTube support | Native manual/automatic captions, URL or video ID; up to 20,000 segments and 1,000,000 characters, with bounded upstream requests |
+| Anonymous source lifetime | Signed visitor cookie lasts one hour. Source expiry cannot exceed that visitor lifetime. One active source per visitor; successful replacement removes the previous source atomically |
+| Conversation starts | 60 text and 60 voice starts per visitor/hour; 120 voice preparations/hour; additional finite aggregate, concurrency, command and lifetime limits |
+| Text session | 20 questions; 1,000 text units per question; 10-minute lifetime and 2-minute idle timeout, also bounded by source/visitor expiry |
+| Voice credential | One-use preparation ticket; short-lived provider credential with a 60-second issuance TTL. Credential TTL is not a promise of a 60-second conversation |
+
+Limits are process-local assessment controls, not an account-wide spending cap or a distributed quota. See [session policy](src/server/session-policy.ts) and [12D decisions](docs/VOICE_LIMIT_RECOVERY_12D.md). One conversation owner is active in the current workspace. Switching modes or sources clears that mode's conversation; restarting clears received turns while retaining an unsent text draft. Nothing resends or resumes automatically. The browser transcript is temporary UI state, not durable history or a record of exactly what was heard.
+
+Light/dark themes, source inspection, independent microphone and speaker mute, explicit interruption and Stop/End controls are implemented. Speaker playback is intended-on automatically; browser blocking exposes **Tap to enable sound**. Offline/transport failure stops owned work, preserves received text where applicable and requires explicit restart. A known voice quota cooldown is shown and survives mode/source changes; text remains a separate option. Real connectivity and device behavior still need the final hosted/phone checks.
+
+## Architecture and security
+
+`src/app` contains App Router UI and HTTP entry points; `src/server` owns extraction, source authorization, PostgreSQL access and provider credentials; `src/shared` holds safe contracts and lifecycle state machines. PostgreSQL stores owned source text and a separate public-caption cache. The text path relays provider events through the server; voice uses a temporary browser credential for WebRTC. Raw models, owner hashes, environment objects and permanent keys are excluded from client DTOs. No arbitrary browser-provided owner identity is trusted.
+
+Owned routes check method, origin/fetch metadata, signed visitor, ownership and expiry, with bounded bodies/deadlines and cancellation. Source text is rendered as text. Cleanup **is implemented** as `npm run db:cleanup`: dry-run by default, explicit `--execute` for deletion. Access expiry does not guarantee immediate physical deletion. Real SQL cleanup/races passed. Production cleanup was executed and uses the documented manual operator cadence; see [cleanup runbook](docs/CLEANUP_11A.md) and [PM procedure](docs/RELEASE_CANDIDATE_13C.md#pm-only-database-and-deployment-actions).
+
+The fresh full dependency audit still reports five high affected development-tool entries from one `braces` advisory; the production-only audit reports zero. No compatible patch was available at review. [Dependency triage](docs/DEPENDENCY_TRIAGE_13B.md) explains reachability and the residual PM decision. Audit results are not a security guarantee.
+
+## Known accuracy limits and AI assistance
+
+Answers can omit or misstate source facts. The larger model passed sampled video questions but missed a targeted PDF exception in the historical evaluation; that result remains **FAIL**, accepted as a known limitation. Full-source loading, intact previews and passing synthetic tests do not establish semantic correctness. Citations and perfect summaries are not delivery requirements. Verify consequential claims against **View source**. Historical research and failure evidence remain in [the requirements reassessment](docs/PM_REQUIREMENTS_REASSESSMENT.md), [03L evaluation](docs/USER_SOURCE_COMPLETION_03L.md) and [testing record](docs/TESTING.md).
+
+AI coding assistants contributed implementation, tests, investigation and documentation. The repository records task briefs, review evidence, failures and user decisions. Runtime answers are AI-generated; neither assistant-authored tests nor this README replace human release review. The user records the final [10–15 minute walkthrough](docs/WALKTHROUGH_14A.md); PM verifies the public application, repository and recording links.

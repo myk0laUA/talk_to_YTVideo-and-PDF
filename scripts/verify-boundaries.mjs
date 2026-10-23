@@ -8,7 +8,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 
-const directory = path.resolve("artifacts/local/11c");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11c`);
 await mkdir(directory, { recursive: true });
 const env = { ...process.env, NODE_OPTIONS: "", NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1",
   DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic", OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "",

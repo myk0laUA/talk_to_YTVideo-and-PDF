@@ -5,6 +5,7 @@ Independent strict pypdf validation/text checks are recorded in manifest.json.
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 
 from PIL import Image
@@ -13,7 +14,7 @@ from reportlab.lib.utils import ImageReader
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import ArrayObject, ByteStringObject, DecodedStreamObject, NameObject
 
-OUT = Path("artifacts/local/04a/fixtures")
+OUT = Path(os.environ.get("PDF_FIXTURE_DIRECTORY", "artifacts/local/04a/fixtures"))
 OUT.mkdir(parents=True, exist_ok=True)
 
 

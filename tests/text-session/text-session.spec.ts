@@ -2,9 +2,9 @@ import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const exact = "  café 🌱 e\u0301\n雪\t مرحبا  ";
-const question = (p: Page) => p.getByRole("textbox", { name: "Your question" });
-const send = (p: Page) => p.getByRole("button", { name: "Send question", exact: true });
-const start = (p: Page) => p.getByRole("button", { name: "Start text session", exact: true });
+const question = (p: Page) => p.getByRole("textbox", { name: "Your question", includeHidden: true });
+const send = (p: Page) => p.getByRole("button", { name: "Send question", exact: true, includeHidden: true });
+const start = (p: Page) => p.getByRole("button", { name: "Start chat", exact: true });
 const stop = (p: Page) => p.getByRole("button", { name: "Stop text session", exact: true });
 const turns = (p: Page) => p.locator(".transcript-turn");
 async function act(p: Page, name: string) {
@@ -25,13 +25,14 @@ async function begin(p: Page) { await start(p).click(); await ready(p); }
 async function ask(p: Page, text = exact) { await question(p).fill(text); await send(p).click(); await expect(p.locator(".text-session-status")).toContainText("Receipt has not been confirmed"); }
 async function answer(p: Page) { await act(p, "ACK question final"); await act(p, "Begin answer"); await act(p, "Stream partial"); }
 async function capture(p: Page, info: TestInfo, name: string) {
-  await mkdir("artifacts/local/10b/screenshots", { recursive: true });
-  await p.screenshot({ path: `artifacts/local/10b/screenshots/${info.project.name}-${name}.png`, fullPage: !["long-reading", "text-200"].includes(name) });
+  await mkdir("artifacts/local/12e-correction/regression/10b/screenshots", { recursive: true });
+  await p.screenshot({ path: `artifacts/local/12e-correction/regression/10b/screenshots/${info.project.name}-${name}.png`, fullPage: !["long-reading", "text-200"].includes(name) });
 }
 async function fits(p: Page) {
   expect(await p.evaluate(() => ({ page: document.documentElement.scrollWidth <= innerWidth,
     text: [...document.querySelectorAll(".transcript-text, textarea")].every(e => e.scrollWidth <= e.clientWidth + 1),
     controls: [...document.querySelectorAll(".text-session button, .text-session textarea")].every(e => {
+      if (!(e as HTMLElement).checkVisibility()) return true;
       const box = e.getBoundingClientRect(), parent = e.closest(".text-session")!.getBoundingClientRect();
       return box.left >= parent.left - 1 && box.right <= parent.right + 1 && box.width <= innerWidth;
     }) }))).toEqual({ page: true, text: true, controls: true });
@@ -73,7 +74,7 @@ test.afterEach(async ({ page }, info) => {
     }
   }
   const counters = await page.evaluate(() => ({ ...Reflect.get(window, "fixtureAudit"), localStorage: localStorage.length, sessionStorage: sessionStorage.length }));
-  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: new URL(page.url()).port === "3117" ? 0 : 1, localStorage: 0, sessionStorage: 0 });
+  expect(counters).toEqual({ media: 0, peers: 0, sockets: 0, audio: 0, scrollListeners: 0, localStorage: 0, sessionStorage: 0 });
   const evidence = observations.get(page)!;
   await writeFile(info.outputPath("safe-counts.json"), JSON.stringify({ context: "local synthetic transports/accounting; denied media sentinel; Chromium viewport only", ...evidence, counters, records }, null, 2));
   expect(evidence.external).toEqual([]); expect(evidence.errors).toEqual([]);
@@ -132,7 +133,7 @@ for (const stage of ["initial", "source", "final"]) test(`withheld ${stage} sour
 for (const gate of ["source-default", "turn-default"]) test(`actual default ${gate} refusal has no question send`, async ({ page }) => {
   await mode(page, gate); await start(page).click();
   if (gate === "turn-default") { await ready(page); await question(page).fill(exact); await send(page).click(); }
-  await expect(page.locator(".text-session-status")).toContainText(gate === "source-default" ? "This source cannot be used" : "It was not sent");
+  await expect(page.locator(".text-session-status")).toContainText(gate === "source-default" ? "This source could not be loaded into chat within its limits" : "It was not sent");
   const r = (await audit(page)).at(-1)!;
   expect(r.connects).toBe(gate === "source-default" ? 0 : 1); expect(r.transports.every(t => t.questions === 0)).toBe(true);
   if (gate === "turn-default") await expect(question(page)).toHaveValue(exact);
@@ -163,7 +164,7 @@ for (const phase of ["preparation", "connection", "priming", "admission", "sendi
   }
   await stop(page).click();
   for (const action of ["Release preparation", "Release connection", "Release admission", "Deliver stale events", "ACK question final"]) await act(page, action);
-  await expect(page.locator(".text-session-status")).toContainText("Session ended"); await expect(send(page)).toBeDisabled();
+  await expect(page.locator(".text-session-status")).toContainText(["preparation", "connection", "priming"].includes(phase) ? "Chat setup stopped" : "Session ended"); await expect(send(page)).toBeDisabled();
   if (phase === "sending") await expect(question(page)).toHaveValue(exact);
 });
 
@@ -194,7 +195,7 @@ test("uncertain unacknowledged send keeps draft, never retransmits and requires 
   await act(page, "ACK question final");
   expect((await audit(page)).at(-1)!.transports[0].responses).toBe(0); await expect(question(page)).toHaveValue(exact);
   await page.getByRole("button", { name: "Start a fresh text session", exact: true }).click(); await ready(page);
-  await expect(question(page)).toHaveValue(""); expect((await audit(page)).at(-1)!.transports.at(-1)!.questions).toBe(0);
+  await expect(question(page)).toHaveValue(exact); expect((await audit(page)).at(-1)!.transports.at(-1)!.questions).toBe(0);
 });
 
 test("streaming keeps keyboard focus and reading anchor; Jump, reduced motion and 200 percent reflow", async ({ page }, info) => {
@@ -218,8 +219,8 @@ test("streaming keeps keyboard focus and reading anchor; Jump, reduced motion an
 test("separate actual production stays unavailable and excludes fixture activation", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3118/?fixture=text&scenario=success");
   await expect(page.locator(".text-session-status")).toContainText("unavailable in this build");
-  for (const name of ["Start text session", "Stop text session", "Send question"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
-  await expect(question(page)).toBeDisabled(); await expect(turns(page)).toHaveCount(0);
+  for (const name of ["Start chat", "Stop text session", "Send question"]) await expect(page.getByRole("button", { name, exact: true, includeHidden: true })).toBeDisabled();
+  await expect(page.locator("textarea[name=question]")).toBeDisabled(); await expect(turns(page)).toHaveCount(0);
   for (const path of ["/fixture.js", "/text-fixture", "/tests/text-session/harness"]) expect((await page.request.get(`http://127.0.0.1:3118${path}`)).status()).toBe(404);
   await fits(page); await capture(page, info, "production-unavailable");
 });

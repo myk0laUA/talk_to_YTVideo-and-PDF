@@ -1,4 +1,5 @@
 "use client";
+import { SourceSizeError } from "../shared/priming-failure.ts";
 
 import { VoiceLifecycle, type VoiceAdapters, type VoiceConnection, type VoiceIdentity, type VoiceStatus, type VoiceTrack } from "../shared/voice-lifecycle.ts";
 import { providerAdmissionRejection, type ProviderPrimingInput } from "../shared/priming-admission.ts";
@@ -7,6 +8,7 @@ import { bytes, MAX_EVENT_BYTES, MAX_ITEMS, MAX_WIRE_BYTES } from "../shared/pri
 import type { PrimingTransport } from "../shared/priming-controller.ts";
 import type { PreparationRejection, VoiceSetupReporter, VoiceSetupStage } from "../shared/voice-diagnostics.ts";
 import type { VoiceEventDiagnostics } from "../shared/voice-event-diagnostics.ts";
+import { SessionAdmissionError, parseAdmissionRejection } from "../shared/session-admission.ts";
 
 export type BrowserVoiceDependencies = {
   fetch: typeof fetch; peer: () => RTCPeerConnection; audio: () => HTMLAudioElement;
@@ -38,10 +40,10 @@ function wait<T>(pending: Promise<T>, signal: AbortSignal, late: (v: T) => void 
     if (signal.aborted) abort();
   });
 }
-async function read(response: Response, mime: string | readonly string[], limit: number, signal: AbortSignal) {
+async function read(response: Response, mime: string | readonly string[], limit: number, signal: AbortSignal, rejection = false) {
   const allowed = typeof mime === "string" ? [mime] : mime;
   const contentType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
-  const reason = !response.ok || response.redirected ? "response_envelope"
+  const reason = (!response.ok && !rejection) || response.redirected ? "response_envelope"
     : !contentType || !allowed.includes(contentType) ? "response_mime"
     : Number(response.headers.get("content-length")) > limit ? "response_size" : !response.body ? "response_body" : undefined;
   if (reason) { cancelBody(response); throw new ReadFailure(reason); }
@@ -164,6 +166,20 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
     const response = await wait(deps.fetch(`/api/voice-preparations${suffix}`, { method: "POST", credentials: "same-origin", cache: "no-store",
       redirect: "error", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal }), signal, cancelBody);
     report(stage, response.ok ? "ok" : "http_error", response.status);
+    if (!suffix && response.status === 413) {
+      let result: unknown;
+      try { result = JSON.parse(await read(response, "application/json", 1024, signal, true)); }
+      catch { throw unavailable(); }
+      if (record(result) && result.code === "source_too_large") throw new SourceSizeError();
+      throw unavailable();
+    }
+    if (response.status === 429 || response.status === 409) {
+      let rejection;
+      try { rejection = parseAdmissionRejection(JSON.parse(await read(response, "application/json", 1024, signal, true)), response.headers.get("retry-after")); }
+      catch { /* An unrecognised response never invents a reset time. */ }
+      if (rejection) throw new SessionAdmissionError(rejection);
+      throw unavailable();
+    }
     if (response.ok) report(validation, "pending");
     try {
       const text = await read(response, "application/json", suffix ? 2048 : 24_500_000, signal);
@@ -201,7 +217,12 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
           .then(cancelBody, () => {}).finally(() => clearTimeout(timer));
       };
       prepared = p; signal.addEventListener("abort", p.cancel, { once: true });
-      const { result, started } = await send("", { sourceId: identity.sourceId, requestId }, signal, report);
+      const { result, started } = await send("", { sourceId: identity.sourceId, requestId }, signal, report).catch(error => {
+        // A recognised rejection is definitive: this request created no pending work.
+        // Network/invalid responses retain best-effort cancellation and server TTL.
+        if (error instanceof SessionAdmissionError || error instanceof SourceSizeError) p.claimed = true;
+        throw error;
+      });
       const reject = (reason: PreparationRejection): never => { report("preparation_validation", "invalid", undefined, reason); throw unavailable(); };
       if (prepared !== p || signal.aborted) throw unavailable();
       if (!record(result) || Object.keys(result).sort().join() !== "conversationReady,expiresAt,input,issuedAt,preparationId,providerConfirmed,requestId,timingVersion"
@@ -273,7 +294,7 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         clientSecret = result.clientSecret; result.clientSecret = undefined;
         report("credential_validation", "ok");
         report("peer_creation", "pending");
-        peer = deps.peer(); audio = deps.audio(); audio.autoplay = false;
+        peer = deps.peer(); audio = deps.audio(); audio.autoplay = false; audio.muted = false;
         trace?.mark("peer_created");
         const remote = deps.stream();
         const pc = peer, speaker = audio;
@@ -334,14 +355,30 @@ export function browserVoiceAdapters(deps: BrowserVoiceDependencies): VoiceAdapt
         // Source expiry ends this local session; credential expiry only bounds negotiation.
         expiry = setTimeout(fail, Math.min(2_147_483_647, p.sourceExpires - deps.now()));
         const connection: VoiceConnection = { transport, close, playback: {
-          play: () => closed || p.sourceExpires! <= deps.now() ? Promise.reject(unavailable()) : speaker.play(), release: releaseAudio,
+          async play(playSignal) {
+            if (closed || playSignal.aborted || p.sourceExpires! <= deps.now()) throw unavailable();
+            // Wait for actual binding, bounded and cancelled by the lifecycle playback deadline.
+            if (!speaker.srcObject) await new Promise<void>((resolve, reject) => {
+              const cleanup = () => { pc.removeEventListener("track", bound); playSignal.removeEventListener("abort", cancelled); };
+              const bound = () => { if (speaker.srcObject) { cleanup(); resolve(); } };
+              const cancelled = () => { cleanup(); reject(unavailable()); };
+              pc.addEventListener("track", bound); playSignal.addEventListener("abort", cancelled, { once: true });
+              bound();
+            });
+            if (closed || playSignal.aborted || p.sourceExpires! <= deps.now()) throw unavailable();
+            const cancelPlay = () => { safely(() => speaker.pause()); };
+            playSignal.addEventListener("abort", cancelPlay, { once: true });
+            try { await wait(speaker.play(), playSignal); }
+            finally { playSignal.removeEventListener("abort", cancelPlay); }
+          },
+          setMuted: muted => { if (!closed) speaker.muted = muted; }, release: releaseAudio,
         } };
         const live = () => !closed && p.sourceExpires! > deps.now();
         bindings.set(connection, { sender: transceiver.sender, signal, live });
         mediaAttempts.set(signal, { identity, live });
         remove.push(() => { bindings.delete(connection); mediaAttempts.delete(signal); });
         transferred = true; return connection;
-      } catch { close(); throw unavailable(); }
+      } catch (error) { close(); throw error instanceof SessionAdmissionError ? error : unavailable(); }
       finally { clientSecret = undefined; clearTimeout(timer); signal.removeEventListener("abort", stop); }
     },
     async acquireMedia(identity, signal, report = () => {}, trace) {

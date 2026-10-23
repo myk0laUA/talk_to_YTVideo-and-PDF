@@ -1,4 +1,5 @@
 import "server-only";
+import { ThemeToggle } from "./theme-toggle";
 import { connection } from "next/server";
 import { PRODUCT_NAME } from "@/shared/product";
 import { parseSourceConfig, parseYoutubeSourceConfig } from "@/server/sources/config";
@@ -13,14 +14,10 @@ export default async function Home() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <span className="wordmark">{PRODUCT_NAME}</span>
-        <span className="build-label">Early preview</span>
+        <span className="wordmark"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M5 3h14v14H9l-4 4V3Z"/><path d="M9 7h6M9 11h6"/></svg>{PRODUCT_NAME}</span>
+        <div className="header-tools"><ThemeToggle /></div>
       </header>
       <main id="workspace" tabIndex={-1}>
-        <div className="intro">
-          <h1>A little more understanding.</h1>
-          <p>A place to explore one document or video, one question at a time.</p>
-        </div>
         <SourceWorkspace pdfAvailable={pdfAvailable} youtubeAvailable={youtubeAvailable} textAvailable={textAvailability(process.env).available} voiceAvailable={voiceAvailability(process.env).available} />
       </main>
       <footer>One source. Space to understand it.</footer>

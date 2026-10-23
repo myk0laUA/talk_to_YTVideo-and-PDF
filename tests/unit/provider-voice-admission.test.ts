@@ -8,7 +8,7 @@ import { resolveProviderTextPolicy, resolveProviderVoicePolicy } from "../../src
 import { createSourceRepository } from "../../src/server/sources/repository.ts";
 import { captionRecord, uploadedRecord } from "../../src/server/sources/service.ts";
 import { createVisitor } from "../../src/server/proof/visitor.ts";
-import { PROVIDER_TEXT_POLICY, PROVIDER_VOICE_POLICY as policy } from "../../src/shared/priming-provider-policy.ts";
+import { ENGLISH_RESPONSE_INSTRUCTIONS, PROVIDER_TEXT_POLICY, PROVIDER_VOICE_POLICY as policy } from "../../src/shared/priming-provider-policy.ts";
 import { validateAdmission, validateProviderAdmission, type ProviderPrimingInput } from "../../src/shared/priming-admission.ts";
 import { PrimingController } from "../../src/shared/priming-controller.ts";
 import { VoiceLifecycle, type VoiceStatus, type VoiceMedia } from "../../src/shared/voice-lifecycle.ts";
@@ -19,11 +19,62 @@ import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 import { FakeClock, ScriptedTransport, flush, start, validateOutbound } from "../priming/harness.ts";
 import { resources, deferred } from "../priming/voice-harness.ts";
 import { initialVoiceSession } from "../../src/server/voice/provider.ts";
+import { decodeCaptions } from "../priming/caption-decoder.ts";
 
 const evidence: unknown[] = [];
 
+for (const stage of ["initial", "final"]) for (const kind of ["PDF", "YOUTUBE"] as const)
+  test(`13E ${kind} voice ${stage} missing English ACK fails before microphone`, async () => {
+    const h = await lifecycle(kind); await h.begin();
+    if (stage === "final") { await h.initial(); await h.items(); }
+    const ack = h.transport.config();
+    ack.session.instructions = ack.session.instructions.replace(ENGLISH_RESPONSE_INSTRUCTIONS, "");
+    h.transport.emit(ack); await flush();
+    assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0); h.clean();
+  });
+
+for (const kind of ["PDF", "YOUTUBE"] as const) {
+  test(`08P ${kind} larger voice identity stays fixed across two provider turns`, async () => {
+    const h = await lifecycle(kind); await h.begin();
+    const projection = h.projection();
+    assert.equal(projection.policy.model, "gpt-realtime-2.1");
+    assert.equal(projection.policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+    assert.ok(Object.isFrozen(projection.policy));
+    await h.initial(); await h.items(); await h.final();
+    const before = JSON.stringify(h.transport.outbound);
+    for (const id of ["summary08p", "followup08p"]) {
+      h.transport.emit({ type: "response.created", event_id: `created_${id}`, response: { id, status: "in_progress" } });
+      h.transport.emit({ type: "response.done", event_id: `done_${id}`, response: { id, status: "completed", output: [] } });
+      await flush();
+      assert.equal(h.controller.canSendQuestions, true);
+      assert.equal(h.controller.snapshot.response.generation.responseId, id);
+      assert.equal(h.projection().policy, projection.policy);
+    }
+    assert.equal(JSON.stringify(h.transport.outbound), before);
+    assert.equal(h.mediaCalls(), 1); h.clean(); h.trace(`08P-${kind}-two-turns`);
+  });
+}
+for (const stage of ["initial", "final"]) test(`08P old Mini ${stage} ACK cannot enable microphone`, async () => {
+  const h = await lifecycle(); await h.begin();
+  if (stage === "final") { await h.initial(); await h.items(); }
+  const ack = h.transport.config(); ack.session.model = "gpt-realtime-2.1-mini";
+  h.transport.emit(ack); await flush();
+  assert.equal(h.controller.snapshot.phase, "failed"); assert.equal(h.mediaCalls(), 0);
+  h.transport.emit(h.transport.config()); await flush(); assert.equal(h.mediaCalls(), 0); h.clean();
+});
+for (const patch of [
+  { model: "gpt-realtime-2.1-mini" },
+  { policyVersion: "provider-voice-full-source-2026-10-21-v6" },
+  { model: "gpt-realtime-2.1-mini", policyVersion: "provider-voice-full-source-2026-10-21-v6" },
+  { mode: "text" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion },
+]) test(`08P stale/cross-mode policy ${JSON.stringify(patch)} rejected at browser admission`, async () => {
+  const p = structuredClone((await input()).projection);
+  Object.assign(p.policy, patch); assert.equal(validateProviderAdmission(p), false);
+  const h = prime(p); assert.equal(h.begin(), false); assert.equal(h.transport.outbound.length, 0);
+});
+
 test("08O voice-only Stop/Continue candidate is bound to final ACK and rejects stale policy", async () => {
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
   assert.match(policy.answerInstructions, /When the user asks you to stop/);
   assert.match(policy.answerInstructions, /Never restart or resume/);
   assert.match(policy.answerInstructions, /remaining point rather than restarting/);
@@ -43,15 +94,15 @@ test("08O voice-only Stop/Continue candidate is bound to final ACK and rejects s
 
 test("08K finite voice output headroom agrees across issuance and both priming stages", async () => {
   assert.equal(policy.maxOutputTokens, 2048);
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
   assert.equal(initialVoiceSession.max_output_tokens, 2048);
   const h = await input();
   for (const event of [h.projection.manifest.configure, h.projection.manifest.finalize]) {
     assert.equal(event.session.max_output_tokens, 2048);
     assert.match(event.session.instructions, /two to four short sentences/);
   }
-  assert.equal(PROVIDER_TEXT_POLICY.maxOutputTokens, 512);
-  assert.equal(PROVIDER_TEXT_POLICY.policyVersion, "provider-text-full-source-2026-10-20-v1");
+  assert.equal(PROVIDER_TEXT_POLICY.maxOutputTokens, 2048);
+  assert.equal(PROVIDER_TEXT_POLICY.policyVersion, "provider-text-full-source-default-2026-10-22-v4");
 });
 
 test("08M candidate keeps credential/initial VAD disabled and enables exact final threshold only after full ACKs", async () => {
@@ -146,7 +197,7 @@ async function source(kind: "PDF" | "YOUTUBE" = "PDF") {
   const repository = createSourceRepository(() => db.asClient()); await repository.replace(row, () => {});
   const abort = new AbortController(); let at = start;
   const args = { visitor, sourceId: row.id, signal: abort.signal, model: policy.model, mode: "voice" as const,
-    policyVersion: policy.policyVersion, variant: "B" as "A" | "B", runId: "voice07g", maxEventBytes: 2048 };
+    policyVersion: policy.policyVersion, variant: "B" as "A" | "B", runId: "voice07g", maxEventBytes: 4096 };
   const prepare = createProviderVoicePreparation({ repository, now: () => at });
   return { db, visitor, row, repository, abort, args, prepare, time: (n: number) => { at = n; } };
 }
@@ -265,13 +316,14 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
     assert.equal(validateProviderAdmission(p), true); assert.equal(validateAdmission(p), false);
     assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId }, start), true);
     assert.equal(matchesProviderPreparation(structuredClone(p), { ...h.args, runId: m.runId }, start), false);
-    for (const patch of [{ model: "gpt-realtime-2.1" }, { mode: "text" as const }, { runId: "old" }, { sourceId: "old" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion }])
+    for (const patch of [{ model: "gpt-realtime-2.1-mini" }, { mode: "text" as const }, { runId: "old" }, { sourceId: "old" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion }])
       assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId, ...patch }, start), false);
     assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId }, h.row.expiresAt.getTime()), false);
     const fragments = m.items.map(i => JSON.parse(i.item.content[0].text));
-    const sections = Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
+    const packed = kind === "YOUTUBE" && variant === "B" ? decodeCaptions(m) : undefined;
+    const sections = packed ? packed.map(s => s.text) : Array.from({ length: fragments[0].sectionCount }, (_, n) => fragments.filter(f => f.sectionIndex === n).map(f => f.text).join(""));
     assert.equal(sections.join(p.variant.source.separator), h.row.fullText);
-    if (variant === "B") assert.deepEqual(fragments.map(f => ({ ...f.locator, text: f.text })), p.variant.source.sections);
+    if (variant === "B") assert.deepEqual(packed ?? fragments.map(f => ({ ...f.locator, text: f.text })), p.variant.source.sections);
     assert.equal(h.db.reads, 3); assert.equal(h.db.creates, 1); assert.equal(h.db.deletes, 1);
     assert.equal(h.mediaCalls(), 0); assert.equal(h.controller.canSendQuestions, false);
     assert.equal(m.configure.session.audio.input.turn_detection, null);
@@ -290,7 +342,7 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
       fullSourceSha256Utf16: createHash("sha256").update(h.row.fullText, "utf16le").digest("hex"), completeSource: true });
   });
 }
-for (const patch of [{ policyVersion: "provider-voice-full-source-2026-10-20-v1" }, { model: "gpt-realtime-2.1" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "text" as const },
+for (const patch of [{ policyVersion: "provider-voice-full-source-2026-10-20-v1" }, { model: "gpt-realtime-2.1-mini" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "text" as const },
   { policyVersion: "future" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion }]) test(`07G unsupported ${JSON.stringify(patch)}`, async () => {
   const s = await source(), result = await s.prepare({ ...s.args, ...patch });
   assert.equal(result.status, "unavailable"); assert.equal(s.db.reads, 0);
@@ -300,7 +352,7 @@ test("07G server text/voice resolvers and preparations cannot cross-authorize", 
   assert.equal(resolveProviderTextPolicy(policy.model, "voice", policy.policyVersion), undefined);
   const s = await source(), text = createProviderTextPreparation({ repository: s.repository, now: () => start });
   assert.equal((await text(s.args)).status, "unavailable");
-  const result = await s.prepare({ ...s.args, mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion });
+  const result = await s.prepare({ ...s.args, model: PROVIDER_TEXT_POLICY.model, mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion });
   assert.equal(result.status, "unavailable"); assert.equal(s.db.reads, 0);
 });
 for (const problem of ["foreign", "expired", "removed", "replaced", "cancelled", "expiry-final", "replacement-final", "visitor-expiry-final", "cancel-final"])
@@ -404,7 +456,7 @@ test("09C provider empty transcription defaults preserve the exact model barrier
 
 test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
   const h = await lifecycle(); await h.begin();
-  assert.equal(policy.policyVersion, "provider-voice-full-source-2026-10-21-v6");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
   assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
   assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
     { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600, threshold: policy.activationThreshold });
@@ -433,9 +485,9 @@ test("08F stale v2 policy and altered final pause manifest cannot acquire resour
 
 test("08F provider text policy keeps VAD and transcription off at both stages", async () => {
   const s = await source(), prepare = createProviderTextPreparation({ repository: s.repository, now: () => start });
-  const result = await prepare({ ...s.args, mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion });
+  const result = await prepare({ ...s.args, model: PROVIDER_TEXT_POLICY.model, mode: "text", policyVersion: PROVIDER_TEXT_POLICY.policyVersion });
   assert.equal(result.status, "prepared"); if (result.status !== "prepared") throw new Error("Preparation failed");
-  assert.equal(result.input.policy.policyVersion, "provider-text-full-source-2026-10-20-v1");
+  assert.equal(result.input.policy.policyVersion, "provider-text-full-source-default-2026-10-22-v4");
   for (const event of [result.input.manifest.configure, result.input.manifest.finalize]) {
     assert.deepEqual(event.session.audio.input, { turn_detection: null, transcription: null });
     assert.deepEqual(event.session.output_modalities, ["text"]);
@@ -499,7 +551,7 @@ test("07G source ACKs in reverse, duplicate initial ACK, and server default reas
 });
 test("07G large Unicode projection is lossless; resource bounds reject instead of shortening", async () => {
   const s = await input("PDF", "A"), text = " <source>🌱e\u0301雪\n".repeat(1500), v = structuredClone(s.projection.variant);
-  Object.assign(v.source, { fullText: text }); const m = encodeManifest(v, "large07g", "voice", 2048, "voice");
+  Object.assign(v.source, { fullText: text }); const m = encodeManifest(v, "large07g", "voice", 4096, "voice");
   assert.ok(m.items.length > 1); assert.equal(m.items.map(i => JSON.parse(i.item.content[0].text).text).join(""), text);
   assert.throws(() => encodeManifest(v, "bound", "voice", 2047, "voice"));
   Object.assign(v.source, { fullText: "x".repeat(8_000_001) });

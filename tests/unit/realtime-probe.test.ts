@@ -314,7 +314,7 @@ test("developer files emit no src/server runtime import; application contains no
 
 after(async () => {
   assert.equal(externalAttempts, 0);
-  await mkdir("artifacts/local/07d", { recursive: true });
-  await writeFile("artifacts/local/07d/scripted-matrix.json", JSON.stringify({ environment: "local-scripted-only", liveResult: "NOT_RUN",
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/07d`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/07d/scripted-matrix.json`, JSON.stringify({ environment: "local-scripted-only", liveResult: "NOT_RUN",
     recordedAt: new Date().toISOString(), externalAttempts, traces }, null, 2) + "\n");
 });

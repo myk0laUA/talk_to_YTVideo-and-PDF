@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import type { CaptionTranscript } from "../../shared/captions.ts";
 import { SourceError } from "../sources/service.ts";
-import { normalizeVideo, validLanguage } from "./input.ts";
+import { matchesCaptionLanguage, normalizeVideo, validLanguage } from "./input.ts";
 import { validatedTranscript } from "./validated.ts";
 
 export const captionCacheTtlMs = 24 * 60 * 60 * 1000;
@@ -23,6 +23,9 @@ const select = { videoId: true, languagePreference: true, mode: true, selectedLa
   providerMetadata: true, title: true, fullText: true, sections: true, characterCount: true, wordCount: true, expiresAt: true } as const;
 type Row = Prisma.TranscriptCacheGetPayload<{ select: typeof select }>;
 const words = (text: string) => text.trim().split(/\s+/u).filter(Boolean).length;
+// Version 2 records bounded raw-XML canonicalization for the direct provider.
+// Managed JSON remains version 1. Old direct rows are misses, never re-decoded.
+const representationVersion = (provider: string) => provider === "youtube-transcript-plus@2.0.3" ? 2 : 1;
 
 // Validate BOTH cache identity and the original normalized transcript. Never salvage partial rows.
 export function checkedCacheTranscript(row: Row, key: CaptionCacheKey, at: Date): CaptionTranscript | null {
@@ -34,12 +37,12 @@ export function checkedCacheTranscript(row: Row, key: CaptionCacheKey, at: Date)
       || !row.providerMetadata || typeof row.providerMetadata !== "object" || Array.isArray(row.providerMetadata)
       || Object.keys(row.providerMetadata).some(k => k !== "version" && k !== "trackType")) return null;
     const metadata = row.providerMetadata as Record<string, unknown>;
-    if (metadata.version !== 1 || !Array.isArray(row.sections)
+    if (metadata.version !== representationVersion(row.provider) || !Array.isArray(row.sections)
       || !row.sections.every((s, i) => s && typeof s === "object" && !Array.isArray(s) && s.id === `segment-${i + 1}`)) return null;
     const transcript = validatedTranscript({ videoId: row.videoId, canonicalUrl: normalizeVideo(row.videoId)?.canonicalUrl,
       language: row.selectedLanguage, provider: row.provider, fullText: row.fullText, segments: row.sections,
       ...(metadata.trackType !== undefined ? { trackType: metadata.trackType } : {}) });
-    if (key.languagePreference && transcript.language.toLowerCase() !== key.languagePreference) return null;
+    if (!matchesCaptionLanguage(transcript.language, key.languagePreference)) return null;
     return transcript;
   } catch { return null; }
 }
@@ -61,7 +64,7 @@ export function createCaptionCache(database: () => PrismaClient, now: () => numb
     put: (key, value, at) => transaction(async tx => {
       const transcript = validatedTranscript(value);
       const data = { ...key, selectedLanguage: transcript.language, provider: transcript.provider,
-        providerMetadata: { version: 1, ...(transcript.trackType ? { trackType: transcript.trackType } : {}) },
+        providerMetadata: { version: representationVersion(transcript.provider), ...(transcript.trackType ? { trackType: transcript.trackType } : {}) },
         title: "YouTube captions", fullText: transcript.fullText,
         sections: transcript.segments.map((s, i) => ({ id: `segment-${i + 1}`, ...s })),
         characterCount: transcript.fullText.length, wordCount: words(transcript.fullText), expiresAt: new Date(at.getTime() + captionCacheTtlMs) };

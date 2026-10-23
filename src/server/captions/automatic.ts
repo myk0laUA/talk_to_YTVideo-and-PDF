@@ -4,6 +4,7 @@ import type { CaptionResult } from "../../shared/captions.ts";
 import { validSupadataKey, type CaptionSelectionConfig } from "./config.ts";
 import type { CaptionProvider } from "./provider.ts";
 import { validatedTranscript } from "./validated.ts";
+import { matchesCaptionLanguage } from "./input.ts";
 
 export const automaticBounds = { deadlineMs: 15000, cooldownMs: 5 * 60 * 1000 } as const;
 const eligible = new Set(["blocked", "rate_limited", "timeout", "upstream_failure"]);
@@ -32,7 +33,7 @@ export function createAutomaticCaptionProvider(options: {
       try {
         const transcript = validatedTranscript(result.transcript);
         if (transcript.provider !== provider || transcript.videoId !== input.videoId
-          || (input.language && transcript.language.toLowerCase() !== input.language.toLowerCase())) return failure("malformed");
+          || !matchesCaptionLanguage(transcript.language, input.language)) return failure("malformed");
         return { ok: true, transcript };
       } catch { return failure("malformed"); }
     };

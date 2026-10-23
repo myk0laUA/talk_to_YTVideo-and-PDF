@@ -37,7 +37,7 @@ test("10D HTTP proxy ignores queued old readiness; Stop cancels reader and never
   } finally { controller.dispose(); globalThis.fetch = original; }
 });
 
-test("03F local Stop or connection loss retains natural claim and marks pending evidence incomplete", async () => {
+test("03G local Stop or connection loss retains ordinary citation-looking prose", async () => {
   const original = globalThis.fetch;
   for (const failed of [false, true]) {
     let output!: ReadableStreamDefaultController<Uint8Array>;
@@ -50,13 +50,13 @@ test("03F local Stop or connection loss retains natural claim and marks pending 
       controller.start(randomUUID()); await setImmediate();
       const transcript = { ...new TranscriptStore().snapshot, phase: "active", turns: [{ itemId: "a", role: "assistant", ordering: "established",
         generation: "generating", interrupted: false, playback: "not_applicable", parts: [{ index: 0, kind: "output_text", state: "draft",
-          text: "The speaker says this.", evidence: [{ start: 0, end: 0, state: "pending", references: [] }] }] }] };
+          text: "The speaker says this. [segment-355]" }] }] };
       output.enqueue(new TextEncoder().encode(JSON.stringify({ status: { phase: "responding", protocolReady: false, productionReady: false, revision: 0 }, transcript }) + "\n"));
       await setImmediate();
       if (failed) output.error(new Error("Synthetic connection loss")); else controller.stop();
       await setImmediate();
       const part = controller.transcript.turns[0].parts[0];
-      assert.equal(part.text, "The speaker says this."); assert.equal(part.evidence?.[0].state, "incomplete"); assert.deepEqual(part.evidence?.[0].references, []);
+      assert.equal(part.text, "The speaker says this. [segment-355]"); assert.equal(part.state, "unfinished"); assert.equal(Object.hasOwn(part, "evidence"), false);
       assert.equal(controller.snapshot.phase, failed ? "failed" : "ended");
     } finally { controller.dispose(); globalThis.fetch = original; }
   }

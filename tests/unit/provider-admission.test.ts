@@ -12,6 +12,7 @@ import { validateAdmission, validateProviderAdmission, type ProviderPrimingInput
 import { PrimingController, type PrimingStatus } from "../../src/shared/priming-controller.ts";
 import { TextLifecycle } from "../../src/shared/text-lifecycle.ts";
 import { VoiceLifecycle } from "../../src/shared/voice-lifecycle.ts";
+import { ENGLISH_RESPONSE_INSTRUCTIONS } from "../../src/shared/priming-provider-policy.ts";
 import { encodeManifest, type SessionEvent } from "../../src/shared/priming-manifest.ts";
 import { SyntheticSourceDatabase } from "../sources/database.ts";
 import { pdfFixture, captionFixture } from "../context/fixtures.ts";
@@ -57,6 +58,16 @@ function prime(projection: ProviderPrimingInput) {
   return { clock, transport, controller, states, begin, initial, items, final, ready: () => ready };
 }
 
+for (const stage of ["initial", "final"]) for (const kind of ["PDF", "YOUTUBE"] as const)
+  test(`13E ${kind} text ${stage} missing English ACK cannot enable questions`, async () => {
+    const p = await input(kind), h = prime(p.projection); assert.equal(h.begin(), true);
+    if (stage === "final") { await h.initial(); await h.items(); }
+    const ack = config(h.transport);
+    ack.session.instructions = ack.session.instructions!.replace(ENGLISH_RESPONSE_INSTRUCTIONS, "");
+    h.transport.emit(ack); await flush();
+    assert.equal(h.controller.snapshot.state, "failed"); assert.equal(h.ready(), 0); h.controller.stop();
+  });
+
 for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"] as const) {
   test(`07E ${kind}/${variant}: full reconstruction, server provenance, default protocol priming without fit claim`, async () => {
     const s = await input(kind, variant), p = s.projection, m = p.manifest;
@@ -83,7 +94,7 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
   });
 }
 
-for (const patch of [{ model: "gpt-realtime-2.1" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "voice" as const }, { policyVersion: "future" }])
+for (const patch of [{ model: "gpt-realtime-2.1-mini" }, { model: "gpt-realtime-2.1-mini-latest" }, { mode: "voice" as const }, { policyVersion: "future" }])
   test(`07E unsupported policy ${JSON.stringify(patch)} fails closed`, async () => {
     const s = await source(); const r = await s.prepare({ ...s.args, ...patch });
     assert.equal(r.status, "unavailable"); assert.equal(s.db.reads, 0);
@@ -199,7 +210,7 @@ for (const turn of ["first", "later"] as const) for (const shape of ["standalone
     }
     const earlier = structuredClone(h.controller.transcript.turns);
     await h.question(); const responses = h.t.responses.length;
-    assert.equal(h.t.responses.at(-1)!.response!.max_output_tokens, 512);
+    assert.equal(h.t.responses.at(-1)!.response!.max_output_tokens, 2048);
     if (shape === "standalone") h.t.emit({ type: "error", error: { code: "context_length_exceeded", event_id: h.t.responses.at(-1)!.event_id, message: "PRIVATE_PROVIDER_DETAIL" } });
     else {
       const id = h.created(); h.t.emit({ type: "response.done", response: { id, conversation_id: "conversation_text", status: "failed", output: [],

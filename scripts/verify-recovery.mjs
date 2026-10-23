@@ -10,7 +10,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
-const directory = path.resolve("artifacts/local/11b");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11b`);
 await mkdir(directory, { recursive: true });
 // Refuse occupied ports; never mistake another server's readiness for ours.
 for (const port of [3123, 3124]) await new Promise((resolve, reject) => {

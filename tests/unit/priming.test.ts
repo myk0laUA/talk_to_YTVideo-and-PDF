@@ -323,9 +323,9 @@ test("safe shared dependency trace and sanitized two-source transport matrix", a
     dependencies[name] = [...emitted.matchAll(/from ["']([^"']+)["']/g)].map(m => m[1]);
     assert.ok(dependencies[name].every(name => name.startsWith("./priming-")));
   }
-  await mkdir("artifacts/local/07b", { recursive: true });
-  await writeFile("artifacts/local/07b/transport-matrix.json", JSON.stringify({ environment: "local/scripted/synthetic-only",
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/07b`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/07b/transport-matrix.json`, JSON.stringify({ environment: "local/scripted/synthetic-only",
     realTokens: "NOT_RUN", provider: "NOT_RUN", physicalDevice: "NOT_RUN", traces }, null, 2));
-  await writeFile("artifacts/local/07b/dependency-audit.json", JSON.stringify({ runtimeImports: dependencies,
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/07b/dependency-audit.json`, JSON.stringify({ runtimeImports: dependencies,
     serverRuntimeImports: 0, testRuntimeImports: 0, newEndpoints: 0, runtimeIntegration: "none" }, null, 2));
 });

@@ -6,7 +6,7 @@ import { SyntheticSourceDatabase } from "../sources/database.ts";
 
 const require = createRequire(import.meta.url), database = new SyntheticSourceDatabase();
 globalThis.database = database.asClient();
-const counters = { opens: 0, closes: 0, updates: 0, sources: 0, questions: 0, responses: 0, active: 0, acknowledgments: 0, fidelityChecks: 0 };
+const counters = { opens: 0, closes: 0, updates: 0, sources: 0, questions: 0, responses: 0, active: 0, acknowledgments: 0, fidelityChecks: 0, models: [] };
 const sockets = new Set();
 let scenario = "success", held = [], answerDelay = 100;
 const wsPath = require.resolve("next/dist/compiled/ws");
@@ -15,7 +15,9 @@ class LocalProvider extends EventEmitter {
   readyState = 0; bufferedAmount = 0; sequence = 0; turns = 0; closed = false; timers = new Set(); sourceParts = [];
   constructor(url, options) {
     super(); counters.opens++; counters.active++; sockets.add(this);
-    assert.equal(url, "wss://api.openai.com/v1/realtime?model=gpt-realtime-2.1-mini");
+    this.model = new URL(url).searchParams.get("model");
+    assert.equal(this.model, "gpt-realtime-2.1");
+    assert.equal(url, `wss://api.openai.com/v1/realtime?model=${this.model}`); counters.models.push(this.model);
     assert.equal(options.maxPayload, 80_000); assert.equal(options.followRedirects, false); assert.equal(options.perMessageDeflate, false);
     assert.match(options.headers.Authorization, /^Bearer sk-synthetic10d-/);
     assert.match(options.headers["OpenAI-Safety-Identifier"], /^[a-f0-9]{64}$/);
@@ -28,7 +30,7 @@ class LocalProvider extends EventEmitter {
     assert.ok(["session.update", "conversation.item.create", "response.create"].includes(e.type));
     if (e.type === "session.update") {
       assert.deepEqual(e.session.output_modalities, ["text"]); assert.equal(e.session.truncation, "disabled");
-      assert.equal(e.session.max_output_tokens, 512); assert.equal(e.session.reasoning.effort, "minimal");
+      assert.equal(e.session.max_output_tokens, 2048); assert.equal(e.session.reasoning.effort, "minimal");
       assert.deepEqual(e.session.tools, []); assert.equal(e.session.tool_choice, "none");
       assert.deepEqual(e.session.audio.input, { turn_detection: null, transcription: null });
       if (e.session.instructions.endsWith("Context loading complete.")) {
@@ -52,7 +54,7 @@ class LocalProvider extends EventEmitter {
         assert.equal(texts.join(first.source.separator), row.fullText); counters.fidelityChecks++;
       }
       counters.updates++;
-      this.later(() => this.event({ type: "session.updated", session: { ...e.session, model: "gpt-realtime-2.1-mini", id: "fake_session10d", object: "realtime.session" } }), 2);
+      this.later(() => this.event({ type: "session.updated", session: { ...e.session, model: this.model, id: "fake_session10d", object: "realtime.session" } }), 2);
     }
     if (e.type === "conversation.item.create") {
       const source = e.item.id.includes("_source_");
@@ -68,10 +70,10 @@ class LocalProvider extends EventEmitter {
     }
     if (e.type === "response.create") {
       counters.responses++; this.turns++;
-      assert.deepEqual(e.response.output_modalities, ["text"]); assert.equal(e.response.max_output_tokens, 512);
+      assert.deepEqual(e.response.output_modalities, ["text"]); assert.equal(e.response.max_output_tokens, 2048);
       assert.deepEqual(e.response.reasoning, { effort: "minimal" }); assert.deepEqual(e.response.tools, []);
       const response_id = `response_${this.turns}`, item_id = `answer_${this.turns}`;
-      const text = this.turns === 1 ? "Synthetic10D answer begins. All source markers preserved." : "Synthetic10D follow-up ends. Full history retained.";
+      const text = this.turns === 1 ? "Synthetic10D answer begins. All source markers preserved." : "Synthetic10D follow-up ends. Full history retained. [segment-355] [segment-unknown] <script>inert</script>";
       const item = { id: item_id, type: "message", role: "assistant", status: "completed", content: [{ type: "text", text }] };
       this.later(() => {
         this.event({ type: "response.created", response: { id: response_id, conversation_id: "conversation10d", status: "in_progress", output_modalities: ["text"], metadata: e.response.metadata } });

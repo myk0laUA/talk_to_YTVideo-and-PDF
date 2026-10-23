@@ -12,7 +12,7 @@ import { createVisitor, visitorCookie } from "../src/server/proof/visitor.ts";
 import { uploadedRecord, captionRecord, sourceDto } from "../src/server/sources/service.ts";
 import { pdfFixture, captionFixture } from "../tests/context/fixtures.ts";
 
-const directory = path.resolve("artifacts/local/02d"); await mkdir(directory, { recursive: true });
+const directory = path.resolve(process.env.OWNED_VOICE_EVIDENCE_DIRECTORY ?? "artifacts/local/02d"); await mkdir(directory, { recursive: true });
 const port = 3128, origin = `http://127.0.0.1:${port}`;
 const report = { startedUtc: new Date().toISOString(), runtime: process.version, buildId: (await readFile(".next/BUILD_ID", "utf8")).trim(),
   context: "local production Next routes/Chromium; synthetic Prisma/fake client-secret transport via preload; no live provider, database, RTC, media or phone",
@@ -83,7 +83,7 @@ try {
           await page.goto(origin);
           const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Upload a PDF", exact: true }).click();
           await (await chooser).setFiles({ name: "Synthetic02D.pdf", mimeType: "application/pdf", buffer: Buffer.from("seeded-source-only") });
-          await page.getByRole("button", { name: "Inspect extracted text", exact: true }).waitFor();
+          await page.getByRole("button", { name: "View source", exact: true }).waitFor();
           await page.getByRole("button", { name: "Voice mode", exact: true }).click();
           const disabled = await page.getByRole("button", { name: /Start/ }).isDisabled(); check("ordinary Voice Start remains unavailable with source and voice gate off", disabled);
           check("ordinary Voice native media calls", await page.evaluate(() => window.__media02d), 0); check("browser external requests", external, 0);
@@ -151,11 +151,11 @@ try {
         await wait(async () => (await ipc("snapshot")).calls === 2);
         await credential(fixtures[2].f, fixtures[2].p, 429); check("concurrent provider acquisition bound2", (await ipc("snapshot")).calls, 2);
         await ipc("release"); await Promise.all(pending); await ipc("scenario", { scenario: "success" });
-        // Same visitor can mint at most3 times/window; previous count1, so exactly2 more.
+        // Assessment policy: this visitor already minted once; allow exactly59 more.
         const f = fixtures[0].f;
-        for (let i = 0; i < 2; i++) { f.requestId = randomUUID(); await credential(f, await prepare(f)); }
+        for (let i = 0; i < 59; i++) { f.requestId = randomUUID(); await credential(f, await prepare(f)); }
         f.requestId = randomUUID(); await credential(f, await prepare(f), 429);
-        check("visitor issuance exhausted without extra upstream", (await ipc("snapshot")).calls, 4);
+        check("visitor issuance exhausted without extra upstream", (await ipc("snapshot")).calls, 61);
       }
       await wait(async () => (await ipc("snapshot")).registry.pendingMints === 0);
       const final = await ipc("snapshot");

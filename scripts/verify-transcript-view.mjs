@@ -10,7 +10,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
-const directory = path.resolve("artifacts/local/09b");
+const directory = path.resolve("artifacts/local/12e/regression/09b");
 await mkdir(directory, { recursive: true });
 // Refuse occupied ports; never mistake another server's readiness for ours.
 for (const port of [3115, 3116]) await new Promise((resolve, reject) => {

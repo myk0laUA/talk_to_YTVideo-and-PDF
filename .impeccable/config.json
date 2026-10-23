@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-10-23T02:15:44.954Z",
+        "reason": "Agent decision: DESIGN.md records Geist as intentional for this focused document workspace; locally served neutral UI typography was visually reviewed in both themes and at 200 percent text. Preserve the selected Taste polish; this exception applies only to Geist."
+      }
+    ]
+  }
+}

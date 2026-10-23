@@ -23,9 +23,9 @@ export class Track implements VoiceTrack {
 }
 export function resources() {
   const transport = new ScriptedTransport(), tracks = [new Track(), new Track()];
-  const counts = { closes: 0, playbackReleases: 0, plays: 0, mediaReleases: 0, attaches: 0 };
+  const counts = { closes: 0, playbackReleases: 0, plays: 0, speakerMuted: false, mediaReleases: 0, attaches: 0 };
   let throwing = false;
-  const playback = { play: async () => { counts.plays++; }, release: () => { counts.playbackReleases++; if (throwing) throw new Error("SECRET"); } };
+  const playback = { setMuted: (muted: boolean) => { counts.speakerMuted = muted; }, play: async () => { counts.plays++; }, release: () => { counts.playbackReleases++; if (throwing) throw new Error("SECRET"); } };
   const connection: VoiceConnection = { transport, playback, close: () => { counts.closes++; transport.close(); if (throwing) throw new Error("SECRET"); } };
   const media: VoiceMedia = { tracks, attach: () => { assert.ok(tracks.every(t => !t.enabled)); counts.attaches++; },
     release: () => { counts.mediaReleases++; if (throwing) throw new Error("SECRET"); } };

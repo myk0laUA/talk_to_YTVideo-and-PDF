@@ -83,7 +83,7 @@ for (const change of ["language", "provider", "key", "bypass"] as const) test(`i
   if (change === "provider") s.current.provider = "supadata";
   if (change === "key") s.current.supadataApiKey = "different-policy";
   if (change === "bypass") s.current.cacheBypass = true;
-  await response(s.handler(s.request(1, undefined, change === "language" ? "fr" : "en")), 429, "limit_reached");
+  await response(s.handler(s.request(1, undefined, change === "language" ? "en-GB" : "en")), 429, "limit_reached");
   assert.equal(s.db.cacheReads, 1); assert.equal(s.calls(), 1); s.resolve(); await response(a, 201);
 });
 

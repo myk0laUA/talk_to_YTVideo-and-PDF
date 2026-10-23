@@ -20,10 +20,10 @@ const pdf = (id = idB): PdfSourceContent => ({ id, kind: "PDF", title: "Uploaded
 const metadata = (content: SourceContent) => Object.fromEntries(Object.entries(content).filter(([key]) => key !== "fullText" && key !== "sections"));
 const reply = (route: Route, status: number, body: unknown) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 const fail = (route: Route, status: number, code: string) => reply(route, status, { ok: false, error: { code, message: "PRIVATE upstream SQL details" } });
-const submit = async (page: Page, video = url) => { await page.getByRole("textbox", { name: "YouTube URL" }).fill(video); await page.getByRole("textbox", { name: "YouTube URL" }).press("Enter"); };
-const loaded = (page: Page) => expect(page.locator(".source-panel").getByRole("status")).toContainText("YouTube captions ready");
-const open = async (page: Page) => { await page.getByRole("button", { name: "Inspect extracted text" }).click(); await expect(page.getByRole("heading", { name: "YouTube caption text" })).toBeFocused(); };
-const remove = async (page: Page) => { await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove" }).click(); };
+const submit = async (page: Page, video = url) => { if (await page.getByRole("dialog").count()) await page.keyboard.press("Escape"); if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions", { exact: true }).click(); if (await page.locator(".source-menu button").count() && !await page.locator(".replacement-dialog").count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click(); await page.getByRole("textbox", { name: "YouTube URL" }).fill(video); await page.getByRole("textbox", { name: "YouTube URL" }).press("Enter"); };
+const loaded = (page: Page) => expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("YouTube captions ready");
+const open = async (page: Page) => { if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape"); await page.getByRole("button", { name: "View source" }).click(); await expect(page.getByRole("heading", { name: "YouTube caption text" })).toBeFocused(); };
+const remove = async (page: Page) => { if (await page.getByRole("dialog").count()) await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).click(); await page.getByRole("button", { name: "Confirm remove" }).click(); };
 const counts = (info: TestInfo, value: object) => info.attach("request-counts", { body: JSON.stringify(value), contentType: "application/json" });
 
 test.beforeEach(async ({ page }) => {
@@ -47,10 +47,10 @@ test("mocked: native submit, one 401, metadata then full GET, complete ordered c
   await page.keyboard.press("Enter"); await expect(page.getByRole("main")).toBeFocused();
   await submit(page, ` ${url} `); await loaded(page);
   expect(posts).toBe(2); expect(gets).toBe(1);
-  await expect(page.getByText("Selected caption language:", { exact: false })).toContainText("en · Automatic captions");
-  await expect(page.locator("time")).toHaveAttribute("datetime", source.expiresAt);
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-loaded.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-loaded.png`, fullPage: true });
   await open(page);
+  await expect(page.getByText("Caption language:", { exact: false })).toContainText("en · Automatic captions");
+  await expect(page.locator("time")).toHaveAttribute("datetime", source.expiresAt);
   expect(await page.locator(".caption-segment").evaluateAll(nodes => nodes.map(n => n.id))).toEqual(source.sections.map(s => `source-${s.id}`));
   expect(await page.locator(".page-text").allTextContents()).toEqual(source.sections.map(s => s.text));
   await expect(page.locator("#source-segment-1 h3")).toHaveText("0:00 · duration 2 s");
@@ -60,18 +60,19 @@ test("mocked: native submit, one 401, metadata then full GET, complete ordered c
   await expect(page.locator("#source-segment-64 h3")).toHaveText("60:01.000125 · duration 2 s");
   expect(await page.locator("#source-text").getAttribute("aria-live")).toBeNull();
   expect(await page.locator("#source-text script").count()).toBe(0);
+  await page.getByText("Extraction notes",{exact:true}).click();
   await expect(page.getByText("Synthetic caption note")).toBeVisible();
   await page.locator("#source-segment-1").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-first.png` });
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-first.png` });
   await page.locator("#source-segment-64").scrollIntoViewIfNeeded();
   await expect(page.locator("#source-segment-64 .page-text")).toBeInViewport();
   await expect.poll(() => page.locator("#source-segment-64 .page-text").evaluate(el => el.checkVisibility({ contentVisibilityAuto: true }))).toBe(true);
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-final.png` });
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-final.png` });
   await page.getByRole("button", { name: "Close text and return" }).last().click();
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
-  expect(await page.getByRole("button", { name: "Inspect extracted text" }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-focus-return.png` });
-  await expect(page.getByRole("button", { name: "Start text session" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "View source" })).toBeFocused();
+  expect(await page.getByRole("button", { name: "View source" }).evaluate(el => getComputedStyle(el).outlineWidth)).toBe("3px");
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-focus-return.png` });
+  await expect(page.getByRole("button", { name: "Start chat" })).toBeDisabled();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length, fits: document.documentElement.scrollWidth <= innerWidth }))).toEqual({ local: 0, session: 0, fits: true });
   expect(errors).toEqual([]);
   await page.reload(); await expect(page.getByRole("button", { name: "Import YouTube video", exact: true })).toBeVisible(); expect(gets).toBe(1);
@@ -111,11 +112,11 @@ for (const [code, status, text, rechecks] of failures) test(`mocked: ${code} rec
     gets++; return reply(route, 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText(text);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText(text);
   await expect(page.getByRole("button", { name: "Replace with YouTube video" })).toBeEnabled();
   expect(posts).toBe(2); expect(gets).toBe(rechecks ? 2 : 1);
-  await expect(page.locator(".source-panel").getByRole("status")).not.toContainText(/PRIVATE|another provider|fallback/i);
-  if (code === "blocked") await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-failure.png`, fullPage: true });
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).not.toContainText(/PRIVATE|another provider|fallback/i);
+  if (code === "blocked") await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-failure.png`, fullPage: true });
   await open(page); await expect(page.locator("#source-segment-64")).toContainText("Caption 64 marker");
   await counts(info, { posts, gets, rechecks });
 });
@@ -127,7 +128,7 @@ test("mocked: second 401 ends handshake, preserves input, rechecks expired prior
     return ++gets === 1 ? reply(route, 200, { ok: true, source: youtube() }) : fail(route, 404, "unavailable");
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("cookies are unavailable");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("cookies are unavailable");
   await expect(page.getByRole("textbox", { name: "YouTube URL" })).toHaveValue(url);
   await expect(page.locator(".active-source")).toHaveCount(0); expect(posts).toBe(3); expect(gets).toBe(2);
   await counts(info, { posts, gets });
@@ -140,7 +141,7 @@ test("mocked: saved-ID GET retry never repeats POST", async ({ page }, info) => 
     expect(route.request().url()).toContain(idA);
     return ++gets === 1 ? fail(route, 503, "storage_unavailable") : reply(route, 200, { ok: true, source: youtube() });
   });
-  await page.goto("/"); await submit(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("YouTube stored, but");
+  await page.goto("/"); await submit(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("YouTube stored, but");
   await page.getByRole("button", { name: "Retry text" }).click(); await loaded(page); expect(posts).toBe(1); expect(gets).toBe(2);
   await counts(info, { posts, gets });
 });
@@ -155,9 +156,10 @@ test("mocked: YouTube to PDF to YouTube to YouTube uses one card and no pre-dele
     return reply(route, 200, { ok: true, source: current });
   });
   await page.goto("/"); await submit(page); await loaded(page);
+  if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions", { exact: true }).click(); if (await page.locator(".source-menu button").count() && !await page.locator(".replacement-dialog").count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click();
   const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Replace PDF", exact: true }).click();
   await (await chooser).setFiles({ name: "Résumé 日本語.pdf", mimeType: "application/pdf", buffer: Buffer.from("mock") });
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready");
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await submit(page); await loaded(page); await submit(page, "https://youtu.be/abcdefghijk"); await loaded(page);
   expect(await page.locator(".active-source").count()).toBe(1); expect(posts).toBe(4); expect(deletes).toBe(0);
@@ -174,7 +176,7 @@ for (const code of ["network", "replacement_conflict"]) test(`mocked: uncertain 
     gets++; return posts === 2 ? fail(route, 404, "unavailable") : reply(route, 200, { ok: true, source: youtube(posts === 1 ? idA : idC) });
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is no longer accessible");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("previous source is no longer accessible");
   await expect(page.locator(".active-source")).toHaveCount(0);
   await submit(page); await loaded(page); expect(posts).toBe(3); expect(gets).toBe(3);
   await counts(info, { posts, gets });
@@ -199,9 +201,9 @@ test("mocked: cancel aborts request, excludes parallel mutation and ignores late
   });
   await page.goto("/"); await submit(page); await loaded(page); await submit(page);
   await expect(page.getByRole("button", { name: "Replace PDF", exact: true })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Remove", exact: true })).toBeDisabled();
+  await expect(page.getByRole("menuitem", { name: "Remove source", exact: true, includeHidden: true })).toBeDisabled();
   await page.getByRole("button", { name: "Cancel import" }).click();
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("may still replace it");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("may still replace it");
   expect(await page.evaluate(() => (window as unknown as { cancelledSignal: AbortSignal }).cancelledSignal.aborted)).toBe(true);
   await submit(page); await loaded(page);
   await page.evaluate(() => (window as unknown as { releaseLate: () => void }).releaseLate());
@@ -218,10 +220,10 @@ test("mocked: removal confirmation, keep, repeat and already removed", async ({ 
     return reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page);
-  await page.getByRole("button", { name: "Remove", exact: true }).click(); await page.getByRole("button", { name: "Keep source" }).click(); expect(deletes).toBe(0);
-  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
+  await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).click(); await page.getByRole("button", { name: "Keep source" }).click(); expect(deletes).toBe(0);
+  await remove(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable");
   await submit(page); await loaded(page); await remove(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2); expect(posts).toBe(2);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable"); expect(deletes).toBe(2); expect(posts).toBe(2);
   await counts(info, { posts, deletes });
 });
 
@@ -243,9 +245,9 @@ test("mocked: local deadline aborts extraction and still revalidates known prior
     return reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await page.clock.install(); await submit(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Importing YouTube");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Importing YouTube");
   await page.clock.fastForward(55_001);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("previous source is readable now");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("previous source is readable now");
   expect(await page.evaluate(() => (window as unknown as { deadlineAborted: boolean }).deadlineAborted)).toBe(true);
   expect(gets).toBe(2); expect(posts).toBe(1);
   await counts(info, { routedPosts: posts, clientPosts: 2, gets, clock: "mocked 55-second deadline" });
@@ -259,19 +261,19 @@ for (const network of [true, false]) test(`mocked: failed removal ${network ? "n
     return reply(route, route.request().method() === "POST" ? 201 : 200, { ok: true, source: youtube() });
   });
   await page.goto("/"); await submit(page); await loaded(page); await remove(page);
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("Removal is not confirmed");
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeEnabled(); expect(deletes).toBe(1); expect(gets).toBe(2);
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Removal is not confirmed");
+  await expect(page.getByRole("button", { name: "View source" })).toBeEnabled(); expect(deletes).toBe(1); expect(gets).toBe(2);
   await counts(info, { gets, deletes });
 });
 
-test("mocked: expiry clears inaccessible source on Check source", async ({ page }, info) => {
+test("mocked: expiry clears inaccessible source on missing-content Retry", async ({ page }, info) => {
   let gets = 0, posts = 0;
   await page.route("**/api/sources/**", route => {
     if (route.request().method() === "POST") { posts++; return reply(route, 201, { ok: true, source: metadata(youtube()) }); }
-    return ++gets === 1 ? reply(route, 200, { ok: true, source: youtube() }) : fail(route, 404, "unavailable");
+    return ++gets === 1 ? fail(route, 503, "storage_unavailable") : fail(route, 404, "unavailable");
   });
-  await page.goto("/"); await submit(page); await loaded(page); await page.getByRole("button", { name: "Check source" }).click();
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("expired or is no longer available");
+  await page.goto("/"); await submit(page); await expect(page.getByRole("button", { name: "Retry text" })).toBeVisible(); await page.getByRole("button", { name: "Retry text", exact: true }).click();
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("expired or is no longer available");
   await expect(page.locator(".active-source")).toHaveCount(0); expect(posts).toBe(1); expect(gets).toBe(2);
   await counts(info, { posts, gets });
 });
@@ -290,13 +292,15 @@ test("integrated: actual direct adapter/DTO, synthetic upstream/Prisma, YouTube 
   await expect(page.locator("#source-segment-1 h3")).toHaveText("0:01.2505 · duration 0.500125 s");
   await expect(page.locator("#source-segment-2 h3")).toHaveText("0:25 · duration 0 s");
   await expect(page.locator("#source-segment-3 h3")).toHaveText("0:50.125 · duration 3.75 s");
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-integrated-captions.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-integrated-captions.png`, fullPage: true });
   await page.getByRole("button", { name: "Close text and return" }).first().click();
+  if (!await page.locator(".replacement-dialog").count() && await page.locator("button[aria-haspopup=menu][aria-expanded=false]").count()) await page.getByText("Source actions", { exact: true }).click(); if (await page.locator(".source-menu button").count() && !await page.locator(".replacement-dialog").count()) await page.getByRole("menuitem", { name: "Replace source", exact: true }).click();
   const chooser = page.waitForEvent("filechooser"); await page.getByRole("button", { name: "Replace PDF", exact: true }).click();
   await (await chooser).setFiles("artifacts/local/04a/fixtures/multi.pdf");
-  await expect(page.locator(".source-panel").getByRole("status")).toContainText("PDF text ready");
+  await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("PDF text ready");
   expect((await page.request.get(`/api/sources/${ids[0]}`)).status()).toBe(404);
-  await page.getByRole("button", { name: "Inspect extracted text" }).click();
+  if (await page.locator(".replacement-dialog").count()) await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "View source" }).click();
   const manifest = JSON.parse(await readFile("artifacts/local/04a/fixtures/manifest.json", "utf8"));
   const expected: string[][] = manifest.fixtures.find((f: { name: string }) => f.name === "multi").expectedPages;
   const actual = await page.locator(".page-text").allTextContents(); expect(actual).toHaveLength(12);
@@ -304,13 +308,13 @@ test("integrated: actual direct adapter/DTO, synthetic upstream/Prisma, YouTube 
   for (let i = 0; i < expected.length; i++) for (const line of expected[i]) { expect(actual[i]).toContain(line); lines++; }
   expect(lines).toBe(384);
   await page.getByRole("heading", { name: "Page 12", exact: true }).scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `artifacts/local/05b/${info.project.name}-integrated-pdf-final.png` });
+  await page.screenshot({ path: `artifacts/local/12e/regression/05b/${info.project.name}-integrated-pdf-final.png` });
   await page.getByRole("button", { name: "Close text and return" }).last().click();
-  await expect(page.getByRole("button", { name: "Inspect extracted text" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "View source" })).toBeFocused();
   await submit(page); await loaded(page);
   expect((await page.request.get(`/api/sources/${ids[1]}`)).status()).toBe(404);
   await open(page); expect(await page.locator(".page-text").allTextContents()).toEqual([" FIRST synthetic marker ", "MIDDLE synthetic marker", "LAST synthetic marker"]);
-  await remove(page); await expect(page.locator(".source-panel").getByRole("status")).toContainText("Source removed or already unavailable");
+  await remove(page); await expect(page.locator("body:has(.replacement-dialog) .replacement-dialog > [role=status], body:not(:has(.replacement-dialog)) .source-panel > [role=status]")).toContainText("Source removed or already unavailable");
   expect((await page.request.get(`/api/sources/${ids[2]}`)).status()).toBe(404);
   expect(requests.filter(r => r.method === "POST").map(r => r.status)).toEqual([401, 201, 201, 201]);
   expect(requests.filter(r => r.method === "GET")).toHaveLength(3);

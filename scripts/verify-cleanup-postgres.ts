@@ -30,19 +30,24 @@ async function removeFixtures() {
   await database.query('DELETE FROM "public"."Source" WHERE "id" = ANY($1::uuid[]) AND "title" = $2 AND "ownerSessionHash" = $3', [ids.Source, marker, owner]);
   await database.query('DELETE FROM "public"."TranscriptCache" WHERE "id" = ANY($1::uuid[]) AND "title" = $2', [ids.TranscriptCache, marker]);
 }
-async function seed() {
+async function seed(scenario: string) {
+  stage = `${scenario}:seed-teardown`;
   await removeFixtures();
   const cutoff = new Date();
   for (let index = 0; index < 5; index++) {
     // Two old rows, exact cutoff, another old row, one future row. No real content.
     const expires = new Date(+cutoff + (index === 4 ? 600_000 : index === 2 ? 0 : -10_000 + index));
-    await database!.query(`INSERT INTO "public"."Source" ("id", "ownerSessionHash", "uploadedPdfOwner", "kind", "title", "fullText", "sections", "extractionStatus", "updatedAt", "expiresAt")
-      VALUES ($1,$2,$3,'PDF',$4,'synthetic cleanup fixture','[]',$5,now(),$6)`,
-    [ids.Source[index], owner, index === 4 ? owner : null, marker, index % 2 ? "PENDING" : "FAILED", expires]);
+    const active = index === 4;
+    stage = `${scenario}:seed-source-${active ? "active" : "inactive"}`;
+    await database!.query(`INSERT INTO "public"."Source" ("id", "ownerSessionHash", "uploadedPdfOwner", "kind", "title", "fullText", "sections", "extractionStatus", "provider", "updatedAt", "expiresAt")
+      VALUES ($1,$2,$3,'PDF',$4,'synthetic cleanup fixture','[]',$5,$6,now(),$7)`,
+    [ids.Source[index], owner, active ? owner : null, marker, active ? "READY" : index % 2 ? "PENDING" : "FAILED", active ? "pdf-parse@2.4.5" : null, expires]);
+    stage = `${scenario}:seed-cache`;
     await database!.query(`INSERT INTO "public"."TranscriptCache" ("id", "videoId", "languagePreference", "provider", "title", "fullText", "sections", "characterCount", "wordCount", "updatedAt", "expiresAt")
       VALUES ($1,'abcdefghijk',$2,'synthetic',$3,'synthetic cleanup fixture','[]',25,3,now(),$4)`,
     [ids.TranscriptCache[index], `${marker}-${index}`, marker, expires]);
   }
+  stage = `${scenario}:verification`;
   return cutoff;
 }
 async function snapshot() {
@@ -95,10 +100,14 @@ try {
   fixturesAllowed = true;
   const peer = await connect(target), peer2 = await connect(target);
   stage = "CLI-sequence";
-  let cutoff = await seed(); const before = await snapshot();
+  let cutoff = await seed(stage); const before = await snapshot();
+  stage = "CLI-dry-run";
   const dry = await cli([], target); assert.deepEqual(await snapshot(), before);
+  stage = "CLI-execute";
   const executed = await cli(["--execute", "--batch-size", "2"], target);
+  stage = "CLI-no-op";
   const noop = await cli(["--execute"], target);
+  stage = "CLI-assertions";
   for (const report of [dry, executed, noop]) assert.equal(report.status, "complete");
   const dryCounts = dry.counts as Record<string, { selected: number; deleted: number }>;
   const executeCounts = executed.counts as typeof dryCounts, noopCounts = noop.counts as typeof dryCounts;
@@ -112,12 +121,12 @@ try {
   results.push({ scenario: "actual CLI dry-run/execute/no-op", before: { Source: 5, TranscriptCache: 5 }, dry, executed, noop,
     remaining: { Source: 1, TranscriptCache: 1 }, byteIdenticalDryRun: true, livePreserved: true });
 
-  stage = "boundary"; cutoff = await seed();
+  stage = "boundary"; cutoff = await seed(stage);
   const boundary = await cleanup(createPostgresCleanupStore(database), { ...defaults, execute: true }, undefined, () => +cutoff);
   for (const table of tables) assert.equal(boundary.counts[table].deleted, 4);
   results.push({ scenario: "exact boundary", report: boundary });
 
-  stage = "refresh-before-selection"; cutoff = await seed(); let refreshed = false;
+  stage = "refresh-before-selection"; cutoff = await seed(stage); let refreshed = false;
   const refresh = await cleanup(createPostgresCleanupStore(wrap(database, async () => {
     if (!refreshed) { refreshed = true; await peer.query('UPDATE "public"."TranscriptCache" SET "expiresAt" = $2 WHERE "id" = $1', [ids.TranscriptCache[0], new Date(+cutoff + 600_000)]); }
   })), { ...defaults, execute: true }, undefined, () => +cutoff);
@@ -126,7 +135,7 @@ try {
   results.push({ scenario: "refresh before cache selection", report: refresh });
 
   // Refresh specifically AFTER candidate selection, before deletion.
-  stage = "refresh-after-selection"; cutoff = await seed(); refreshed = false;
+  stage = "refresh-after-selection"; cutoff = await seed(stage); refreshed = false;
   const refreshConnection: CleanupConnection = { async query(text, values) {
     const result = await database!.query(text, values);
     if (!refreshed && text.startsWith('SELECT "id"') && text.includes('"TranscriptCache"')) {
@@ -138,7 +147,7 @@ try {
   assert.equal(racedRefresh.counts.TranscriptCache.selected, 4); assert.equal(racedRefresh.counts.TranscriptCache.deleted, 3);
   results.push({ scenario: "cache refresh after selection", report: racedRefresh });
 
-  stage = "overlapping-cleaners"; cutoff = await seed(); let arrivals = 0; let release: () => void = () => {};
+  stage = "overlapping-cleaners"; cutoff = await seed(stage); let arrivals = 0; let release: () => void = () => {};
   const barrier = new Promise<void>(resolve => { release = resolve; });
   const overlap = () => { let first = true; return async () => { if (first) { first = false; if (++arrivals === 2) release(); await barrier; } }; };
   const cleaners = await Promise.all([database, peer].map(client => cleanup(createPostgresCleanupStore(wrap(client, overlap())),
@@ -146,16 +155,19 @@ try {
   for (const table of tables) assert.equal(cleaners.reduce((n, r) => n + r.counts[table].deleted, 0), 4);
   assert.ok(cleaners.every(r => r.status === "complete")); results.push({ scenario: "overlapping cleaners", reports: cleaners });
 
-  stage = "replacement"; cutoff = await seed(); let replaced = false;
+  stage = "replacement"; cutoff = await seed(stage); let replaced = false;
   const replacement = await cleanup(createPostgresCleanupStore(wrap(database, async () => {
     if (!replaced) {
       replaced = true;
       await peer.query("BEGIN");
       try {
         await peer.query('DELETE FROM "public"."Source" WHERE "id"=ANY($1::uuid[]) AND "ownerSessionHash"=$2', [ids.Source, owner]);
-        await peer.query(`INSERT INTO "public"."Source" ("id", "ownerSessionHash", "uploadedPdfOwner", "kind", "title", "fullText", "sections", "extractionStatus", "updatedAt", "expiresAt")
-          VALUES ($1,$2,$2,'PDF',$3,'synthetic replacement','[]','READY',now(),$4)`, [ids.Source[4], owner, marker, new Date(+cutoff + 600_000)]);
+        stage = "replacement:insert-active-source";
+        await peer.query(`INSERT INTO "public"."Source" ("id", "ownerSessionHash", "uploadedPdfOwner", "kind", "title", "fullText", "sections", "extractionStatus", "provider", "updatedAt", "expiresAt")
+          VALUES ($1,$2,$2,'PDF',$3,'synthetic replacement','[]','READY','pdf-parse@2.4.5',now(),$4)`, [ids.Source[4], owner, marker, new Date(+cutoff + 600_000)]);
+        stage = "replacement:commit";
         await peer.query("COMMIT");
+        stage = "replacement:verification";
       } catch (error) { await peer.query("ROLLBACK"); throw error; }
     }
   })), { ...defaults, execute: true }, undefined, () => +cutoff);
@@ -163,14 +175,14 @@ try {
   assert.equal((await database.query('SELECT count(*)::int AS n FROM "public"."Source" WHERE "uploadedPdfOwner"=$1', [owner])).rows[0].n, 1);
   results.push({ scenario: "simultaneous replacement transaction", report: replacement });
 
-  stage = "rollback"; cutoff = await seed(); const rollbackBefore = await snapshot();
+  stage = "rollback"; cutoff = await seed(stage); const rollbackBefore = await snapshot();
   const rollback = await cleanup(createPostgresCleanupStore(wrap(database, undefined, true)), { ...defaults, execute: true }, undefined, () => +cutoff);
   assert.equal(rollback.status, "error"); assert.deepEqual(await snapshot(), rollbackBefore);
   results.push({ scenario: "failure before commit rolls back", report: rollback });
 
   for (const cancel of [false, true]) {
     stage = cancel ? "cancel-lock-wait" : "lock-wait";
-    cutoff = await seed(); const lockedBefore = await snapshot();
+    cutoff = await seed(stage); const lockedBefore = await snapshot();
     const controller = new AbortController(); let timer: ReturnType<typeof setTimeout> | undefined;
     await peer2.query("BEGIN");
     try {
@@ -185,7 +197,7 @@ try {
   }
   for (const phase of ["before", "during", "between"] as const) {
     stage = `cancel-${phase}`;
-    cutoff = await seed(); const controller = new AbortController();
+    cutoff = await seed(stage); const controller = new AbortController();
     if (phase === "before") controller.abort();
     const store = createPostgresCleanupStore(wrap(database, phase === "during" ? async () => { controller.abort(); } : undefined));
     const batch = store.batch;
@@ -194,6 +206,7 @@ try {
     assert.equal(report.status, "cancelled"); assert.equal(report.counts.Source.deleted, phase === "between" ? 2 : 0);
     results.push({ scenario: `cancel ${phase}`, report });
   }
+  stage = "fixture-teardown-verification";
   await removeFixtures();
   for (const table of tables) assert.equal((await database.query(`SELECT count(*)::int AS n FROM "public"."${table}" WHERE "id"=ANY($1::uuid[])`, [ids[table]])).rows[0].n, 0);
   succeeded = true;

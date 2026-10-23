@@ -3,9 +3,9 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
   let captureRequest;
   const activationThresholds = [];
   const counts = { peers: 0, peerCloses: 0, channels: 0, channelCloses: 0, listeners: 0,
-    media: 0, attached: 0, trackStops: 0, remoteStops: 0, audio: 0, releases: 0, plays: 0,
+    media: 0, attached: 0, trackStops: 0, remoteStops: 0, audio: 0, releases: 0, pauses: 0, plays: 0,
     offers: 0, local: 0, remote: 0, sends: 0, finalAck: 0, items: 0, violations: 0 };
-  const control = { hold: '', fault: '', denied: false, blockedPlayback: false, maxMessageSize: 16384, buffered: 0 };
+  const control = { hold: '', fault: '', denied: false, blockedPlayback: false, maxMessageSize: 16384, buffered: 0, holdTrack: false };
   const pending = [], peers = [], channels = [], tracks = [], trace = [], sourceParts = [], senders = [], speakers = []; let eventSequence = 0;
   class Target extends EventTarget {
     own = new Map();
@@ -45,7 +45,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
           const s = structuredClone(e.session);
           activationThresholds.push(s.audio.input.turn_detection === null ? null : s.audio.input.turn_detection.threshold);
           if (control.fault === 'settings') s.model = 'wrong-model';
-          else s.model = 'gpt-realtime-2.1-mini';
+          else s.model = 'gpt-realtime-2.1';
           if (phase === 'final' && control.fault === 'transcription-missing') delete s.audio.input.transcription;
           if (phase === 'final' && control.fault === 'transcription-wrong') s.audio.input.transcription = { model: 'whisper-1' };
           if (phase === 'final' && control.fault === 'threshold-missing') delete s.audio.input.turn_detection.threshold;
@@ -81,10 +81,10 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     setRemoteDescription() { counts.remote++; return step('remote', () => {
       if (this.connectionState === 'closed') throw new Error('closed peer');
       this.connectionState = 'connected'; this.channel.readyState = 'open';
-      const e = new Event('track'); e.track = new Track(true); e.streams = []; this.dispatchEvent(e);
+      const e = new Event('track'); e.track = new Track(true); e.streams = []; if (control.holdTrack) this.pendingTrack = e; else this.dispatchEvent(e);
       this.dispatchEvent(new Event('connectionstatechange')); this.channel.dispatchEvent(new Event('open'));
     }); }
-    close() { counts.peerCloses++; this.connectionState = 'closed'; }
+    close() { counts.peerCloses++; this.connectionState = 'closed'; if (this.pendingTrack?.track.readyState === 'live') this.pendingTrack.track.stop(); }
   }
   const deps = { peer: () => new Peer(), stream: () => new Stream(), now: () => performance.now(),
     uuid: () => crypto.randomUUID(), fetch: (...args) => fetch(...args),
@@ -93,7 +93,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
     audio: () => { counts.audio++; let bound = null; const speaker = { autoplay: false, assignments: 0,
       get srcObject() { return bound; }, set srcObject(value) { bound = value; this.assignments++; },
       play: () => { counts.plays++; return step('play', () => { if (control.blockedPlayback) throw new Error('playback blocked'); }); },
-      pause() { counts.releases++; }, removeAttribute() {}, load() {} }; speakers.push(speaker); return speaker; },
+      pause() { counts.pauses++; }, removeAttribute() {}, load() { counts.releases++; } }; speakers.push(speaker); return speaker; },
   };
   const api = { counts, control, trace, deps, peers, channels, tracks, sourceParts, senders, speakers,
     release: phase => { const work = pending.splice(0); for (const p of work) if (!phase || p.phase === phase) p.release(); else pending.push(p); },

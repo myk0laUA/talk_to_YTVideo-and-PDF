@@ -30,8 +30,8 @@ const realFetch = globalThis.fetch;
 before(() => { globalThis.fetch = async () => { forbiddenNetwork++; throw new Error("Network forbidden in boundary units"); }; });
 after(async () => {
   globalThis.fetch = realFetch; assert.equal(forbiddenNetwork, 0);
-  await mkdir("artifacts/local/11c", { recursive: true });
-  await writeFile("artifacts/local/11c/handler-boundaries.json", JSON.stringify({ finishedUtc: new Date().toISOString(),
+  await mkdir(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/11c`, { recursive: true });
+  await writeFile(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/11c/handler-boundaries.json`, JSON.stringify({ finishedUtc: new Date().toISOString(),
     context: "actual handlers/repository over synthetic Prisma, injected mint/parser/captions; NOT real SQL/provider", forbiddenNetwork, cases, sideEffects }, null, 2) + "\n");
 });
 function harness(mint?: Mint, waitForProofRead?: () => Promise<void>) {

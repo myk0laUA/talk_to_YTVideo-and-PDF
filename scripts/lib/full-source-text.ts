@@ -7,7 +7,7 @@ import { createVisitor } from "../../src/server/proof/visitor.ts";
 import { TextLifecycle } from "../../src/shared/text-lifecycle.ts";
 import type { PrimingClock, PrimingTransport } from "../../src/shared/priming-controller.ts";
 import type { ProviderPrimingInput } from "../../src/shared/priming-admission.ts";
-import { PROVIDER_TEXT_POLICY as policy } from "../../src/shared/priming-provider-policy.ts";
+import { DIAGNOSTIC_MINI_TEXT_POLICY as policy } from "../../src/shared/priming-provider-policy.ts";
 import { pdfFixture, captionFixture } from "../../tests/context/fixtures.ts";
 import { SyntheticSourceDatabase } from "../../tests/sources/database.ts";
 import { sanitizeUsage, type ProbeUsage } from "./realtime-probe.ts";
@@ -150,11 +150,11 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
             const s = e.session, audio = record(s.audio) && record(s.audio.input) ? s.audio.input : undefined;
             const wanted = (report.acknowledgments.effectiveUpdates === 0 ? prepared.manifest.configure : prepared.manifest.finalize).session;
             const exact = s.model === policy.model && s.type === "realtime" && s.instructions === wanted.instructions
-              && s.max_output_tokens === 512 && s.truncation === "disabled" && JSON.stringify(s.tools) === "[]"
+              && s.max_output_tokens === policy.maxOutputTokens && s.truncation === "disabled" && JSON.stringify(s.tools) === "[]"
               && s.tool_choice === "none" && JSON.stringify(s.output_modalities) === '["text"]'
               && record(s.reasoning) && s.reasoning.effort === "minimal" && audio?.transcription === null && audio?.turn_detection === null;
             report.effectivePolicy.push({ exact, checks: { model: s.model === policy.model, instructions: s.instructions === wanted.instructions,
-              outputCap: s.max_output_tokens === 512, truncation: s.truncation === "disabled", tools: JSON.stringify(s.tools) === "[]",
+              outputCap: s.max_output_tokens === policy.maxOutputTokens, truncation: s.truncation === "disabled", tools: JSON.stringify(s.tools) === "[]",
               toolChoice: s.tool_choice === "none", textOnly: JSON.stringify(s.output_modalities) === '["text"]',
               reasoning: record(s.reasoning) && s.reasoning.effort === "minimal", transcriptionOff: audio?.transcription === null, vadOff: audio?.turn_detection === null },
               fields: Object.keys(s).filter(k => /^[a-z_]{1,40}$/.test(k)).sort(),
@@ -172,7 +172,7 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
             const usage = sanitizeUsage(record(e.response) ? e.response.usage : undefined); report.usage.push(usage);
             if (usage) {
               report.estimatedTextCostUsd += usageCost(usage);
-              ensure(usage.output_tokens <= 512 && !(usage.input_token_details?.audio_tokens || usage.input_token_details?.image_tokens || usage.output_token_details?.audio_tokens), "usage_contract");
+              ensure(usage.output_tokens <= policy.maxOutputTokens && !(usage.input_token_details?.audio_tokens || usage.input_token_details?.image_tokens || usage.output_token_details?.audio_tokens), "usage_contract");
             } else report.usageComplete = false;
           }
         };
@@ -188,7 +188,7 @@ export async function runFullSource(kind: "PDF" | "YOUTUBE", variant: "A" | "B",
           send: text => {
             const e = JSON.parse(text);
             if (e.type === "response.create") {
-              ensure(++report.counts.responseRequests <= 2 && e.response.max_output_tokens === 512
+              ensure(++report.counts.responseRequests <= 2 && e.response.max_output_tokens === policy.maxOutputTokens
                 && e.response.reasoning.effort === "minimal" && JSON.stringify(e.response.tools) === "[]"
                 && e.response.tool_choice === "none" && JSON.stringify(e.response.output_modalities) === '["text"]', "outbound_contract");
             } else if (e.type === "conversation.item.create" && !sourceIds.has(e.item.id)) {

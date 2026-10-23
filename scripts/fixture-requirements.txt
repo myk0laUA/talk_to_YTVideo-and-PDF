@@ -1,0 +1,4 @@
+# Used by generate-pdf-fixtures.py; independent strict-PDF oracle.
+reportlab==4.4.9
+pypdf==6.10.0
+Pillow==11.1.0

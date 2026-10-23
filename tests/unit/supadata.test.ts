@@ -15,10 +15,10 @@ const config = { origin: "https://proof.invalid", secure: true, cookieSecret: "c
 const env = { APP_ORIGIN: config.origin, VISITOR_COOKIE_SECRET: config.cookieSecret, CAPTION_PROOF_ENABLED: "true",
   CAPTION_PROOF_PROVIDER: "supadata", SUPADATA_API_KEY: key };
 const input = { videoId: id, language: "en", signal: new AbortController().signal };
-const transcript = { lang: "fr", content: [
-  { text: " FIRST marker ", offset: 1250.5, duration: 2500.125, lang: "fr" },
-  { text: "MIDDLE marker", offset: 25000, duration: 0, lang: "fr" },
-  { text: "LAST marker", offset: 50125.75, duration: 3750.5, lang: "fr" },
+const transcript = { lang: "en-GB", content: [
+  { text: " FIRST marker ", offset: 1250.5, duration: 2500.125, lang: "en-GB" },
+  { text: "MIDDLE marker", offset: 25000, duration: 0, lang: "en-GB" },
+  { text: "LAST marker", offset: 50125.75, duration: 3750.5, lang: "en-GB" },
 ] };
 const request = (body: unknown = { video: id, language: "en" }, headers: Record<string, string> = {}, signal?: AbortSignal) =>
   new Request(config.origin + "/api/proof-captions", { method: "POST", headers: {
@@ -67,7 +67,7 @@ test("managed synchronous raw HTTP preserves all text, fractional milliseconds, 
   const result = await provider(input);
   assert.equal(result.ok, true); if (!result.ok) return;
   assert.deepEqual(result.transcript, { videoId: id, canonicalUrl: `https://www.youtube.com/watch?v=${id}`,
-    language: "fr", provider: "supadata", fullText: " FIRST marker \nMIDDLE marker\nLAST marker", segments: [
+    language: "en-GB", provider: "supadata", fullText: " FIRST marker \nMIDDLE marker\nLAST marker", segments: [
       { text: " FIRST marker ", startSeconds: 1.2505, durationSeconds: 2.500125 },
       { text: "MIDDLE marker", startSeconds: 25, durationSeconds: 0 },
       { text: "LAST marker", startSeconds: 50.12575, durationSeconds: 3.7505 },

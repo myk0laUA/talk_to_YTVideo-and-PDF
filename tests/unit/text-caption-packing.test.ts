@@ -83,9 +83,10 @@ for (const bad of ["identity", "content", "previous"] as const) test(`03D packed
   controller.stop(); assert.equal(closes, 1);
 });
 
-test("03D voice manifest remains byte identical to the accepted format", () => {
+test("13E owned voice uses the exact shared packed caption format and English instructions", () => {
   const v = source(["First 😀", "Second\nline", ""]).B;
   const m = encodeManifest(v, "text_1", "voice", undefined, "voice");
-  assert.equal(createHash("sha256").update(m.representation).digest("hex"), "15a4798c675354886d14fe077a4a660c53334b3a208554cab5d0a1f6210c55f6");
+  assert.deepEqual(decodeCaptions(m), v.source.sections);
+  assert.equal(createHash("sha256").update(m.representation).digest("hex"), "6914ee3ec6b4170009ecb1ba6accba927b3785a867c1097c2817240dc6021337");
 });
 

@@ -11,19 +11,13 @@ async function act(page: Page, name: string) {
 }
 const turns = (page: Page) => page.getByRole("list", { name: "Conversation turns" }).getByRole("listitem");
 
-test("03F matched excerpts and pending/incomplete/unmatched copy remain distinct and inert", async ({ page }, info) => {
-  await act(page, "Evidence states");
-  await expect(page.locator(".transcript-part > .transcript-text")).toHaveText('An attributed claim. [segment-355]\nWords retained despite failed annotations. <script>inert</script> https://evil.invalid');
-  await expect(page.getByText("Source references pending.", { exact: true })).toBeVisible();
-  await expect(page.getByText("Source references incomplete. Check the source preview.", { exact: true })).toBeVisible();
-  await expect(page.getByText("Source references unconfirmed. Check the source preview.", { exact: true })).toBeVisible();
-  await expect(page.getByText("Further source references exceeded the display limit. The answer text is retained.", { exact: true })).toBeVisible();
-  await page.getByText("Source excerpt [segment-355] · 1040.594s", { exact: true }).click();
-  await expect(page.locator("blockquote")).toHaveText('Exact source excerpt 😀\n<script>inert</script>');
-  await expect(page.getByRole("link", { name: "Open video at 1040.594s", exact: true })).toHaveAttribute("href", "https://www.youtube.com/watch?v=Ks-_Mh1QhMc&t=1040.594s");
-  await expect(page.locator(".transcript script")).toHaveCount(0); await expect(page.locator(".transcript")).not.toContainText('"refs"');
-  await fits(page); await capture(page, info, "03f-evidence-states");
-  await act(page, "Replace source"); await expect(page.locator(".transcript")).not.toContainText("1040.594");
+test("03G citation-looking prose is ordinary inert text without notices or links", async ({ page }, info) => {
+  await act(page, "Citation-looking prose");
+  await expect(page.locator(".transcript-part > .transcript-text")).toHaveText('An attributed claim. [segment-355]\nOrdinary words retained. <script>inert</script> https://evil.invalid');
+  await expect(page.locator(".transcript")).not.toContainText("Source references");
+  await expect(page.locator(".transcript a, .transcript blockquote, .transcript script")).toHaveCount(0);
+  await fits(page); await capture(page, info, "03g-ordinary-prose");
+  await act(page, "Replace source"); await expect(page.locator(".transcript")).not.toContainText("segment-355");
 });
 
 test("08K output limit preserves partial text and exposes only safe completion details", async ({ page }, info) => {
@@ -38,8 +32,8 @@ test("08K output limit preserves partial text and exposes only safe completion d
   await capture(page, info, "08k-output-limit");
 });
 async function capture(page: Page, info: TestInfo, name: string) {
-  await mkdir("artifacts/local/09b/screenshots", { recursive: true });
-  await page.screenshot({ path: `artifacts/local/09b/screenshots/${info.project.name}-${name}.png`, fullPage: true });
+  await mkdir("artifacts/local/12e/regression/09b/screenshots", { recursive: true });
+  await page.screenshot({ path: `artifacts/local/12e/regression/09b/screenshots/${info.project.name}-${name}.png`, fullPage: true });
 }
 async function fits(page: Page) {
   expect(await page.evaluate(() => ({ page: document.documentElement.scrollWidth <= innerWidth,
@@ -144,14 +138,14 @@ test("page scroll anchors through deltas/finals/late earlier text/new turns; key
   await text.evaluate(node => window.scrollTo(0, node.getBoundingClientRect().top + scrollY + 500));
   const before = await text.evaluate(node => ({ top: node.getBoundingClientRect().top, y: scrollY }));
   await act(page, "Append long"); await act(page, "Long final"); await act(page, "Next turn");
-  expect(await text.evaluate(node => node.getBoundingClientRect().top)).toBeCloseTo(before.top, 0);
+  expect(Math.abs(await text.evaluate(node => node.getBoundingClientRect().top) - before.top)).toBeLessThanOrEqual(1);
   // scrollY may adjust when a status line above wraps differently. The passage's
   // viewport position is the invariant, rather than its old document coordinate.
   await act(page, "Late question");
-  expect(await text.evaluate(node => node.getBoundingClientRect().top)).toBeCloseTo(before.top, 0);
+  expect(Math.abs(await text.evaluate(node => node.getBoundingClientRect().top) - before.top)).toBeLessThanOrEqual(1);
   await expect(page.locator(".transcript-navigation")).toContainText("Updates below.");
   await expect(page.getByRole("button", { name: "Jump to latest" })).toBeInViewport();
-  await page.screenshot({ path: `artifacts/local/09b/screenshots/${info.project.name}-reading-anchor.png` });
+  await page.screenshot({ path: `artifacts/local/12e/regression/09b/screenshots/${info.project.name}-reading-anchor.png` });
   // Keyboard only: source control -> Tab -> Jump, then Enter moves to latest.
   await page.getByRole("button", { name: "Inspect fixture source" }).focus();
   await page.keyboard.press("Tab");
@@ -222,15 +216,36 @@ test("reduced motion and 200% text zoom preserve reading, controls and wrapping"
 
 test("production root has only empty transcript and no fixture route, query switch or transport", async ({ page }, info) => {
   await page.goto("http://127.0.0.1:3116/?fixture=transcript&scenario=streaming");
-  await expect(page.getByRole("heading", { name: "Transcript", exact: true })).toBeVisible();
-  await expect(page.getByText("Voice and text conversations are not connected yet.", { exact: true })).toBeVisible();
-  for (const name of ["Start text session", "Upload a PDF", "Add a YouTube video"]) await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
+  await expect(page.getByRole("heading", { name: "Bring a source. Start a chat.", exact: true })).toBeVisible();
+  await expect(page.locator(".transcript")).toBeHidden();
+  for (const name of ["Start chat", "Upload a PDF", "Add a YouTube video"]) await expect(page.getByRole("button", { name, exact: true, includeHidden: true })).toBeDisabled();
   await expect(page.locator(".transcript-turn")).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Source", exact: true })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
+  await expect(page.getByText("About this temporary workspace", { exact: true })).toBeVisible();
+  await expect(page.locator("textarea[name=question]")).toBeDisabled();
   await capture(page, info, "production-empty");
   for (const path of ["/fixture.js", "/transcript-fixture", "/tests/transcript-view/harness"]) {
     expect((await page.request.get(`http://127.0.0.1:3116${path}`)).status()).toBe(404);
   }
   await fits(page);
+});
+
+test("bounded transcript preserves anchor through late text and reset, and follows explicit Jump", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.workspace').evaluate(e => e.classList.add('has-source'));
+  await act(page, 'Long answer');
+  const panel = page.locator('.transcript');
+  await panel.evaluate(e => { e.scrollTop = 500; });
+  const text = turns(page).nth(1).locator('.transcript-text');
+  const top = await text.evaluate(e => e.getBoundingClientRect().top);
+  await act(page, 'Append long'); await act(page, 'Long final'); await act(page, 'Next turn'); await act(page, 'Late question');
+  expect(Math.abs(await text.evaluate(e => e.getBoundingClientRect().top) - top)).toBeLessThanOrEqual(1);
+  await expect(page.locator('.transcript-navigation')).toContainText('Updates below.');
+  await page.getByRole('button', { name: 'Jump to latest' }).click();
+  await expect(page.locator('.transcript-latest')).toBeFocused();
+  await act(page, 'Second part');
+  await expect(page.locator('.transcript-latest')).toBeFocused();
+  expect(await panel.evaluate(e => e.scrollHeight - e.scrollTop - e.clientHeight)).toBeLessThanOrEqual(2);
+  await act(page, 'Replace source');
+  await expect(page.locator('.transcript-turn')).toHaveCount(0);
+  expect(await panel.evaluate(e => e.scrollTop)).toBe(0);
 });

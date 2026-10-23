@@ -2,6 +2,11 @@ const videoIdPattern = /^[A-Za-z0-9_-]{11}$/;
 export const validLanguage = (value: unknown): value is string => typeof value === "string"
   && value.length <= 35 && /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(value);
 
+export const isEnglish = (value: unknown): value is string => validLanguage(value) && /^en(?:-|$)/i.test(value);
+// Generic English accepts an advertised regional track. Explicit regions remain exact.
+export const matchesCaptionLanguage = (selected: string, requested?: string): boolean => !requested
+  || (requested.toLowerCase() === "en" ? isEnglish(selected) : selected.toLowerCase() === requested.toLowerCase());
+
 // HTTPS only: youtube.com (www/m) watch, shorts, embed, live; youtu.be/<id>.
 // Query/fragment playback context is discarded. Duplicate v parameters are rejected.
 export function normalizeVideo(value: unknown): { videoId: string; canonicalUrl: string } | null {
