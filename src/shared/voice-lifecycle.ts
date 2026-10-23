@@ -3,7 +3,7 @@ import { isProviderInput, validateProviderAdmission, type AdmissionInput, type P
 import { isContextLimit, matchesProviderVoicePolicy } from "./priming-provider-policy.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
 import { TranscriptStore, type TranscriptSnapshot } from "./transcript.ts";
-import { joinedTranscript, voiceHistory, VoiceHistoryRestore, type HistoryEvent } from "./voice-history.ts";
+import { joinedTranscript, voiceHistory, VoiceHistoryRestore, type HistoryEvent } from "./conversation-restore.ts";
 import { VoiceSetupDiagnostics, type VoiceSetupDiagnostic, type VoiceSetupReporter } from "./voice-diagnostics.ts";
 import { VoiceEventDiagnostics } from "./voice-event-diagnostics.ts";
 import { SessionAdmissionError, type AdmissionRejection } from "./session-admission.ts";
@@ -219,10 +219,13 @@ export class VoiceLifecycle {
       if (!this.current(a)) cancel();
     });
   }
-  /** Call only from an explicit user Start action. Active starts are rejected; retry is explicit.
+  /** Start follows an explicit Start or mode selection. Active starts are rejected.
    * Source replacement MUST call reset(); page departure calls stop(); unmount calls dispose().
    */
-  start(sourceId: string): boolean { return this.begin(sourceId, false); }
+  start(sourceId: string, history?: TranscriptSnapshot): boolean {
+    if (history && history.identity?.sourceId !== sourceId) return false;
+    return this.begin(sourceId, false, history);
+  }
   private remember(a: Attempt) { this.continuation = { sourceId: a.identity.sourceId, muted: this.status.muted, speakerMuted: this.status.speakerMuted }; }
   /** Network suspension retains same-source dialogue and user mute choices, but releases all media. */
   suspend(): boolean {
@@ -232,7 +235,7 @@ export class VoiceLifecycle {
     return this.canResume;
   }
   resume(): boolean { return this.canResume && this.begin(this.continuation!.sourceId, true); }
-  private begin(sourceId: string, resuming: boolean): boolean {
+  private begin(sourceId: string, resuming: boolean, history?: TranscriptSnapshot): boolean {
     if (this.disposed || this.disposing || this.cleaning || this.resetting || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;
     const n = ++this.sequence;
     const a: Attempt = { identity: Object.freeze({ sourceId, runId: `voice_${n}`, connectionId: `connection_${n}` }),
@@ -240,7 +243,7 @@ export class VoiceLifecycle {
       trace: new VoiceEventDiagnostics(this.clock.now.bind(this.clock)), resuming };
     this.eventTrace = a.trace; a.trace.mark("session_start");
     this.attempt = a;
-    this.previousTranscript = resuming ? this.transcript : undefined;
+    this.previousTranscript = resuming ? this.transcript : history;
     if (!resuming) this.continuation = undefined;
     this.transcriptStore.reset();
     this.update({ phase: "connecting", identity: a.identity, muted: resuming ? this.continuation!.muted : false,
@@ -273,7 +276,7 @@ export class VoiceLifecycle {
         || input.manifest.items.some(item => JSON.parse(item.item.content[0].text).source.id !== a.identity.sourceId)) {
         this.finish(a, "preparation"); return;
       }
-      if (a.resuming && this.previousTranscript) {
+      if (this.previousTranscript) {
         failure = "history";
         const history = voiceHistory(this.previousTranscript, a.identity.runId, input.manifest.items.at(-1)!.item.id, input.manifest.bytes);
         a.history = history.events;

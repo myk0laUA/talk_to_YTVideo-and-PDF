@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { VoiceSession, type VoiceControllerFactory } from "./voice-session";
 import { TextSession, type TextControllerFactory } from "./text-session";
 import { VoiceRecovery } from "../shared/voice-recovery";
+import { ConversationMemory } from "../shared/conversation-memory";
 
 type Props = {
   source: { id: string; title: string } | null;
@@ -18,6 +19,12 @@ type Props = {
 export function ConversationArea({ source, createVoiceController, createTextController }: Props) {
   const [mode, setMode] = useState<"voice" | "text">("text");
   const [voiceRecovery] = useState(() => new VoiceRecovery());
+  const memory = useMemo(() => new ConversationMemory(source?.id ?? ""), [source?.id]);
+  const switchMode = (next: "voice" | "text") => {
+    if (mode === next) return;
+    memory.requestHandoff();
+    setMode(next);
+  };
   const id = useId();
   const area = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -38,16 +45,16 @@ export function ConversationArea({ source, createVoiceController, createTextCont
     return () => { observer.disconnect(); viewport.removeEventListener("resize", resize); workspace.classList.remove("viewport-constrained"); };
   }, [source?.id]);
   return <div ref={area} className="conversation-area">
-    <p className="mode-policy" id={`${id}-policy`}>Switching modes ends the session and clears chat and draft.</p>
+    <p className="mode-policy" id={`${id}-policy`}>Your chat continues when you switch modes.</p>
     <div className="source-actions conversation-modes" role="group" aria-label="Conversation mode" aria-describedby={`${id}-policy`}>
-      <button type="button" aria-pressed={mode === "voice"} aria-controls={`${id}-panel`} onClick={() => setMode("voice")}>Voice mode</button>
-      <button type="button" aria-pressed={mode === "text"} aria-controls={`${id}-panel`} onClick={() => setMode("text")}>Text mode</button>
+      <button type="button" aria-pressed={mode === "voice"} aria-controls={`${id}-panel`} onClick={() => switchMode("voice")}>Voice mode</button>
+      <button type="button" aria-pressed={mode === "text"} aria-controls={`${id}-panel`} onClick={() => switchMode("text")}>Text mode</button>
     </div>
     <p className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{mode === "voice" ? "Voice mode selected." : "Text mode selected. No microphone or speaker playback is needed."}</p>
     <section id={`${id}-panel`} aria-label={mode === "voice" ? "Voice conversation" : "Text conversation"}>
       {mode === "voice"
-        ? <VoiceSession source={source} createController={createVoiceController} recovery={voiceRecovery} />
-        : <TextSession source={source} createController={createTextController} />}
+        ? <VoiceSession source={source} createController={createVoiceController} recovery={voiceRecovery} memory={memory} />
+        : <TextSession source={source} createController={createTextController} memory={memory} />}
     </section>
   </div>;
 }

@@ -13,6 +13,7 @@ import type { Visitor } from "../proof/visitor.ts";
 import { Admission } from "../proof/admission.ts";
 import { ownedTextStarts, ownedTextCommands, ownedTextStops, ownedTextReplayEntries } from "../session-policy.ts";
 import { onSourceChange } from "../sources/invalidation.ts";
+import { parseHistory, type ConversationHistory } from "../../shared/conversation-history.ts";
 
 export const TEXT_LIMITS = Object.freeze({ lifetimeMs: 600_000, idleMs: 120_000, attachMs: 5_000,
   questions: 20, concurrent: 20, backlogBytes: 2_000_000, snapshotBytes: 1_000_000, checkMs: 10_000 });
@@ -21,7 +22,7 @@ type Entry = { id: string; requestId: string; visitor: Visitor; sourceId: string
   release: () => void; life: TextLifecycle; closed: boolean; closing: boolean; attached: boolean;
   pending: boolean; questionId?: string; questions: Set<string>; expires: number; idle: Timer; absolute: Timer; watch?: Timer; flush?: Timer;
   output?: ReadableStreamDefaultController<Uint8Array>; removeAbort?: () => void; readyToStart: boolean;
-  sourceHash?: string; policy?: ProviderTextPolicy };
+  sourceHash?: string; policy?: ProviderTextPolicy; history?: ConversationHistory };
 const sourceHash = (serialized: string) => createHash("sha256").update(serialized, "utf16le").digest("hex");
 export class RelayError extends Error {
   readonly status: number;
@@ -77,7 +78,8 @@ export class TextRegistry {
     return row;
   }
   private touch(e: Entry) { clearTimeout(e.idle); e.idle = setTimeout(() => this.close(e, "timeout"), this.limits.idleMs); }
-  async start(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal) {
+  async start(visitor: Visitor, sourceId: string, requestId: string, signal: AbortSignal, history?: ConversationHistory) {
+    if (history) { try { history = parseHistory(history, sourceId); } catch { throw new RelayError(400); } }
     const key = `${visitor.owner}:${requestId}`;
     if (this.owners.has(visitor.owner) || this.seen.has(key)) throw new RelayError(409);
     if (this.size >= this.limits.concurrent || this.seen.size >= ownedTextReplayEntries) throw new RelayError(429);
@@ -116,7 +118,7 @@ export class TextRegistry {
     const expires = Math.min(this.now() + this.limits.lifetimeMs, visitor.expiresAt * 1000);
     const e: Entry = { id: randomUUID(), requestId, sourceId, visitor: { owner: visitor.owner, expiresAt: visitor.expiresAt, token: "" },
       abort: new AbortController(), release, life, expires, closed: false, closing: false, attached: false,
-      pending: false, questions: new Set(), readyToStart: false,
+      pending: false, questions: new Set(), readyToStart: false, history,
       idle: setTimeout(() => this.close(e, "timeout"), this.limits.attachMs),
       absolute: setTimeout(() => this.close(e, "timeout"), Math.max(1, expires - this.now())) };
     this.entries.set(e.id, e); this.owners.set(visitor.owner, e);
@@ -169,7 +171,7 @@ export class TextRegistry {
         signal.addEventListener("abort", cancel, { once: true });
         e.removeAbort = () => signal.removeEventListener("abort", cancel);
         if (signal.aborted) { cancel(); return; }
-        this.touch(e); e.life.start(e.sourceId); this.emit(e); this.watch(e);
+        this.touch(e); e.life.start(e.sourceId, e.history); e.history = undefined; this.emit(e); this.watch(e);
       },
       cancel: () => this.close(e, "connection", false),
     }, { highWaterMark: this.limits.backlogBytes, size: chunk => chunk.byteLength });
@@ -216,7 +218,7 @@ export class TextRegistry {
     if (notify) this.emit(e, failure);
     const output = e.output; e.output = undefined;
     try { output?.close(); } catch { /* Already cancelled. */ }
-    e.life.dispose(); e.questions.clear(); e.closed = true; e.closing = false;
+    e.life.dispose(); e.history = undefined; e.questions.clear(); e.closed = true; e.closing = false;
   }
   dispose() { for (const e of this.entries.values()) this.close(e); this.unsubscribe(); }
 }

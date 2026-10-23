@@ -2,7 +2,7 @@ import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 type Mode = "voice" | "text";
 const choose = (p: Page, m: Mode) => p.getByRole("button", { name: m === "voice" ? "Voice mode" : "Text mode", exact: true });
-const start = (p: Page, m: Mode) => p.getByRole("button", { name: m === "voice" ? /^(Start|Retry) voice$/ : "Start chat", exact: true });
+const start = (p: Page, m: Mode) => p.getByRole("button", { name: m === "voice" ? /^(Start|Retry) voice$/ : /^(Start chat|Start text session)$/, exact: true });
 const turns = (p: Page) => p.locator(".transcript-turn");
 const question = (p: Page) => p.getByRole("textbox", { name: "Your question", includeHidden: true });
 const selected = (p: Page, m: Mode) => p.locator(`.${m}-session-status`);
@@ -11,7 +11,7 @@ async function act(p: Page, name: string) {
   await p.getByRole("button", { name, exact: true, includeHidden: true }).evaluate((b: HTMLButtonElement) => b.click());
   await expect(p.getByLabel("Fixture revision")).not.toHaveText(revision!);
 }
-type Transport = { closes: number; subscriptions: number; unsubscribes: number; listening: boolean; questions: number; responses: number; exact: string[]; commands: { type: string; event_id: string; item_id?: string }[]; trace: string[] };
+type Transport = { closes: number; subscriptions: number; unsubscribes: number; listening: boolean; questions: number; responses: number; exact: string[]; commands: { type: string; event_id: string; item_id?: string; item?: { role: string; content: {text: string}[] } }[]; trace: string[] };
 type Base = { disposed: number; turns: number; prepare: number; connects: number; timers: number };
 type Audit = {
   ownership: { maxOwners: number; maxTransferred: number; maxUntransferred: number; untransferred: number; owners: number; transferred: number; chronology: { event: string; owner?: number; liveOwners?: number; liveTransferred?: number; mode?: Mode; source?: string }[] };
@@ -27,10 +27,10 @@ async function mode(p: Page, m: Mode, scenario = "success") {
   await choose(p, opposite(m)).click(); await choose(p, m).click();
 }
 async function prime(p: Page, m: Mode) {
-  for (const ack of ["initial", "source", "final"]) await act(p, `${m === "voice" ? "Voice" : "Text"} ACK ${ack}`);
+  for (const ack of ["initial", "source", "final", "history"]) await act(p, `${m === "voice" ? "Voice" : "Text"} ACK ${ack}`);
 }
 async function begin(p: Page, m: Mode) {
-  await start(p, m).click(); await prime(p, m);
+  if (await start(p, m).isVisible()) await start(p, m).click(); await prime(p, m);
   await expect(selected(p, m)).toContainText(m === "voice" ? "Voice session ready" : "Ready for your question");
 }
 const exact = "FIXTURE10C question 日本語\nWhat does this source say?";
@@ -124,7 +124,7 @@ test.afterEach(async ({ page }, info) => {
 });
 
 test("explicit mode, inert repeat selection, one owner, keyboard focus and no eager resources", async ({ page }) => {
-  await expect(page.getByRole("group", { name: "Conversation mode" })).toHaveAccessibleDescription(/ends the session and clears/);
+  await expect(page.getByRole("group", { name: "Conversation mode" })).toHaveAccessibleDescription(/chat continues when you switch/);
   await expect(choose(page, "text")).toHaveAttribute("aria-pressed", "true");
   const a = await audit(page); expect(a.voice).toHaveLength(0); expect(a.text.every(r => r.prepare === 0)).toBe(true);
   await choose(page, "text").dblclick(); expect((await audit(page)).text.length).toBe(a.text.length);
@@ -135,11 +135,11 @@ test("explicit mode, inert repeat selection, one owner, keyboard focus and no ea
   await choose(page, "text").focus(); await page.keyboard.press("Space"); await expect(choose(page, "text")).toBeFocused(); await expect(question(page)).toHaveValue("");
 });
 
-test("repeat text selection preserves an unsent draft; switching and returning clears it before Start", async ({ page }) => {
+test("repeat text selection preserves an unsent draft; switching and returning retains it before Start", async ({ page }) => {
   await begin(page, "text"); await question(page).fill("Unsent draft 雪");
   const before = (await audit(page)).text.length;
   await choose(page, "text").dblclick(); await expect(question(page)).toHaveValue("Unsent draft 雪"); expect((await audit(page)).text.length).toBe(before);
-  await choose(page, "voice").click(); await choose(page, "text").click(); await expect(question(page)).toHaveValue("");
+  await choose(page, "voice").click(); await choose(page, "text").click(); await expect(question(page)).toHaveValue("Unsent draft 雪");
   expect((await audit(page)).text.at(-1)!.prepare).toBe(0); await expect(start(page, "text")).toBeEnabled();
 });
 
@@ -155,29 +155,51 @@ for (const failure of ["denied", "unavailable", "ended"]) test(`${failure} micro
   await expect(selected(page, "text")).toContainText("Ready for your question"); await expect(turns(page)).toHaveCount(2); await expect(page.locator(".transcript-text").last()).toContainText("Complete synthetic answer");
   if (failure === "denied") await capture(page, info, "text-complete");
   await page.getByLabel("Voice scenario").selectOption("success"); await choose(page, "voice").click();
-  await expect(turns(page)).toHaveCount(0); expect((await audit(page)).voice.at(-1)!.prepare).toBe(0);
-  await start(page, "voice").click(); expect((await audit(page)).voice.at(-1)!.media).toBe(0);
+  await expect(turns(page)).toHaveCount(2); expect((await audit(page)).voice.at(-1)!.prepare).toBe(1); expect((await audit(page)).voice.at(-1)!.media).toBe(0);
   await act(page, "Voice ACK initial"); await act(page, "Voice ACK source"); expect((await audit(page)).voice.at(-1)!.media).toBe(0);
-  await act(page, "Voice ACK final"); await expect(selected(page, "voice")).toContainText("Voice session ready");
+  await act(page, "Voice ACK final"); expect((await audit(page)).voice.at(-1)!.media).toBe(0); await act(page, "Voice ACK history"); await expect(selected(page, "voice")).toContainText("Voice session ready");
   if (failure === "denied") await capture(page, info, "voice-return");
 });
 
-for (const m of ["voice", "text"] as const) for (const state of ["partial", "stopped", "error"]) test(`${m} ${state} switching clears old history and draft; returning starts empty`, async ({ page }) => {
+for (const m of ["voice", "text"] as const) for (const state of ["partial", "stopped", "error"]) test(`${m} ${state} switching preserves received history without replaying an unfinished answer`, async ({ page }) => {
   await mode(page, m); await begin(page, m);
   if (m === "text") { await ask(page); await textAnswer(page); } else await act(page, "Voice answer");
   await expect(turns(page)).toHaveCount(2);
   if (state === "stopped") { await page.getByRole("button", { name: m === "voice" ? "End voice" : "Stop text session", exact: true }).click(); await expect(turns(page)).toHaveCount(2); }
   if (state === "error") await act(page, m === "voice" ? "End microphone" : "Fail text");
-  await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(0);
-  await choose(page, m).click(); await expect(turns(page)).toHaveCount(0); await expect(start(page, m)).toBeEnabled();
+  await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(2);
+  await choose(page, m).click(); await expect(turns(page)).toHaveCount(2); await prime(page, m);
   if (m === "text") await expect(question(page)).toHaveValue("");
-  expect((await audit(page))[m].at(-1)!.prepare).toBe(0);
+  expect((await audit(page))[m].at(-1)!.prepare).toBe(1);
 });
 
 const stages: Record<Mode, string[]> = {
   voice: ["preparation", "connection", "priming", "microphone", "playback", "cancel", "clear", "answer"],
   text: ["preparation", "connection", "priming", "admission", "write", "receipt", "response", "answer"],
 };
+
+test("completed text to voice to text roundtrip restores roles and context exactly once without generating a replay", async ({ page }) => {
+  await begin(page, "text"); await ask(page); await textAnswer(page, true);
+  await choose(page, "voice").click(); await expect(turns(page)).toHaveCount(2);
+  await prime(page, "voice");
+  const voice = (await audit(page)).voice.at(-1)!.resources[0].transport.commands;
+  const voiceHistory = voice.filter(c => c.event_id.includes("_history_")).map(c => c.item!);
+  expect(voiceHistory.map(i => i.role)).toEqual(["user", "assistant", "system"]);
+  expect(voiceHistory[0].content[0].text).toBe(exact);
+  expect(voiceHistory[1].content[0].text).toContain("Complete synthetic answer.");
+  expect(voice.some(c => c.type === "response.create")).toBe(false);
+  await act(page, "Voice answer"); await act(page, "Voice finish");
+  await expect(turns(page)).toHaveCount(4);
+  await choose(page, "text").click(); await expect(turns(page)).toHaveCount(4);
+  await prime(page, "text");
+  const text = (await audit(page)).text.at(-1)!.transports[0];
+  const history = text.commands.filter(c => c.event_id.includes("_history_")).map(c => c.item!);
+  expect(history.map(i => i.role)).toEqual(["user", "assistant", "user", "assistant", "system"]);
+  expect(history[3].content[0].text).toBe("FIXTURE10C completed spoken answer.");
+  expect(text.questions).toBe(0); expect(text.responses).toBe(0);
+  await ask(page); await textAnswer(page, true); await expect(turns(page)).toHaveCount(6);
+  await expect(page.locator(".transcript-text")).toContainText([exact, "Complete synthetic answer", "synthetic spoken question", "completed spoken answer", exact, "Complete synthetic answer"]);
+});
 async function pending(p: Page, m: Mode, stage: string) {
   const held = ["preparation", "connection", "microphone", "playback", "cancel", "clear", "admission", "write"].includes(stage);
   await mode(p, m, held ? `hold-${stage}` : "success"); await start(p, m).click();
@@ -207,7 +229,8 @@ for (const m of ["voice", "text"] as const) for (const stage of stages[m]) test(
   if (m === "voice" && stage === "playback") await expect(page.locator(".voice-device-status")).toContainText("Waiting for playback");
   if (m === "voice" && ["cancel", "clear"].includes(stage)) await expect(page.locator(".voice-media-announcement")).toContainText("Interrupting…");
   if (m === "voice" && stage === "answer") await expect(page.locator(".voice-state")).toHaveText("Answering…");
-  await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(0);
+  const retained = await turns(page).count();
+  await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(retained);
   await begin(page, opposite(m));
   if (m === "voice") { await ask(page); await textAnswer(page, true); await question(page).fill("New draft remains"); } else await act(page, "Voice answer");
   if (stage === "connection") expect((await audit(page)).ownership).toMatchObject({ untransferred: 1, transferred: 1 });

@@ -122,7 +122,9 @@ Voice has independent microphone and speaker mute, interruption and End controls
 
 After a connection loss, voice reconnects automatically and restores completed dialogue before enabling the microphone. Mute choices survive. After three consecutive connection failures, recovery pauses and offers **Retry connection**. **End voice** cancels recovery. Partial or untranscribed speech may need repeating; the app does not replay questions or resume interrupted audio automatically.
 
-Text works without microphone permission. It requires a fresh session after a disconnection. Ending a session preserves its visible text; a fresh start, mode switch, source replacement or page reload clears the conversation. There is one active source and conversation per workspace.
+Switch between **Voice mode** and **Text mode** to continue the same conversation. Messages and unsent text drafts stay in the workspace. The new connection restores completed turns before accepting another question; unfinished answers remain visible and are not replayed. Text mode works without microphone permission.
+
+Ending a session preserves its visible text. An explicit fresh start, source replacement or page reload clears the conversation. A text connection failure still requires an explicit restart. There is one active source and connection per workspace.
 
 ## Tech stack
 
@@ -173,6 +175,8 @@ For voice, the backend authorizes a single-use preparation ticket and issues a s
 
 For text, the server holds the provider WebSocket and key. The browser submits questions over HTTP and consumes streamed NDJSON. Shared lifecycle state machines reject stale events and release pending work on cancellation, expiry, source changes and teardown.
 
+A source-scoped browser memory owns the shared transcript and draft. Mode changes dispose the outgoing connection before starting the next one. Both transports restore bounded user/assistant dialogue and require exact provider acknowledgments; the client cannot supply system messages through the text API. Incomplete turns are retained for display but excluded from restored context. Each switch resends the source and eligible history, adding setup latency and provider input cost.
+
 The database stores sources, not permanent chat history. Visible conversation history is temporary browser state; text relay sessions, admission counters and replay guards live in the Node process.
 
 ### Repository layout
@@ -202,10 +206,12 @@ These APIs serve the same-origin browser application; they are not an API-key-au
 | `POST` | `/api/voice-preparations` | `{ sourceId, requestId }`; returns `201` with `preparationId`, timing and source/policy input. This is not microphone readiness. |
 | `POST` | `/api/voice-preparations/credential` | `{ sourceId, requestId, preparationId }`; consumes the preparation and returns an ephemeral `clientSecret` and expiry. |
 | `POST` | `/api/voice-preparations/cancel` | `{ sourceId, requestId }`; cancels pending preparation, returning `{ cancelled: true }`. |
-| `POST` | `/api/text-sessions` | `{ sourceId, requestId }`; returns `201` with `{ sessionId }`. |
+| `POST` | `/api/text-sessions` | `{ sourceId, requestId, history? }`; returns `201` with `{ sessionId }`. Optional history is same-source user/assistant dialogue. |
 | `GET` | `/api/text-sessions/:id/stream` | Streams session events as `application/x-ndjson`; this is not SSE. |
 | `POST` | `/api/text-sessions/question` | `{ sessionId, questionId, question }`; returns `202` after acceptance. The answer arrives on the stream. |
 | `POST` | `/api/text-sessions/stop` | `{ requestId }` using the start request's ID; returns `{ ok: true }`. |
+
+The optional text-start `history` has shape `{ sourceId, turns: [{ role: "user" | "assistant", text }] }`, limited to 128 turns and 128,000 characters. The start request body is capped at 800,000 bytes. History is untrusted conversation context; the server independently authorizes and loads the original source.
 
 A first source request can return `401` while establishing the visitor cookie; the browser retries that handshake once. Foreign, missing or expired sources are not disclosed. Other failures include invalid input (`400`), forbidden origin (`403`), replacement conflict (`409`), excessive size (`413`), unsupported content (`415`/`422`), admission limits (`429`), and unavailable upstream/storage (`502`/`503`/`504`). Timed ingestion/voice admission rejections include `Retry-After`; busy and provider-quota failures may need different recovery.
 

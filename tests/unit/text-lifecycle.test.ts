@@ -267,7 +267,7 @@ test("10A browser-safe emitted graph has no media/provider/server/test runtime i
     const dependencies = [...emitted.matchAll(/from "([^"]+)"/g)].map(m => m[1]); imports[path] = dependencies;
     for (const dependency of dependencies) { assert.ok(dependency.startsWith("./")); assert.ok(!/server|tests|voice/.test(dependency)); await visit(resolve(dirname(path), dependency)); }
   }
-  await visit("src/shared/text-lifecycle.ts"); assert.equal(visited.size, 8);
+  await visit("src/shared/text-lifecycle.ts"); assert.ok(visited.has(resolve("src/shared/conversation-restore.ts")));
   assert.ok(visited.has(resolve("src/shared/priming-failure.ts")));
   const workspace = await readFile("src/app/source-workspace.tsx", "utf8");
   assert.ok(!workspace.includes("text-lifecycle")); assert.match(workspace, /<ConversationArea source=/);

@@ -5,12 +5,13 @@ import { TEXT_QUESTION_LIMIT } from "../../shared/text-lifecycle.ts";
 import { textUuid } from "../../shared/text-relay.ts";
 import { RelayError, type TextRegistry } from "./registry.ts";
 import { guardedAwait } from "../context/await.ts";
+import { HISTORY_BODY_BYTES, parseHistory } from "../../shared/conversation-history.ts";
 
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 const reply = (status: number, body: unknown) => Response.json(body, { status, headers });
 export const textMethodNotAllowed = () => reply(405, { error: "Method not allowed" });
 // A bounded byte stream and fixed body deadline, including absent/forged Content-Length.
-async function body(request: Request): Promise<Record<string, unknown>> {
+async function body(request: Request, maxBytes = 8192): Promise<Record<string, unknown>> {
   if (request.headers.get("content-type")?.split(";", 1)[0].trim() !== "application/json") throw new RelayError(400);
   const reader = request.body?.getReader();
   if (!reader) throw new RelayError(400);
@@ -25,7 +26,7 @@ async function body(request: Request): Promise<Record<string, unknown>> {
       const { value, done } = await guardedAwait(() => reader.read(), abort.signal, guard);
       if (done) break;
       length += value.byteLength;
-      if (length > 8192) throw new RelayError(400);
+      if (length > maxBytes) throw new RelayError(400);
       chunks.push(value);
     }
     const result: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
@@ -58,11 +59,13 @@ export function createTextHandlers(deps: { config: () => TextConfig | null; regi
         const stream = await deps.registry.stream(visitor, id, request.signal);
         return new Response(stream, { headers: { ...headers, "Content-Type": "application/x-ndjson; charset=utf-8", "X-Accel-Buffering": "no" } });
       }
-      const input = await body(request);
+      const input = await body(request, kind === "start" ? HISTORY_BODY_BYTES : 8192);
       if (request.signal.aborted) throw new RelayError(400);
       if (kind === "start") {
-        if (!keys(input, "requestId,sourceId") || !textUuid(input.sourceId) || !textUuid(input.requestId)) throw new RelayError(400);
-        const sessionId = await deps.registry.start(visitor, input.sourceId, input.requestId, request.signal);
+        if (!(keys(input, "requestId,sourceId") || keys(input, "history,requestId,sourceId")) || !textUuid(input.sourceId) || !textUuid(input.requestId)) throw new RelayError(400);
+        let history;
+        if ("history" in input) { try { history = parseHistory(input.history, input.sourceId); } catch { throw new RelayError(400); } }
+        const sessionId = await deps.registry.start(visitor, input.sourceId, input.requestId, request.signal, history);
         return reply(201, { sessionId });
       }
       if (kind === "stop") {

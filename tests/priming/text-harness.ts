@@ -28,7 +28,7 @@ export class TextTransport implements PrimingTransport {
     assert.ok(this.open);
     const e: Command = JSON.parse(raw); assert.ok(["session.update", "conversation.item.create", "response.create"].includes(e.type));
     if (e.session) { assert.deepEqual(e.session.output_modalities, ["text"]); assert.equal(e.session.audio.input.turn_detection, null); }
-    if (e.item) { assert.equal(e.item.role, "user"); assert.equal(e.item.content[0].type, "input_text"); }
+    if (e.item) { assert.ok(["user", "assistant", "system"].includes(e.item.role)); assert.equal(e.item.content[0].type, String(e.item.role) === "assistant" ? "output_text" : "input_text"); }
     if (e.response) { assert.deepEqual(e.response.output_modalities, ["text"]); assert.ok(e.response.max_output_tokens > 0); }
     this.commands.push(e); this.trace.push(`send:${e.type}:${e.item?.id ?? e.event_id}`);
     return this.sendAction?.(e);

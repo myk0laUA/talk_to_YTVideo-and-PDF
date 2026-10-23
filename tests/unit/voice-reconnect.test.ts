@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { voiceHarness } from "../priming/voice-harness.ts";
 import { flush } from "../priming/harness.ts";
-import { voiceHistory, VoiceHistoryRestore, type HistoryEvent } from "../../src/shared/voice-history.ts";
+import { voiceHistory, VoiceHistoryRestore, type HistoryEvent } from "../../src/shared/conversation-restore.ts";
 import { bytes, MAX_EVENT_BYTES } from "../../src/shared/priming-manifest.ts";
 
 async function harness() {

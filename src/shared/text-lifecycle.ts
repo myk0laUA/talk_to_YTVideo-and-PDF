@@ -4,6 +4,8 @@ import { isContextLimit, matchesProviderTextPolicy, type ProviderTextPolicy } fr
 import { bytes, freeze } from "./priming-manifest.ts";
 import { TranscriptStore, type TranscriptIdentity } from "./transcript.ts";
 import { SourceSizeError } from "./priming-failure.ts";
+import { parseHistory, type ConversationHistory } from "./conversation-history.ts";
+import { historyEvents, VoiceHistoryRestore, type HistoryEvent } from "./conversation-restore.ts";
 
 export const TEXT_QUESTION_LIMIT = 1000;
 export type TextIdentity = TranscriptIdentity;
@@ -81,10 +83,10 @@ type Pending = { proposal: TurnProposal; timer?: unknown; itemSent: boolean; ite
   responseSent: boolean; responseWritten: boolean; responseId?: string; done: boolean; outputLimit?: number; items: Set<string> };
 type Attempt = { identity: TextIdentity; abort: AbortController; priming?: PrimingController; bridge?: TextBridge;
   connection?: TextConnection; policy?: TurnProposal["policy"]; previous?: string; sessionId?: string; conversationId?: string;
-  pending?: Pending; turns: number; revision: number };
+  pending?: Pending; turns: number; revision: number; history?: ConversationHistory; historyEvents?: HistoryEvent[]; restore?: VoiceHistoryRestore };
 
 /** Data-only text lifecycle. No provider implementation, credentials, media, persistence or UI.
- * A Start always clears history. Stop preserves received text; reset/dispose erase it.
+ * Start resets the transport transcript and optionally restores supplied dialogue. Stop preserves received text; reset/dispose erase it.
  */
 export class TextLifecycle {
   private attempt?: Attempt;
@@ -127,6 +129,7 @@ export class TextLifecycle {
     if (!this.current(a)) return;
     this.attempt = undefined; this.cleaning = true;
     this.store.stop(); a.abort.abort();
+    a.restore?.stop(); a.restore = undefined; a.history = undefined; a.historyEvents = undefined;
     if (a.pending?.timer !== undefined) this.clock.clearTimeout(a.pending.timer);
     a.pending = undefined; a.policy = undefined; this.question = ""; this.questionRevision++;
     safe(() => a.priming?.stop()); safe(() => a.bridge?.close());
@@ -148,11 +151,12 @@ export class TextLifecycle {
       if (!this.current(a)) cancel();
     });
   }
-  start(sourceId: string) {
+  start(sourceId: string, history?: ConversationHistory) {
     if (this.disposed || this.cleaning || this.attempt || !id(sourceId) || this.sequence >= 128) return false;
+    if (history) { try { history = parseHistory(history, sourceId); } catch { return false; } }
     const n = ++this.sequence;
     const a: Attempt = { identity: freeze({ sourceId, runId: `text_${n}`, connectionId: `text_connection_${n}` }),
-      abort: new AbortController(), turns: 0, revision: 0 };
+      abort: new AbortController(), turns: 0, revision: 0, history };
     this.attempt = a; this.store.reset(); this.question = ""; this.questionRevision++;
     this.update({ phase: "connecting", identity: a.identity, revision: 0, protocolReady: false, basis: undefined, failure: undefined });
     if (this.current(a)) void this.setup(a);
@@ -176,18 +180,23 @@ export class TextLifecycle {
         a.policy = freeze({ model, tokenizer, policyVersion, capacity, historyAllowance, outputReserve, framingAllowance });
       }
       a.previous = input.manifest.items.at(-1)?.item.id;
-      this.store.start(a.identity, input.manifest.items.map(e => e.item.id));
+      if (a.history) a.historyEvents = historyEvents(a.history, a.identity.runId, a.previous!, input.manifest.bytes);
+      a.history = undefined;
+      this.store.start(a.identity, [...input.manifest.items.map(e => e.item.id), ...(a.historyEvents?.map(e => e.item.id) ?? [])]);
       a.bridge = new TextBridge((event, prime) => {
         if (!this.current(a)) return;
         if (!a.priming?.canSendQuestions) {
           prime();
           // Keep only the session identity from configuration accepted by actual 07B.
           if (this.current(a) && record(event) && event.type === "session.updated" && record(event.session) && id(event.session.id)) a.sessionId = event.session.id;
+        } else if (a.restore) {
+          if (record(event) && event.type === "error") this.finish(a, isContextLimit(event.error) ? "context_limit" : "priming");
+          else a.restore.receive(event);
         } else this.receive(a, event);
       }, () => this.finish(a, "connection"));
       a.priming = this.createPriming(s => {
         if (this.current(a) && s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable" : s.failure === "transport" ? "connection" : s.failure === "context_limit" ? "context_limit" : "priming");
-      }, () => { if (this.current(a)) this.update({ phase: "ready", protocolReady: true }); });
+      }, () => { if (this.current(a)) void this.restoreHistory(a); });
       if (!a.priming.start(a.identity, input, a.bridge) || !this.current(a)) return;
       failure = "connection";
       const connection = await this.wait(a, this.adapters.connect(a.identity, a.abort.signal), this.deadlines.connectionMs, c => c.close());
@@ -196,6 +205,19 @@ export class TextLifecycle {
       this.update({ phase: "priming", basis: a.priming.snapshot.basis });
       if (this.current(a)) a.bridge.bind(connection);
     } catch (error) { if (this.current(a)) this.finish(a, error instanceof SourceSizeError ? "source_too_large" : failure); }
+  }
+  private async restoreHistory(a: Attempt) {
+    if (a.historyEvents?.length) {
+      const events = a.historyEvents; a.historyEvents = undefined;
+      const restore = new VoiceHistoryRestore(events); a.restore = restore;
+      const completed = this.wait(a, restore.done, this.deadlines.primingMs);
+      if (this.current(a)) void restore.send(raw => a.connection!.transport.send(raw));
+      try { await completed; }
+      catch { if (this.current(a)) this.finish(a, "priming"); return; }
+      if (!this.current(a)) return;
+      a.previous = events.at(-1)!.item.id; a.restore = undefined;
+    }
+    if (this.current(a)) this.update({ phase: "ready", protocolReady: true });
   }
   /** Draft changes invalidate awaited admission, including change-away-and-back. Never trim submitted text. */
   setQuestion(text: string): boolean {

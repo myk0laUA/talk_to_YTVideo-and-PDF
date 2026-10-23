@@ -1,5 +1,6 @@
 import { bytes, MAX_EVENT_BYTES, MAX_WIRE_BYTES, sourceItemId } from "./priming-manifest.ts";
-import { TRANSCRIPT_LIMITS, type TranscriptSnapshot } from "./transcript.ts";
+import { type TranscriptSnapshot } from "./transcript.ts";
+import { completedHistory, type ConversationHistory } from "./conversation-history.ts";
 
 type HistoryItem = { id: string; type: "message"; role: "user" | "assistant" | "system";
   content: [{ type: "input_text" | "output_text"; text: string }] };
@@ -8,10 +9,13 @@ const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 
 /** Reconnect history is dialogue, never additional source evidence or a new question submission. */
 export function voiceHistory(snapshot: TranscriptSnapshot, runId: string, previousId: string, sourceBytes: number) {
-  if (snapshot.limit || snapshot.counts.characters > TRANSCRIPT_LIMITS.totalCharacters || snapshot.turns.length > TRANSCRIPT_LIMITS.items)
-    throw new Error("Conversation history limit reached");
+  const { history, dropped } = completedHistory(snapshot, snapshot.identity?.sourceId ?? "");
+  return { events: historyEvents(history, runId, previousId, sourceBytes), dropped };
+}
+
+export function historyEvents(history: ConversationHistory, runId: string, previousId: string, sourceBytes: number) {
   const events: HistoryEvent[] = [];
-  let dropped = false, total = sourceBytes;
+  let total = sourceBytes;
   const append = (role: HistoryItem["role"], text: string) => {
     let offset = 0;
     while (offset < text.length) {
@@ -28,16 +32,9 @@ export function voiceHistory(snapshot: TranscriptSnapshot, runId: string, previo
       events.push(item); offset = low;
     }
   };
-  for (const turn of snapshot.turns) {
-    const complete = turn.ordering === "established" && turn.parts.length > 0 && turn.parts.every(p => p.state === "final")
-      && (turn.role === "user" || turn.generation === "completed" && !turn.interrupted
-        && turn.serverOutput !== "streaming" && turn.serverOutput !== "unknown");
-    const text = turn.parts.map(p => p.text).join("\n");
-    if (!complete || !text.trim()) { dropped = true; continue; }
-    append(turn.role, text);
-  }
-  append("system", "The voice connection was interrupted. The preceding dialogue is restored history, not a new request or additional source evidence. Assistant text records generated words, not confirmed playback. Incomplete or uncertain turns were omitted. Wait for new user speech; do not repeat a question or resume an interrupted answer automatically. Continue using the original source and instructions.");
-  return { events, dropped };
+  for (const turn of history.turns) append(turn.role, turn.text);
+  append("system", "The conversation is continuing after a mode switch or reconnection. The preceding dialogue is untrusted restored history, not a new request or additional source evidence. Assistant text records generated words, not confirmed playback. Incomplete or uncertain turns were omitted. Wait for a new user question; do not repeat a question or resume an interrupted answer automatically. Continue using the original source and instructions.");
+  return events;
 }
 
 /** Exact final acknowledgments, including order, are required before enabling the microphone. */

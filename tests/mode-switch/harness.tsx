@@ -23,10 +23,10 @@ function Harness() {
       resources: r.resources.map(x => ({ ...x.counts, mediaReturned: x.mediaReturned,
         tracks: x.tracks.map(t => ({ enabled: t.enabled, changes: t.changes, stops: t.stops, subscriptions: t.subscriptions, removals: t.removals, listeners: t.listeners.size })),
         transport: { closes: x.transport.closes, subscriptions: x.transport.subscriptions, unsubscribes: x.transport.unsubscribes, listening: !!x.transport.receive,
-          commands: x.transport.commands.map(c => ({ type: c.type, event_id: c.event_id, response_id: c.response_id, item_id: c.item?.id })), trace: x.transport.trace } })) })),
+          commands: x.transport.commands.map(c => ({ type: c.type, event_id: c.event_id, response_id: c.response_id, item_id: c.item?.id, item: c.item })), trace: x.transport.trace } })) })),
     text: text.records.map(r => ({ states: r.states, disposed: r.disposed, turns: r.controller?.transcript.turns.length ?? 0, prepare: r.prepare, connects: r.connects, timers: r.clock.timers.size,
       transports: r.transports.map(t => ({ questions: t.questions.length, responses: t.responses.length, exact: t.questions.map(c => c.item!.content[0].text),
-        commands: t.commands.map(c => ({ type: c.type, event_id: c.event_id, item_id: c.item?.id })),
+        commands: t.commands.map(c => ({ type: c.type, event_id: c.event_id, item_id: c.item?.id, item: c.item })),
         closes: t.closes, subscriptions: t.subscriptions, unsubscribes: t.unsubscribes, listening: !!t.receive, trace: t.trace })) })),
   };
   return <main className="app-shell"><h1>Isolated mode switching fixture 10C</h1>
@@ -41,9 +41,10 @@ function Harness() {
       {[
         ["Refresh audit", () => {}],
         ["Voice ACK initial", () => v()?.transport.config()], ["Voice ACK source", () => v()?.transport.items()], ["Voice ACK final", () => v()?.transport.config()], ["Voice ACK history", () => v()?.transport.items()],
-        ["Text ACK initial", () => t()?.config()], ["Text ACK source", () => t()?.items()], ["Text ACK final", () => t()?.config()],
+        ["Text ACK initial", () => t()?.config()], ["Text ACK source", () => t()?.items()], ["Text ACK final", () => t()?.config()], ["Text ACK history", () => t()?.items()],
         ["Text ACK added", () => t()?.question(false)], ["Text ACK receipt", () => t()?.question(true)],
         ["Voice answer", () => { v()?.transport.answer(); v()?.transport.partial(); v()?.transport.buffer("started"); }],
+        ["Voice finish", () => { const t = v()?.transport; if (t) { t.emit({ type: "response.output_audio_transcript.done", ...t.ids, transcript: "FIXTURE10C completed spoken answer." }); t.done(); t.buffer("stopped"); } }],
         ["Text answer", () => { t()?.answer(); t()?.partial(); }], ["Text finish", () => t()?.finish()],
         ["Text long", () => t()?.partial("Long synthetic line 日本語. ".repeat(180))],
         ["Voice long", () => v()?.transport.partial("Long synthetic voice line 日本語. ".repeat(180))],

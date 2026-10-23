@@ -3,6 +3,7 @@
 import { TEXT_QUESTION_LIMIT, type TextStatus } from "../shared/text-lifecycle.ts";
 import { TranscriptStore, type TranscriptSnapshot } from "../shared/transcript.ts";
 import { textUuid, type TextController, type TextRelaySnapshot } from "../shared/text-relay.ts";
+import { parseHistory, type ConversationHistory } from "../shared/conversation-history.ts";
 
 type Attempt = { requestId: string; sourceId: string; abort: AbortController; sessionId?: string; questionId?: string;
   reader?: ReadableStreamDefaultReader<Uint8Array>; stopping: boolean; watchdog?: ReturnType<typeof setTimeout> };
@@ -31,17 +32,18 @@ export class HttpTextController implements TextController {
     if (!response.ok) throw new Error("Text session unavailable");
     return response;
   }
-  start(sourceId: string) {
+  start(sourceId: string, history?: ConversationHistory) {
     if (this.disposed || this.active || !textUuid(sourceId)) return false;
+    if (history) { try { history = parseHistory(history, sourceId); } catch { return false; } }
     const a: Attempt = { requestId: crypto.randomUUID(), sourceId, abort: new AbortController(), stopping: false };
     this.active = a; this.text = empty(); this.draft = "";
     this.publish({ phase: "connecting", protocolReady: false, productionReady: false, revision: 0 });
     a.watchdog = setTimeout(() => { if (this.current(a)) this.finish(a, true); }, 30_000);
-    void this.open(a); return true;
+    void this.open(a, history); return true;
   }
-  private async open(a: Attempt) {
+  private async open(a: Attempt, history?: ConversationHistory) {
     try {
-      const response = await this.post("", { sourceId: a.sourceId, requestId: a.requestId }, a.abort.signal);
+      const response = await this.post("", { sourceId: a.sourceId, requestId: a.requestId, ...(history ? { history } : {}) }, a.abort.signal);
       const result: unknown = await response.json();
       if (!this.current(a)) return;
       if (!result || typeof result !== "object" || !("sessionId" in result) || !textUuid(result.sessionId)) throw new Error("Invalid session");

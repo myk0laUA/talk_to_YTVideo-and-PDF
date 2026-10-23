@@ -462,6 +462,14 @@ test(`voice pending reconnect is cancelled by ${action}`, async ({ page }) => {
   else if (action === "source") await act(page, "Replace source");
   else await departure(page, true);
   await page.clock.runFor(15000); await act(page, "Deliver stale events");
-  expect((await audit(page)).voice.every(r => r.prepare <= 1)).toBe(true);
-  expect((await audit(page)).ownership.transferred).toBe(0);
+  const result = await audit(page);
+  expect(result.voice.every(r => r.prepare <= 1)).toBe(true);
+  expect(result.voice.flatMap(r => r.resources).every(r => r.closes === 1)).toBe(true);
+  expect(result.ownership.transferred).toBe(action === "mode" ? 1 : 0);
+  if (action === "mode") {
+    await expect(turns(page)).toHaveCount(2);
+    await prime(page, "text"); await act(page, "Text ACK history");
+    await expect(selected(page, "text")).toContainText("Ready for your question");
+    expect((await audit(page)).text.at(-1)!.transports[0]).toMatchObject({ questions: 0, responses: 0 });
+  }
 });
