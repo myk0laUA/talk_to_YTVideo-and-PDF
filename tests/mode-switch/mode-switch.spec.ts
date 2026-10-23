@@ -205,8 +205,8 @@ for (const m of ["voice", "text"] as const) for (const stage of stages[m]) test(
   }
   if (m === "voice" && stage === "microphone") await expect(selected(page, m)).toContainText("Waiting for microphone");
   if (m === "voice" && stage === "playback") await expect(page.locator(".voice-device-status")).toContainText("Waiting for playback");
-  if (m === "voice" && ["cancel", "clear"].includes(stage)) await expect(page.locator(".voice-media-announcement")).toContainText("Interruption pending");
-  if (m === "voice" && stage === "answer") await expect(page.locator(".voice-media-announcement")).toContainText("Answer being generated");
+  if (m === "voice" && ["cancel", "clear"].includes(stage)) await expect(page.locator(".voice-media-announcement")).toContainText("Interrupting…");
+  if (m === "voice" && stage === "answer") await expect(page.locator(".voice-state")).toHaveText("Answering…");
   await choose(page, opposite(m)).click(); await expect(turns(page)).toHaveCount(0);
   await begin(page, opposite(m));
   if (m === "voice") { await ask(page); await textAnswer(page, true); await question(page).fill("New draft remains"); } else await act(page, "Voice answer");

@@ -164,7 +164,7 @@ test("03M fixed larger default and independent voice policy", () => {
   assert.equal(PROVIDER_VOICE_POLICY.model, large.model); assert.equal(PROVIDER_VOICE_POLICY.maxOutputTokens, 2048);
   assert.equal(PROVIDER_VOICE_POLICY.mode, "voice");
   assert.notEqual(PROVIDER_VOICE_POLICY.policyVersion, large.policyVersion);
-  assert.equal(PROVIDER_VOICE_POLICY.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+  assert.equal(PROVIDER_VOICE_POLICY.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
 });
 test("03I socket URL uses selected allowlisted model; invalid model/policy never constructs socket", async () => {
   for (const policy of [mini, large]) {

@@ -52,15 +52,14 @@ function playback(s: VoiceStatus | null) {
   return "Playback not enabled.";
 }
 function answer(s: VoiceStatus | null) {
-  if (s?.phase === "ended" || s?.phase === "failed") return "No active answer. Any received text stays below.";
-  const r = s?.response;
-  if (!r) return "No answer yet.";
-  const generation = { idle: "No answer yet.", generating: "Answer being generated.", completed: "Answer generation complete.", cancelled: "Answer generation cancelled.", failed: "Answer generation failed.", incomplete: "Answer generation incomplete." }[r.generation.state];
-  const output = { idle: "", streaming: "Audio output is streaming; it may continue after generation completes.", stopped: "Audio output stopped.", cleared: "Audio output cleared.", unknown: "Audio output state is uncertain. Stop the session if you need to end playback." }[r.output.state];
-  const interruption = { idle: "", pending: "Interruption pending. Waiting for confirmation.", confirmed: "Interruption confirmed. Words displayed may include speech you did not hear.", failed: "Interruption could not be confirmed. Stop the session to end it; no interruption is retried automatically." }[r.interruption.state];
-  const input = r.input.state === "speaking" ? "Speech activity detected." : r.input.state === "stopped" ? "Speech activity ended." : "";
-  const issue = r.issue ? "The answer encountered a problem. Received text may be incomplete; you can stop and start fresh." : "";
-  return [generation, output, interruption, input, issue].filter(Boolean).join(" ");
+  if (!s || s.phase !== "ready") return "";
+  const r = s.response;
+  if (r.generation.state === "failed" || r.generation.state === "incomplete") return "The answer stopped early. Try asking again.";
+  if (r.interruption.state === "failed") return "Couldn’t interrupt. End voice to stop playback.";
+  if (r.output.state === "unknown") return "Audio state is uncertain. End voice to stop playback.";
+  if (r.interruption.state === "pending") return "Interrupting…";
+  if (r.issue) return "Voice encountered a problem. End voice and try again.";
+  return "";
 }
 
 /** Mount owns one controller. The source key discards old UI before paint; teardown
@@ -70,16 +69,19 @@ class OwnedVoiceSession extends Component<Props, State> {
   private recovery = this.props.recovery ?? new VoiceRecovery();
   state: State = { browser: initialBrowserSession, status: null, transcript: null, session: 0, cooldown: this.recovery.seconds, reconnect: null };
   private reconnectTimer?: ReturnType<typeof setTimeout>;
+  private reconnectedTimer?: ReturnType<typeof setTimeout>;
   private reconnectAttempts = 0;
   private resumeArmed = false;
   private browserState = initialBrowserSession;
   private end = () => {
+    clearTimeout(this.reconnectedTimer);
     this.resumeArmed = false; this.reconnectAttempts = 0;
     clearTimeout(this.reconnectTimer); this.reconnectTimer = undefined;
     this.controller?.stop();
     if (this.mounted) this.setState({ reconnect: null });
   };
   private scheduleReconnect = () => {
+    clearTimeout(this.reconnectedTimer);
     if (!this.mounted || !this.resumeArmed || !this.controller?.canResume || this.reconnectTimer
       || this.browserState.offline || this.browserState.departed) return;
     if (this.reconnectAttempts >= 3) { this.setState({ reconnect: "failed" }); return; }
@@ -115,6 +117,9 @@ class OwnedVoiceSession extends Component<Props, State> {
       if (!this.mounted || !this.controller) return;
       if (status.admission) { this.recovery.remember(status.admission); this.watchCooldown(); }
       this.setState({ status, transcript: this.controller.transcript });
+      if (status.phase === "failed" || status.phase === "ended") {
+        clearTimeout(this.reconnectedTimer); this.setState({ reconnect: null });
+      }
       if (status.phase === "failed" && status.failure === "connection" && this.controller.canResume) {
         this.resumeArmed = true; this.scheduleReconnect();
       } else if (status.phase === "failed" && this.resumeArmed) {
@@ -123,6 +128,9 @@ class OwnedVoiceSession extends Component<Props, State> {
       } else if (status.phase === "ready" && status.microphone === "available" && this.resumeArmed) {
         this.resumeArmed = false; this.reconnectAttempts = 0;
         this.setState({ reconnect: "restored" });
+        this.reconnectedTimer = setTimeout(() => {
+          if (this.mounted && this.state.reconnect === "restored") this.setState({ reconnect: null });
+        }, 3000);
       }
     });
     this.browser = new BrowserSession(reason => {
@@ -136,7 +144,7 @@ class OwnedVoiceSession extends Component<Props, State> {
   }
   componentWillUnmount() {
     this.mounted = false;
-    this.resumeArmed = false; clearTimeout(this.reconnectTimer);
+    this.resumeArmed = false; clearTimeout(this.reconnectTimer); clearTimeout(this.reconnectedTimer);
     clearInterval(this.cooldownTimer);
     this.browser?.dispose(); this.browser = undefined;
     const controller = this.controller; this.controller = undefined;
@@ -144,6 +152,7 @@ class OwnedVoiceSession extends Component<Props, State> {
   }
   private start = () => {
     if (!this.browser?.allowsAction() || !this.props.source || !this.controller || running(this.controller.snapshot) || !this.recovery.clearForRetry()) return;
+    clearTimeout(this.reconnectedTimer);
     this.resumeArmed = false; this.setState({ reconnect: null });
     if (this.controller.start(this.props.source.id)) { this.browser.started(); this.setState(previous => ({ session: previous.session + 1 })); }
   };
@@ -158,9 +167,7 @@ class OwnedVoiceSession extends Component<Props, State> {
     const blocked = this.state.browser.offline || this.state.browser.departed;
     const reconnecting = this.state.reconnect === "waiting" || this.state.reconnect === "connecting";
     const canResume = !!this.controller?.canResume;
-    const recovery = this.state.reconnect === "restored" ? status?.historyOmitted
-      ? "Reconnected. Some interrupted speech wasn’t restored; please repeat it if needed."
-      : "Reconnected. You can continue the conversation."
+    const recovery = this.state.reconnect === "restored" ? "Reconnected"
       : this.state.reconnect === "failed" ? "Couldn’t reconnect. Your chat is still here. Retry the connection when ready."
       : reconnecting ? this.state.browser.offline ? "Connection lost. Your chat is kept; we’ll reconnect when you’re back online."
         : "Reconnecting and restoring your conversation…"
@@ -192,7 +199,7 @@ class OwnedVoiceSession extends Component<Props, State> {
       <div className="source-actions voice-session-actions" aria-describedby="voice-session-guidance">
         <button type="button" aria-describedby="voice-session-guidance" hidden={active || canResume || reconnecting || status?.failure === "source_too_large"} disabled={blocked || !available || active || status?.failure === "source_too_large" || this.state.cooldown > 0} onClick={this.start}>{status?.phase === "failed" || rejection ? "Retry voice" : "Start voice"}</button>
         <button type="button" hidden={!canResume || reconnecting} disabled={blocked || this.state.cooldown > 0} onClick={this.retryConnection}>Retry connection</button>
-        <button type="button" aria-describedby="voice-session-guidance" hidden={!active && !canResume && !reconnecting} disabled={!available} onClick={this.end}>End voice</button>
+        <button type="button" aria-describedby="voice-session-guidance" hidden={!active && !canResume && !reconnecting} disabled={!available || !active && !canResume && !reconnecting} onClick={this.end}>End voice</button>
         <button className="microphone-control" type="button" aria-label={status?.muted ? "Unmute microphone" : "Mute microphone"} aria-describedby="voice-session-guidance" hidden={!active || status?.microphone !== "available"} disabled={blocked || !available || !active || status?.microphone !== "available"} aria-pressed={status?.muted ?? false} onClick={this.mute}><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/>{status?.muted ? <path d="m3 3 18 18"/> : null}</svg><span>{status?.muted ? "Mic off" : "Mic on"}</span></button>
         <button type="button" aria-describedby="voice-session-guidance" hidden={!canInterrupt} disabled={blocked || !available || !canInterrupt} onClick={() => { if (this.browser?.allowsAction()) this.controller?.interruptCurrentResponse(); }}>Interrupt answer</button>
         <button className="speaker-control" type="button" hidden={!ready} disabled={blocked || !available || !ready} aria-label={status?.speakerMuted ? "Unmute speaker" : "Mute speaker"} aria-pressed={status?.speakerMuted ?? false} onClick={() => this.controller?.setSpeakerMuted(!status?.speakerMuted)}><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4 5 9H2v6h3l6 5Z"/>{status?.speakerMuted ? <path d="m16 9 6 6m0-6-6 6"/> : <path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>}</svg><span>{status?.speakerMuted ? "Sound off" : "Sound on"}</span></button>
@@ -203,7 +210,7 @@ class OwnedVoiceSession extends Component<Props, State> {
         <dt>Microphone</dt><dd>{microphone(status)}</dd>
         <dt>Speaker playback</dt><dd>{playback(status)}</dd>
       </dl>
-      <p className={`note voice-media-announcement ${(!status || status.phase === "idle") || !response?.issue && ["idle", "completed"].includes(response?.generation.state ?? "idle") && ["idle", "stopped"].includes(response?.output.state ?? "idle") && response?.interruption.state === "idle" ? "visually-hidden" : ""}`} role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{answer(status)}</p>
+      <p className="note voice-media-announcement" hidden={!answer(status)} role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{answer(status)}</p>
       <p className="visually-hidden" role={available ? "status" : undefined} aria-live={available ? "polite" : "off"} aria-atomic="true">{microphone(status)} {playback(status)}</p>
       </div>
     </div>;

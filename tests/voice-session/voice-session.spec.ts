@@ -143,37 +143,37 @@ test("manual interrupt waits for both confirmations and retains unheard text", a
     { type: "response.cancel", event_id: "voice_1_interrupt_1_cancel", response_id: "answer_A" },
     { type: "output_audio_buffer.clear", event_id: "voice_1_interrupt_2_clear" },
   ]);
-  await expect(response(page)).toContainText("Interruption pending"); await act(page, "Generation cancelled");
+  await expect(response(page)).toContainText("Interrupting…"); await act(page, "Generation cancelled");
   await stop(page).focus();
-  await expect(response(page)).toContainText("Interruption pending"); await act(page, "Output cleared");
-  await expect(response(page)).toContainText("Interruption confirmed");
-  await expect(page.locator(".transcript")).toContainText("Words shown may include speech you did not hear");
+  await expect(response(page)).toContainText("Interrupting…"); await act(page, "Output cleared");
+  await expect(response(page)).toBeHidden(); await expect(page.locator(".transcript").getByText("Interrupted", { exact: true })).toBeVisible();
+  await expect(page.locator(".transcript-turn-assistant .transcript-notice")).toHaveText("Interrupted");
   await expect(page.locator(".transcript")).toContainText("FIXTURE08C generated speech text");
   await expect(stop(page)).toBeFocused(); await capture(page, info, "interrupted");
 });
 
 test("generation done leaves streaming output and clear-only interrupt", async ({ page }) => {
   await begin(page); await answer(page); await act(page, "Generation done");
-  await expect(response(page)).toContainText("Answer generation complete. Audio output is streaming");
+  await expect(response(page)).toBeHidden(); await expect(page.locator(".voice-state")).toHaveText("Sending audio…");
   await expect(interrupt(page)).toBeEnabled(); await interrupt(page).click();
   expect((await commands(page)).map(c => c.type)).toEqual(["output_audio_buffer.clear"]);
-  await expect(response(page)).toContainText("Interruption pending"); await act(page, "Output cleared");
-  await expect(response(page)).toContainText("Interruption confirmed");
+  await expect(response(page)).toContainText("Interrupting…"); await act(page, "Output cleared");
+  await expect(response(page)).toBeHidden(); await expect(page.locator(".transcript").getByText("Interrupted", { exact: true })).toBeVisible();
 });
 
 test("VAD interruption is observed without client commands", async ({ page }) => {
   await begin(page); await answer(page); await act(page, "Speech started");
-  await expect(response(page)).toContainText("Speech activity detected"); await expect(response(page)).toContainText("Interruption pending");
-  expect(await commands(page)).toEqual([]); await act(page, "Output cleared"); await expect(response(page)).toContainText("Interruption pending");
+  await expect(response(page)).toContainText("Interrupting…");
+  expect(await commands(page)).toEqual([]); await act(page, "Output cleared"); await expect(response(page)).toContainText("Interrupting…");
   await act(page, "Generation cancelled"); await act(page, "Speech stopped");
-  await expect(response(page)).toContainText("Interruption confirmed"); await expect(response(page)).toContainText("Speech activity ended"); expect(await commands(page)).toEqual([]);
+  await expect(response(page)).toBeHidden(); await expect(page.locator(".transcript").getByText("Interrupted", { exact: true })).toBeVisible(); expect(await commands(page)).toEqual([]);
 });
 
 for (const hold of ["cancel", "clear"]) test(`interrupt ACKs before deferred ${hold} write settle stay pending`, async ({ page }) => {
   await mode(page, `hold-${hold}`); await begin(page); await answer(page); await interrupt(page).click();
   await act(page, "Generation cancelled"); await act(page, "Output cleared");
-  await expect(response(page)).toContainText("Interruption pending"); await expect(stop(page)).toBeEnabled();
-  await act(page, `Release ${hold}`); await expect(response(page)).toContainText("Interruption confirmed");
+  await expect(response(page)).toContainText("Interrupting…"); await expect(stop(page)).toBeEnabled();
+  await act(page, `Release ${hold}`); await expect(response(page)).toBeHidden(); await expect(page.locator(".transcript").getByText("Interrupted", { exact: true })).toBeVisible();
   expect((await commands(page)).map(c => c.type)).toEqual(hold === "cancel" ? ["response.cancel"] : ["response.cancel", "output_audio_buffer.clear"]);
 });
 
@@ -181,7 +181,7 @@ for (const origin of ["manual", "vad"]) test(`${origin} timeout is honest and ne
   await begin(page); await answer(page);
   if (origin === "manual") await interrupt(page).click(); else await act(page, "Speech started");
   await act(page, "Generation cancelled"); await act(page, "Expire timers");
-  await expect(response(page)).toContainText("Interruption could not be confirmed"); await expect(response(page)).toContainText("Audio output state is uncertain");
+  await expect(response(page)).toHaveText("Couldn’t interrupt. End voice to stop playback.");
   await expect(page.locator(".voice-state")).toHaveText("Audio output uncertain");
   await expect(interrupt(page)).toBeDisabled(); await expect(stop(page)).toBeEnabled();
   const before = await commands(page); await act(page, "Expire timers"); expect(await commands(page)).toEqual(before);
@@ -189,8 +189,8 @@ for (const origin of ["manual", "vad"]) test(`${origin} timeout is honest and ne
 
 test("correlated interruption error uses safe copy; response failure permits Stop", async ({ page }) => {
   await begin(page); await answer(page); await interrupt(page).click(); await act(page, "Fail interruption");
-  await expect(response(page)).toContainText("Interruption could not be confirmed");
-  await act(page, "Generation failed"); await expect(response(page)).toContainText("Answer generation failed");
+  await expect(response(page)).toContainText("Couldn’t interrupt");
+  await act(page, "Generation failed"); await expect(response(page)).toContainText("The answer stopped early");
   await expect(stop(page)).toBeEnabled();
 });
 
@@ -205,7 +205,7 @@ test("duplicate, foreign and retired response events cannot replace current outp
 test("new response during cancel write cannot clear newer audio", async ({ page }) => {
   await mode(page, "hold-cancel"); await begin(page); await answer(page); await interrupt(page).click();
   await act(page, "Next response"); await act(page, "Output started"); await act(page, "Release cancel");
-  await expect(response(page)).toContainText("Interruption could not be confirmed");
+  await expect(response(page)).toContainText("Couldn’t interrupt");
   expect((await commands(page)).map(c => c.type)).toEqual(["response.cancel"]);
 });
 
@@ -288,7 +288,7 @@ for (const operation of ["Replace source", "Remove source", "Unmount session"]) 
 
 test("Stop retains partial text, deliberate fresh Start clears it and never starts eagerly", async ({ page }, info) => {
   await begin(page); await answer(page); await stop(page).click();
-  await expect(response(page)).toHaveText("No active answer. Any received text stays below.");
+  await expect(response(page)).toBeHidden();
   await expect(page.locator(".transcript")).toContainText("Text unfinished when the conversation stopped");
   await capture(page, info, "retained"); const n = (await latest(page)).prepare;
   await act(page, "Deliver stale events"); expect((await latest(page)).prepare).toBe(n);

@@ -137,7 +137,7 @@ for (const kind of ["PDF", "YOUTUBE"]) for (const failure of [false, true])
     }, f.now));
     const p = await f.start();
     assert.equal(p.input.policy.model, "gpt-realtime-2.1");
-    assert.equal(p.input.policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+    assert.equal(p.input.policy.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
     assert.equal((await f.credential(p)).status, failure ? 404 : 200);
     assert.equal((await f.credential(p)).status, 404);
     assert.deepEqual(models, ["gpt-realtime-2.1"]); clean(f);

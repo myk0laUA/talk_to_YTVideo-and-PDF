@@ -23,4 +23,6 @@ Before submitting, open all three public links without signing in. Verify the re
 
 ## Physical-phone evidence to record after deployment
 
+For the latest voice polish, verify that “Reconnected” disappears after three seconds, interrupted turns show only “Interrupted”, and no generation-complete paragraph occupies the chat. Test ordinary and quiet speech, then hold the phone near your body to check whether incidental noise still activates speech detection at threshold 0.65.
+
 Record the phone model, OS version, browser/version, date and deployed revision. On the public app, use a nonprivate source: speak a question, confirm audible output, interrupt while it speaks, ask a follow-up, independently mute microphone and speaker, then End. Check microphone-denial text fallback, theme, keyboard and scrolling. Briefly disconnect and reconnect during voice: verify the chat remains and voice reconnects automatically, then ask a follow-up about a completed turn. Interrupted or untranscribed speech may need repeating. Verify End prevents automatic reconnection. Text mode still requires a fresh session after disconnection. Record the actual result of each check; a screenshot alone cannot prove audible playback or interruption. Then add the public walkthrough URL and verify signed-out playback and sound.

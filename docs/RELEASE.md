@@ -1,5 +1,15 @@
 # Release status
 
+## Phone voice status polish — 23 October 2026
+
+The user tested voice and connection recovery on a physical phone and reported persistent notices crowding the conversation. Normal generation/output announcements are now removed, successful reconnection displays “Reconnected” for three seconds, and interrupted turns show one “Interrupted” label while retaining received text. Genuine interruption/playback failures remain actionable. Timers are cancelled on End, failure, a new connection attempt and unmount.
+
+Voice activation threshold increases modestly from 0.60 to 0.65 (policy v9); model, silence duration and microphone/source acknowledgment gates are unchanged. This needs a phone retest for normal/quiet speech and incidental handling noise; synthetic tests do not establish acoustic improvement.
+
+Verification: 1,646 unit tests, lint, typecheck and production build; 208 voice UI cases, 44 transcript cases, 156 mode-switch cases, 24 targeted recovery cases (including notice expiry and bounded retries), 138 geometry states across six theme/viewport scenarios, and 623 adapter checks across 48 scenarios plus 126 adapter unit cases. All passed. The layout was visually inspected at phone width. Evidence is ignored under `artifacts/local/test-review/phone-*`. Initial failures from stale copy/hash assertions were corrected; an inactive hidden End button is now disabled consistently. No paid model or caption calls were used for this work.
+
+Deployment and hosted verification are pending for this revision. The public walkthrough remains outstanding; the phone report establishes real-device use/reconnection but does not supply a model/OS/browser inventory or a complete audio acceptance checklist.
+
 ## Voice reconnection and repository cleanup — 23 October 2026
 
 Active voice sessions now reconnect after connection loss while retaining visible dialogue and independent mute choices. Each attempt reauthorizes the source, primes a new provider connection and restores completed turns with exact final acknowledgments before enabling the microphone. Partial/untranscribed speech stays visible when available but is not restored as completed context. No question or interrupted answer is automatically replayed. Three consecutive connection failures stop automatic recovery; End, source/mode changes and page departure cancel it. History is temporary and bounded; a full reload cannot recover it. Text-mode recovery remains explicit.

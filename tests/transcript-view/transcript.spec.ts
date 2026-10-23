@@ -104,12 +104,12 @@ test("interruption/Stop retain generated words with conservative playback and fa
   await act(page, "Begin draft"); await act(page, "Append words");
   const received = await turns(page).nth(1).locator(".transcript-text").textContent();
   await act(page, "Interrupt");
-  await expect(page.getByText("Interrupted. Words shown may include speech you did not hear.")).toBeVisible();
+  await expect(page.getByText("Interrupted", { exact: true })).toBeVisible();
   await capture(page, info, "interrupted");
   await act(page, "Transcription failure"); await act(page, "Stop");
   expect(await turns(page).nth(1).locator(".transcript-text").textContent()).toBe(received);
   await expect(page.getByText("Speech could not be transcribed. Any earlier words above may be incomplete.")).toBeVisible();
-  await expect(page.getByText("Text unfinished when the conversation stopped.")).toBeVisible();
+  await expect(turns(page).nth(1).locator(".transcript-notice")).toHaveText("Interrupted");
   await expect(page.locator(".transcript-summary")).toContainText("Conversation stopped.");
   await act(page, "Append words");
   expect(await turns(page).nth(1).locator(".transcript-text").textContent()).toBe(received);

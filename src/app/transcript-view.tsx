@@ -5,6 +5,7 @@ import type { TranscriptSnapshot } from "../shared/transcript";
 import { responseTerminalMessage } from "../shared/response-terminal";
 
 type Turn = TranscriptSnapshot["turns"][number];
+const interrupted = (turn: Pick<Turn, "interrupted" | "terminal">) => turn.interrupted || turn.terminal?.reason === "turn_detected";
 /** Display facts only. No identity, event envelope, counts, transport or commands. */
 export type TranscriptViewSnapshot = Pick<TranscriptSnapshot, "phase" | "incomplete" | "ordering"> & {
   turns: readonly (Pick<Turn, "itemId" | "role" | "ordering" | "generation" | "terminal" | "interrupted" | "playback" | "parts">)[];
@@ -98,19 +99,19 @@ class TranscriptPresentation extends Component<Props, { unread: boolean }, Ancho
           <ol className="transcript-turns" aria-label="Conversation turns" aria-live="off">
             {turns.map(turn => <li key={turn.itemId} className={`transcript-turn transcript-turn-${turn.role}`}>
               <h4 data-reading-anchor="role">{turn.role === "user" ? "You" : "Assistant"}</h4>
-              {turn.interrupted ? <p className="note transcript-notice">Interrupted. Words shown may include speech you did not hear.</p> : null}
-              {turn.playback === "unconfirmed" && !turn.interrupted ? <p className="visually-hidden">Generated speech text; playback is unconfirmed.</p> : null}
-              {turn.generation === "failed" || turn.generation === "incomplete" || turn.generation === "cancelled" ? <p className="note transcript-notice">{turn.generation === "failed" ? "Answer failed." : turn.generation === "cancelled" ? "Answer cancelled." : "Answer incomplete."} Any text received stays below.</p> : null}
-              {responseTerminalMessage(turn.terminal) ? <p className="note transcript-notice">{responseTerminalMessage(turn.terminal)}</p> : null}
+              {interrupted(turn) ? <p className="note transcript-notice">Interrupted</p> : null}
+              {turn.playback === "unconfirmed" && !interrupted(turn) ? <p className="visually-hidden">Generated speech text; playback is unconfirmed.</p> : null}
+              {!interrupted(turn) && (turn.generation === "failed" || turn.generation === "incomplete" || turn.generation === "cancelled") ? <p className="note transcript-notice">{turn.generation === "failed" ? "Answer failed." : turn.generation === "cancelled" ? "Answer cancelled." : "Answer incomplete."} Any text received stays below.</p> : null}
+              {!interrupted(turn) && responseTerminalMessage(turn.terminal) ? <p className="note transcript-notice">{responseTerminalMessage(turn.terminal)}</p> : null}
 
               {!turn.parts.length ? <p className="note">{snapshot?.phase === "active" ? "Waiting for text…" : "No text was received for this turn."}</p> : null}
               {turn.parts.map(part => <div key={`${part.index}:${part.kind}`} className="transcript-part" data-reading-anchor="part">
                 <p className="transcript-text" dir="auto">{part.text}</p>
-                {part.state === "draft" ? <p className="note">{snapshot?.phase === "limited" ? "Text incomplete at transcript limit." : "Text updating…"}</p> : null}
-                {part.state === "unfinished" ? <p className="note">Text unfinished when the conversation stopped.</p> : null}
+                {!interrupted(turn) && part.state === "draft" ? <p className="note">{snapshot?.phase === "limited" ? "Text incomplete at transcript limit." : "Text updating…"}</p> : null}
+                {!interrupted(turn) && part.state === "unfinished" ? <p className="note">Text unfinished when the conversation stopped.</p> : null}
                 {part.state === "transcription_failed" ? <p className="note transcript-notice">Speech could not be transcribed. Any earlier words above may be incomplete.</p> : null}
               </div>)}
-              {turn.terminal && turn.terminal.reason !== "completed" ? <details className="note"><summary>Answer completion details</summary>
+              {!interrupted(turn) && turn.terminal && turn.terminal.reason !== "completed" ? <details className="note"><summary>Answer completion details</summary>
                 <p>Reason: {turn.terminal.reason}</p>
                 <p>Output tokens: {turn.terminal.usage.outputTokens ?? "unavailable"}; audio: {turn.terminal.usage.outputAudioTokens ?? "unavailable"}; text: {turn.terminal.usage.outputTextTokens ?? "unavailable"}.</p>
               </details> : null}

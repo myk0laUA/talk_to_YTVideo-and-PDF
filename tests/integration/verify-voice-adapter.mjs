@@ -199,7 +199,7 @@ try {
           await expect(page.locator('.transcript')).toContainText('Text updating…');
           await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: path.join(directory, `${kind.toLowerCase()}-${width}-partial.png`), fullPage: true });
           await page.getByRole('button', { name: 'Interrupt answer', exact: true }).click();
-          await expect(page.locator('.voice-media-announcement')).toContainText('Interruption confirmed');
+          await expect(page.locator('.voice-media-announcement')).toBeHidden();await expect(page.locator('.transcript').getByText('Interrupted',{exact:true})).toBeVisible();
           await page.evaluate(() => { const f = window.__voice08d;
             f.emit({ type: 'conversation.item.input_audio_transcription.completed', item_id: 'question09c', content_index: 0, transcript: 'Synthetic09C final question.' });
             f.emit({ type: 'conversation.item.input_audio_transcription.delta', item_id: 'question09c', content_index: 0, delta: 'late words ignored' });

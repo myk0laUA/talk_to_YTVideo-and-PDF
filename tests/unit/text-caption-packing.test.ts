@@ -87,6 +87,6 @@ test("13E owned voice uses the exact shared packed caption format and English in
   const v = source(["First 😀", "Second\nline", ""]).B;
   const m = encodeManifest(v, "text_1", "voice", undefined, "voice");
   assert.deepEqual(decodeCaptions(m), v.source.sections);
-  assert.equal(createHash("sha256").update(m.representation).digest("hex"), "6914ee3ec6b4170009ecb1ba6accba927b3785a867c1097c2817240dc6021337");
+  assert.equal(createHash("sha256").update(m.representation).digest("hex"), "48055200597e9a596e91512dc6b7c73ba17a81a3343b9788142b67c0a2b15b93");
 });
 

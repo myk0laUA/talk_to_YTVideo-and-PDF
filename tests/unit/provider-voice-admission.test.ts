@@ -38,7 +38,7 @@ for (const kind of ["PDF", "YOUTUBE"] as const) {
     const h = await lifecycle(kind); await h.begin();
     const projection = h.projection();
     assert.equal(projection.policy.model, "gpt-realtime-2.1");
-    assert.equal(projection.policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+    assert.equal(projection.policy.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
     assert.ok(Object.isFrozen(projection.policy));
     await h.initial(); await h.items(); await h.final();
     const before = JSON.stringify(h.transport.outbound);
@@ -74,7 +74,7 @@ for (const patch of [
 });
 
 test("08O voice-only Stop/Continue candidate is bound to final ACK and rejects stale policy", async () => {
-  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
   assert.match(policy.answerInstructions, /When the user asks you to stop/);
   assert.match(policy.answerInstructions, /Never restart or resume/);
   assert.match(policy.answerInstructions, /remaining point rather than restarting/);
@@ -94,7 +94,7 @@ test("08O voice-only Stop/Continue candidate is bound to final ACK and rejects s
 
 test("08K finite voice output headroom agrees across issuance and both priming stages", async () => {
   assert.equal(policy.maxOutputTokens, 2048);
-  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
   assert.equal(initialVoiceSession.max_output_tokens, 2048);
   const h = await input();
   for (const event of [h.projection.manifest.configure, h.projection.manifest.finalize]) {
@@ -106,7 +106,7 @@ test("08K finite voice output headroom agrees across issuance and both priming s
 });
 
 test("08M candidate keeps credential/initial VAD disabled and enables exact final threshold only after full ACKs", async () => {
-  assert.equal(policy.activationThreshold, 0.6);
+  assert.equal(policy.activationThreshold, 0.65);
   assert.deepEqual(initialVoiceSession.audio.input, { turn_detection: null, transcription: null });
   const h = await lifecycle(); await h.begin();
   const m = h.projection().manifest;
@@ -456,7 +456,7 @@ test("09C provider empty transcription defaults preserve the exact model barrier
 
 test("08F explicit 600ms final voice pause policy preserves the initial media barrier", async () => {
   const h = await lifecycle(); await h.begin();
-  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-22-v8");
+  assert.equal(policy.policyVersion, "provider-voice-full-source-default-2026-10-23-v9");
   assert.equal(h.projection().manifest.configure.session.audio.input.turn_detection, null);
   assert.deepEqual(h.projection().manifest.finalize.session.audio.input.turn_detection,
     { type: "server_vad", create_response: true, interrupt_response: true, idle_timeout_ms: null, silence_duration_ms: 600, threshold: policy.activationThreshold });

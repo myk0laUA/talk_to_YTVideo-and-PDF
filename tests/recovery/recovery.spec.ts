@@ -262,6 +262,13 @@ for (const m of ["voice", "text"] as const) test(`${m}: partial answer retained,
     expect(await page.locator(".transcript-text").allTextContents()).toEqual(before);
   }
   await expect(selected(page, m)).toContainText(m === "voice" ? "Reconnected" : "Ready for your question");
+  if (m === "voice") {
+    await expect(selected(page, m)).toHaveText("Reconnected");
+    await page.clock.runFor(3100);
+    await expect(selected(page, m)).not.toContainText("Reconnected");
+    await expect(selected(page, m)).toHaveClass(/visually-hidden/);
+    await expect(turns(page)).toHaveCount(2);
+  }
   const records = await audit(page);
   const commands = m === "voice" ? records.voice.at(-1)!.resources : records.text.at(-1)!.transports;
   expect(commands).toHaveLength(2);
