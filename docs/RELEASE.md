@@ -8,7 +8,7 @@ Voice activation threshold increases modestly from 0.60 to 0.65 (policy v9); mod
 
 Verification: 1,646 unit tests, lint, typecheck and production build; 208 voice UI cases, 44 transcript cases, 156 mode-switch cases, 24 targeted recovery cases (including notice expiry and bounded retries), 138 geometry states across six theme/viewport scenarios, and 623 adapter checks across 48 scenarios plus 126 adapter unit cases. All passed. The layout was visually inspected at phone width. Evidence is ignored under `artifacts/local/test-review/phone-*`. Initial failures from stale copy/hash assertions were corrected; an inactive hidden End button is now disabled consistently. No paid model or caption calls were used for this work.
 
-Deployment and hosted verification are pending for this revision. The public walkthrough remains outstanding; the phone report establishes real-device use/reconnection but does not supply a model/OS/browser inventory or a complete audio acceptance checklist.
+Revision `320c530b351204ac72804a25784fdc802f88fdff` deployed at 4:07 PM EDT on 23 October, Render deployment `dep-dbdrs5jl550s738670n0`, served build `7J_73dGGJmnUy-NR_3M-M`. Seven hosted checks passed: homepage, anonymous bootstrap, authored PDF upload/preview, voice preparation returning v9/0.65, preparation cancellation and test-source removal. No credentials, model responses or caption calls were requested; the new zero-provider-spend allocation is closed under ignored `artifacts/local/phone-status`. The public walkthrough remains outstanding; the phone report establishes real-device use/reconnection but does not supply a model/OS/browser inventory or a complete audio acceptance checklist.
 
 ## Voice reconnection and repository cleanup — 23 October 2026
 
