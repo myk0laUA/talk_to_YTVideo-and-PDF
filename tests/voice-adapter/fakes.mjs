@@ -35,7 +35,7 @@ export function fakeBrowserVoice(target = globalThis, install = false) {
       counts.sends++; const e = JSON.parse(raw);
       trace.push(e.type === 'session.update' ? (e.session.output_modalities[0] === 'audio' ? 'send-final' : 'send-config') : e.type);
       const phase = e.type === 'session.update' ? (e.session.output_modalities[0] === 'audio' ? 'final' : 'config') : 'items';
-      if (e.type === 'conversation.item.create') sourceParts.push(JSON.parse(e.item.content[0].text));
+      if (e.type === 'conversation.item.create' && !e.event_id.includes('_history_')) sourceParts.push(JSON.parse(e.item.content[0].text));
       const reply = () => {
         if (control.fault === 'malformed') { this.emit('{bad'); return; }
         if (control.fault === 'oversized') { this.emit('x'.repeat(24577)); return; }

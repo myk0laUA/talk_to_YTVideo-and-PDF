@@ -57,13 +57,14 @@ class LocalProvider extends EventEmitter {
       this.later(() => this.event({ type: "session.updated", session: { ...e.session, model: this.model, id: "fake_session10d", object: "realtime.session" } }), 2);
     }
     if (e.type === "conversation.item.create") {
-      const source = e.item.id.includes("_source_");
+      const history = e.event_id.includes("_history_");
+      const source = !history && e.item.id.includes("_source_");
       if (source) {
         counters.sources++; const fragment = JSON.parse(e.item.content[0].text);
         assert.equal(fragment.variant, "B");
         this.sourceParts.push(...(fragment.fragments
           ? fragment.fragments.map(part => ({ ...part, source: fragment.source, variant: fragment.variant })) : [fragment]));
-      } else counters.questions++;
+      } else if (!history) counters.questions++;
       const ack = () => { counters.acknowledgments++; this.event({ type: "conversation.item.done", previous_item_id: e.previous_item_id ?? null, item: { ...e.item, status: "completed" } }); };
       if (scenario === "withheld-source" && source || scenario === "withheld-question" && !source) held.push(ack);
       else this.later(ack, 2);

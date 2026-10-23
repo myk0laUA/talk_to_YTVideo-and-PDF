@@ -122,7 +122,7 @@ Voice has independent microphone and speaker mute, interruption and End controls
 
 After a connection loss, voice reconnects automatically and restores completed dialogue before enabling the microphone. Mute choices survive. After three consecutive connection failures, recovery pauses and offers **Retry connection**. **End voice** cancels recovery. Partial or untranscribed speech may need repeating; the app does not replay questions or resume interrupted audio automatically.
 
-Switch between **Voice mode** and **Text mode** to continue the same conversation. Messages and unsent text drafts stay in the workspace. The new connection restores completed turns before accepting another question; unfinished answers remain visible and are not replayed. Text mode works without microphone permission.
+Once a chat has started, switching between **Voice mode** and **Text mode** connects automatically, even before the first message. Messages and unsent text drafts stay in the workspace. The new connection restores completed turns before accepting another question; unfinished answers remain visible and are not replayed. Text mode works without microphone permission.
 
 Ending a session preserves its visible text. An explicit fresh start, source replacement or page reload clears the conversation. A text connection failure still requires an explicit restart. There is one active source and connection per workspace.
 
@@ -175,7 +175,7 @@ For voice, the backend authorizes a single-use preparation ticket and issues a s
 
 For text, the server holds the provider WebSocket and key. The browser submits questions over HTTP and consumes streamed NDJSON. Shared lifecycle state machines reject stale events and release pending work on cancellation, expiry, source changes and teardown.
 
-A source-scoped browser memory owns the shared transcript and draft. Mode changes dispose the outgoing connection before starting the next one. Both transports restore bounded user/assistant dialogue and require exact provider acknowledgments; the client cannot supply system messages through the text API. Incomplete turns are retained for display but excluded from restored context. Each switch resends the source and eligible history, adding setup latency and provider input cost.
+A source-scoped browser memory owns the shared transcript, draft and started state. Transcript updates are saved as they arrive. Mode changes dispose the outgoing connection before starting the next one; a rapid return to text waits for the previous HTTP Stop to finish. Both transports restore bounded user/assistant dialogue and require exact provider acknowledgments; the client cannot supply system messages through the text API. Incomplete turns are retained for display but excluded from restored context. Each switch resends the source and eligible history, adding setup latency and provider input cost.
 
 The database stores sources, not permanent chat history. Visible conversation history is temporary browser state; text relay sessions, admission counters and replay guards live in the Node process.
 

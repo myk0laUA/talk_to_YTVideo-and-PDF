@@ -6,6 +6,24 @@ import { HttpTextController } from "../../src/app/text-http-controller.ts";
 import { TranscriptStore } from "../../src/shared/transcript.ts";
 import type { TextRelaySnapshot } from "../../src/shared/text-relay.ts";
 
+test("returning to text waits for the previous controller's Stop acknowledgment", async () => {
+  const original = globalThis.fetch;
+  let release!: () => void, starts = 0;
+  const stopped = new Promise<void>(resolve => { release = resolve; });
+  globalThis.fetch = (async (url: string) => {
+    if (url.endsWith("/stop")) { await stopped; return Response.json({ ok: true }); }
+    if (url.endsWith("/stream")) return new Response(new ReadableStream(), { headers: { "content-type": "application/x-ndjson" } });
+    starts++; return Response.json({ sessionId: randomUUID() });
+  }) as typeof fetch;
+  const first = new HttpTextController(() => {}), next = new HttpTextController(() => {});
+  try {
+    first.start(randomUUID()); await setImmediate(); assert.equal(starts, 1);
+    first.dispose(); next.start(randomUUID()); await setImmediate();
+    assert.equal(starts, 1, "A new server session must not race the outstanding Stop");
+    release(); await setImmediate(); assert.equal(starts, 2);
+  } finally { release(); first.dispose(); next.dispose(); await setImmediate(); globalThis.fetch = original; }
+});
+
 test("10D HTTP proxy ignores queued old readiness; Stop cancels reader and never retries a question", async () => {
   const original = globalThis.fetch, commands: { path: string; input?: Record<string, unknown> }[] = [];
   let output!: ReadableStreamDefaultController<Uint8Array>, cancels = 0;

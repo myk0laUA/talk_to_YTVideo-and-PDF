@@ -66,12 +66,13 @@ class OwnedTextSession extends Component<Props, State> {
   private draft = "";
   componentDidMount() {
     this.mounted = true;
-    this.carried = this.props.memory?.snapshot; this.continuing = !!this.carried;
+    this.carried = this.props.memory?.snapshot; this.continuing = !!this.carried || !!this.props.memory?.started;
     this.draft = this.props.memory?.draft ?? "";
     this.setState({ transcript: this.carried ?? null, draft: this.draft });
     if (this.props.source) this.controller = this.props.createController?.(status => {
       if (!this.mounted || !this.controller) return;
       const transcript = joinedTranscript(this.carried, this.controller.transcript);
+      this.props.memory?.save(transcript);
       if (status.phase === "ready") this.continuing = false;
       // 10A only projects a user item after the exact finalized receipt ACK.
       const pending = this.pending;
@@ -84,7 +85,7 @@ class OwnedTextSession extends Component<Props, State> {
     queueMicrotask(() => {
       if (this.mounted && this.controller === controller && this.props.memory?.resume) {
         this.props.memory.resume = false;
-        if (this.carried) this.start();
+        this.start();
       }
     });
   }
@@ -121,6 +122,7 @@ class OwnedTextSession extends Component<Props, State> {
       catch { this.setState({ status: { phase: "failed", failure: "limit", protocolReady: false, productionReady: false, revision: 0 } }); this.focusAfterStart = false; return; }
     } else { this.carried = undefined; this.props.memory?.clear(); }
     if (this.controller.start(this.props.source.id, history)) {
+      if (this.props.memory) this.props.memory.started = true;
       this.browser.started(); this.pending = undefined;
       this.setState(previous => ({ attempted: false, transcript: this.carried ?? null, receipt: false, session: previous.session + 1 }));
     } else this.focusAfterStart = false;

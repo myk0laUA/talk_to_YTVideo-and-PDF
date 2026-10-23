@@ -116,13 +116,15 @@ class OwnedVoiceSession extends Component<Props, State> {
   private mounted = false;
   componentDidMount() {
     this.mounted = true;
-    this.carried = this.props.memory?.snapshot; this.continuing = !!this.carried;
+    this.carried = this.props.memory?.snapshot; this.continuing = !!this.carried || !!this.props.memory?.started;
     this.setState({ transcript: this.carried ?? null });
     this.watchCooldown();
     if (this.props.source) this.controller = this.props.createController?.(status => {
       if (!this.mounted || !this.controller) return;
       if (status.admission) { this.recovery.remember(status.admission); this.watchCooldown(); }
-      this.setState({ status, transcript: this.controller.transcript });
+      const transcript = this.controller.transcript;
+      this.props.memory?.save(transcript);
+      this.setState({ status, transcript });
       if (status.phase === "ready" && status.microphone === "available") this.continuing = false;
       if (status.phase === "failed" || status.phase === "ended") {
         clearTimeout(this.reconnectedTimer); this.setState({ reconnect: null });
@@ -152,7 +154,7 @@ class OwnedVoiceSession extends Component<Props, State> {
     queueMicrotask(() => {
       if (this.mounted && this.controller === controller && this.props.memory?.resume) {
         this.props.memory.resume = false;
-        if (this.carried) this.start();
+        this.start();
       }
     });
   }
@@ -171,7 +173,10 @@ class OwnedVoiceSession extends Component<Props, State> {
     clearTimeout(this.reconnectedTimer);
     this.resumeArmed = false; this.setState({ reconnect: null });
     if (!this.continuing) { this.carried = undefined; this.props.memory?.clear(); }
-    if (this.controller.start(this.props.source.id, this.carried)) { this.browser.started(); this.setState(previous => ({ session: previous.session + 1 })); }
+    if (this.controller.start(this.props.source.id, this.carried)) {
+      if (this.props.memory) this.props.memory.started = true;
+      this.browser.started(); this.setState(previous => ({ session: previous.session + 1 }));
+    }
   };
   private mute = () => {
     const c = this.controller;

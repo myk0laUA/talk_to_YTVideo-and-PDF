@@ -7,6 +7,14 @@ import { ConversationMemory } from "../../src/shared/conversation-memory.ts";
 import { joinedTranscript } from "../../src/shared/conversation-restore.ts";
 import { TRANSCRIPT_LIMITS } from "../../src/shared/transcript.ts";
 
+test("an already started conversation continues even before its first transcript arrives", () => {
+  const memory = new ConversationMemory("source");
+  memory.requestHandoff(); assert.equal(memory.resume, false);
+  memory.started = true;
+  memory.requestHandoff(); assert.equal(memory.resume, true);
+  memory.clear(); memory.requestHandoff(); assert.equal(memory.resume, false);
+});
+
 test("handoff history accepts only bounded user/assistant dialogue for the same source", () => {
   const history = { sourceId: "source", turns: [{ role: "user", text: "Remember 雪" }] };
   assert.deepEqual(parseHistory(history, "source"), history);

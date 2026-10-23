@@ -26,7 +26,7 @@ await new Promise((resolve, reject) => { const p = net.createServer(); p.once('e
 let browser;
 try {
   browser = await chromium.launch();
-  for (const group of ['clock-skew', 'preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings', 'activation-settings']) {
+  for (const group of (process.argv.includes('--handoff-only') ? ['handoff'] : ['handoff', 'clock-skew', 'preparation-rejection', 'flow', 'setup-races', 'active-races', 'failures', 'transcription-settings', 'activation-settings'])) {
     const config = { origin, secure: false, cookieSecret: randomBytes(32).toString('hex') };
     const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', APP_ORIGIN: origin,
       VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: 'postgresql://synthetic:synthetic@127.0.0.1:1/synthetic',
@@ -98,6 +98,52 @@ try {
     };
     try {
       await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } });
+      if (group === 'handoff') {
+        for (const width of [390, 1440]) {
+          const f = await open('PDF', width), { page } = f;
+          await f.start(); await f.ready();
+          await page.getByRole('button', { name: 'Text mode', exact: true }).click();
+          const question = page.getByLabel('Your question', { exact: true });
+          await expect(question).toBeEditable();
+          await question.fill('Remember the blue crate.');
+          await page.getByRole('button', { name: 'Send question', exact: true }).click();
+          await expect(question).toBeEditable();
+          await expect(page.locator('.transcript-turn')).toHaveCount(2);
+          const retained = await page.locator('.transcript-text').allTextContents();
+          await question.fill('An unsent follow-up');
+          await page.getByRole('button', { name: 'Voice mode', exact: true }).click();
+          await expect(page.locator('.transcript-turn')).toHaveCount(2);
+          await f.ready();
+          check('built text-to-voice preserves messages', await page.locator('.transcript-text').allTextContents(), retained);
+          await expect(page.getByRole('button', { name: 'Start voice', exact: true })).toBeHidden();
+          await page.getByRole('button', { name: 'Text mode', exact: true }).click();
+          await expect(page.locator('.transcript-turn')).toHaveCount(2);
+          await expect(question).toBeEditable();
+          await expect(question).toHaveValue('An unsent follow-up');
+          check('built voice-to-text preserves messages', await page.locator('.transcript-text').allTextContents(), retained);
+          await expect(page.getByRole('button', { name: 'Continue chat', exact: true })).toBeHidden();
+          let releaseStop;
+          const stopped = new Promise(resolve => { releaseStop = resolve; });
+          let stopRequested = false, prematureStarts = 0;
+          const blockStop = async route => { stopRequested = true; await stopped; await route.continue(); };
+          await page.route('**/api/text-sessions/stop', blockStop);
+          const countStart = request => { if (new URL(request.url()).pathname === '/api/text-sessions' && !releaseDone) prematureStarts++; };
+          let releaseDone = false; page.on('request', countStart);
+          await page.getByRole('button', { name: 'Voice mode', exact: true }).click();
+          await until(() => stopRequested);
+          await page.getByRole('button', { name: 'Text mode', exact: true }).click();
+          await expect(page.locator('.transcript-turn')).toHaveCount(2);
+          await expect(page.getByRole('button', { name: 'Continue chat', exact: true })).toBeHidden();
+          await delay(150); check('rapid return waits for server release', prematureStarts, 0);
+          releaseDone = true; releaseStop(); await page.unroute('**/api/text-sessions/stop', blockStop);
+          await expect(question).toBeEditable();
+          check('rapid return keeps dialogue', await page.locator('.transcript-text').allTextContents(), retained);
+          page.off('request', countStart);
+          await page.screenshot({ path: path.join(directory, `handoff-${width}.png`), fullPage: true });
+          await page.getByRole('button', { name: 'Stop text session', exact: true }).click();
+          await f.clean('handoff'); await f.context.close();
+        }
+      }
       if (group === 'clock-skew') {
         for (const offset of [-300_000, -60_000, -1000, 1000, 60_000, 300_000]) {
           const f = await open('PDF');
@@ -241,7 +287,7 @@ try {
           await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
           await page.getByRole('button', { name: 'Text mode', exact: true }).click(); await f.clean(kind + ' mode switch');
           check('switching an empty voice session keeps the transcript empty', await page.locator('.transcript-turn').count(), 0);
-          await page.getByRole('button', { name: 'Start chat', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
+          await page.getByText('Ready for your question.', { exact: true }).waitFor();
           await page.getByLabel('Your question', { exact: true }).fill('Synthetic follow-up in text mode'); await page.getByRole('button', { name: 'Send question', exact: true }).click();
           await expect(page.locator('.transcript')).toContainText('All source markers preserved.');
           check('text mode acquires no new microphone', (await f.snap()).counts.media, 2);

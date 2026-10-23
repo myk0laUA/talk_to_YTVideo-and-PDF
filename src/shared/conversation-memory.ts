@@ -5,10 +5,11 @@ export class ConversationMemory {
   snapshot?: TranscriptSnapshot;
   draft = "";
   resume = false;
+  started = false;
   private revision = 0;
   readonly sourceId: string;
   constructor(sourceId: string) { this.sourceId = sourceId; }
-  requestHandoff() { this.resume = true; }
+  requestHandoff() { this.resume = this.started || !!this.snapshot; }
   save(snapshot?: TranscriptSnapshot) {
     if (!snapshot?.turns.length || snapshot.identity?.sourceId !== this.sourceId) return;
     const prefix = `saved_${++this.revision}_`;
@@ -16,5 +17,5 @@ export class ConversationMemory {
     // their own keys; model history contains roles/text, never these display IDs.
     this.snapshot = { ...snapshot, turns: snapshot.turns.map((turn, index) => ({ ...turn, itemId: `${prefix}${index}` })) };
   }
-  clear() { this.snapshot = undefined; }
+  clear() { this.snapshot = undefined; this.started = false; }
 }

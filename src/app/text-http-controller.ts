@@ -9,6 +9,9 @@ type Attempt = { requestId: string; sourceId: string; abort: AbortController; se
   reader?: ReadableStreamDefaultReader<Uint8Array>; stopping: boolean; watchdog?: ReturnType<typeof setTimeout> };
 const running = new Set<TextStatus["phase"]>(["connecting", "priming", "ready", "admitting", "sending", "awaiting-response", "responding"]);
 const empty = () => new TranscriptStore().snapshot;
+// A mode switch can return to text before the previous HTTP Stop reaches the
+// server. Serialize starts behind those releases to avoid an owner-busy rejection.
+const pendingStops = new Set<Promise<unknown>>();
 
 /** Browser ownership/HTTP adapter only. The server runs the accepted TextLifecycle/ACK gates.
  * No model, source text, credentials, provider events, media or automatic retries cross this API.
@@ -43,6 +46,8 @@ export class HttpTextController implements TextController {
   }
   private async open(a: Attempt, history?: ConversationHistory) {
     try {
+      await Promise.all([...pendingStops]);
+      if (!this.current(a)) return;
       const response = await this.post("", { sourceId: a.sourceId, requestId: a.requestId, ...(history ? { history } : {}) }, a.abort.signal);
       const result: unknown = await response.json();
       if (!this.current(a)) return;
@@ -107,7 +112,9 @@ export class HttpTextController implements TextController {
     void a.reader?.cancel().catch(() => {});
     a.abort.abort(); this.draft = "";
     // Same opaque Start identity for pre-response cancellation and for an acquired session.
-    void this.post("/stop", { requestId: a.requestId }, undefined, true).catch(() => {});
+    const stopped = this.post("/stop", { requestId: a.requestId }, AbortSignal.timeout(10_000), true).catch(() => {});
+    pendingStops.add(stopped);
+    void stopped.finally(() => pendingStops.delete(stopped));
     if (failed || userStop) {
       this.retain();
       this.publish({ ...this.value, identity: undefined, phase: failed ? "failed" : "ended", protocolReady: false,

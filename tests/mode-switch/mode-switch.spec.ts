@@ -135,12 +135,13 @@ test("explicit mode, inert repeat selection, one owner, keyboard focus and no ea
   await choose(page, "text").focus(); await page.keyboard.press("Space"); await expect(choose(page, "text")).toBeFocused(); await expect(question(page)).toHaveValue("");
 });
 
-test("repeat text selection preserves an unsent draft; switching and returning retains it before Start", async ({ page }) => {
+test("switching an empty active chat continues automatically and preserves an unsent draft", async ({ page }) => {
   await begin(page, "text"); await question(page).fill("Unsent draft 雪");
   const before = (await audit(page)).text.length;
   await choose(page, "text").dblclick(); await expect(question(page)).toHaveValue("Unsent draft 雪"); expect((await audit(page)).text.length).toBe(before);
   await choose(page, "voice").click(); await choose(page, "text").click(); await expect(question(page)).toHaveValue("Unsent draft 雪");
-  expect((await audit(page)).text.at(-1)!.prepare).toBe(0); await expect(start(page, "text")).toBeEnabled();
+  expect((await audit(page)).text.at(-1)!.prepare).toBe(1); await expect(start(page, "text")).toBeHidden();
+  await prime(page, "text"); await expect(question(page)).toBeEditable();
 });
 
 for (const failure of ["denied", "unavailable", "ended"]) test(`${failure} microphone to complete text exchange and deliberate fresh voice ACKs`, async ({ page }, info) => {
@@ -264,7 +265,7 @@ test("rapid voice text voice switches, duplicate Start and abandoned callbacks k
   for (let n = 0; n < 5; n++) {
     for (const m of ["voice", "text"] as const) {
       await choose(page, m).click(); await choose(page, m).dblclick();
-      await start(page, m).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); });
+      if (await start(page, m).isVisible()) await start(page, m).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); });
       expect((await audit(page))[m].at(-1)!.prepare).toBe(1);
     }
   }
