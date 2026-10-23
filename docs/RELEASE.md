@@ -1,4 +1,14 @@
 # Release status
+## Voice reconnection and repository cleanup — 23 October 2026
+
+Active voice sessions now reconnect after connection loss while retaining visible dialogue and independent mute choices. Each attempt reauthorizes the source, primes a new provider connection and restores completed turns with exact final acknowledgments before enabling the microphone. Partial/untranscribed speech stays visible when available but is not restored as completed context. No question or interrupted answer is automatically replayed. Three consecutive connection failures stop automatic recovery; End, source/mode changes and page departure cancel it. History is temporary and bounded; a full reload cannot recover it. Text-mode recovery remains explicit.
+
+Offline verification passed 1,646 unit tests, lint, typecheck, production build, 18 smoke cases, the full 248-case recovery suite and 16 additional bounded-retry/cancellation cases across four viewports. Voice adapter verification passed 126 unit cases and 623 browser/HTTP checks across 48 scenarios. The current reconnection build is `ofzO_qetSnCN-to1B35bk`. Browser evidence uses simulated media and does not establish physical audio. Cleanup moved ten browser configurations into `tests/config` and 28 verification helpers into `tests/integration`; all ten configurations still discover their suites. `scripts` retains database cleanup/persistence operations. The environment template now contains only 13 normal application settings; diagnostic flags remain disabled by default.
+
+One bounded live protocol check used the production voice model/settings over Realtime WebSocket: three restored history items were acknowledged, no unsolicited response occurred, and a follow-up correctly answered “It holds 18 tiles.” One connection and one response were used; no audio input/output or caption calls. The provider reported 33 output tokens and zero input tokens in that response's usage payload; this is recorded as returned, not a billing guarantee. The separate allocation is closed with a conservative $1 ceiling. Evidence is ignored under `artifacts/local/voice-resume` and `artifacts/local/test-review/reconnect-*`. This proves history insertion and that specific follow-up, not real-phone WebRTC recovery or general model accuracy.
+
+Deployment of this change is pending. The currently verified hosted revision remains the one recorded below until a fresh deployment is confirmed. Remaining user checks: real-phone speech/audible playback, interruption, follow-up after a network interruption, and the public 10–15 minute walkthrough. The independent local assessment report remains unchanged.
+
 
 Updated 23 October 2026 (Toronto).
 

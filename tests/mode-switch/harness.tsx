@@ -40,7 +40,7 @@ function Harness() {
       <button onClick={() => { setMounted(false); setRevision(n => n + 1); }}>Unmount session</button>
       {[
         ["Refresh audit", () => {}],
-        ["Voice ACK initial", () => v()?.transport.config()], ["Voice ACK source", () => v()?.transport.items()], ["Voice ACK final", () => v()?.transport.config()],
+        ["Voice ACK initial", () => v()?.transport.config()], ["Voice ACK source", () => v()?.transport.items()], ["Voice ACK final", () => v()?.transport.config()], ["Voice ACK history", () => v()?.transport.items()],
         ["Text ACK initial", () => t()?.config()], ["Text ACK source", () => t()?.items()], ["Text ACK final", () => t()?.config()],
         ["Text ACK added", () => t()?.question(false)], ["Text ACK receipt", () => t()?.question(true)],
         ["Voice answer", () => { v()?.transport.answer(); v()?.transport.partial(); v()?.transport.buffer("started"); }],

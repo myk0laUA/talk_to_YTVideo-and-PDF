@@ -55,7 +55,8 @@ The example contains only normal application settings. Diagnostic endpoints defa
 - Open **View source** to inspect the extracted content.
 - Choose **Voice mode** or **Text mode**, then start the conversation.
 - Voice has independent microphone/speaker mute, interruption and End controls. If autoplay is blocked, use **Tap to enable sound**.
-- Text works without microphone access. Stop preserves received text; starting again clears it. Switching modes or replacing the source clears the conversation. Nothing resumes or resends automatically.
+- Voice reconnects after a connection loss, preserving the chat and mute choices. It restores completed dialogue before enabling the microphone; interrupted or untranscribed speech may need repeating. Three failed connection attempts pause recovery and show **Retry connection**. **End voice** cancels recovery.
+- Text works without microphone access and requires a new session after disconnection. Stop preserves received text; starting fresh clears it. Switching modes or replacing the source clears the conversation. Questions are never resent automatically.
 
 ## Stack and structure
 

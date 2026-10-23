@@ -31,7 +31,7 @@ Run the suites relevant to a change after the production build. These exercise r
 | Import/cancel/replace/remove, keyboard focus, theme/draft retention | `test:workspace:flows`, `test:source-ui`, `test:youtube-ui` |
 | Desktop/mobile layout, 200% text, scrolling, voice recovery and centered starts | `test:workspace:layout` |
 | Owned-source HTTP streaming and voice setup, transport/resource teardown | `test:owned-text`, `test:owned-voice`, `test:voice-adapter`, `test:voice-preparation` |
-| Session controls, transcript states, switching and explicit recovery | `test:text-session`, `test:voice-session`, `test:transcript-view`, `test:mode-switch`, `test:recovery` |
+| Session controls, transcript states, switching and bounded voice reconnection | `test:text-session`, `test:voice-session`, `test:transcript-view`, `test:mode-switch`, `test:recovery` |
 | Real parser/HTTP limits, complete sources, isolation and replacement | `test:pdf:http`, `test:sources:http`, `test:youtube:http` |
 | Caption cache/coalescing/fallback, English selection and entity decoding | `test:captions:cache`, `test:captions:coalescing`, `test:captions:fallback`, `test:source-limits`, `test:caption-entities` |
 | Disabled production gates and retained diagnostic endpoints | `test:smoke`, `test:boundaries`, `test:captions:mocked`, `test:text`, `test:voice` |
@@ -76,7 +76,7 @@ Use a nonprivate authored source and a deliberate request/cost bound. Record rev
 2. Verify exact 25 MB success, over-limit rejection, foreign-visitor denial and disabled proof routes.
 3. Ask a detail, follow-up and absent-information question in text. Check answers against the actual source; transport success alone is insufficient.
 4. On a physical phone, record model/OS/browser. Test source preview, microphone permission, audible English answer, interruption, independent mic/speaker mute and Stop.
-5. Test text without microphone permission, on-screen keyboard, scrolling, theme and source replacement. Disconnect/reconnect the real network and verify recovery needs explicit action.
+5. Test text without microphone permission, on-screen keyboard, scrolling, theme and source replacement. Disconnect/reconnect the real network during voice: verify automatic reconnection preserves chat, a follow-up uses completed history, mute choices persist, and End prevents reconnecting. Repeat interrupted/untranscribed speech explicitly. Text-mode recovery still needs a fresh session.
 6. Import a public English-caption YouTube video on the host, inspect first/final captions and ask a source-specific question. Record provider, segment count and bounded credit/model usage. Verify that PDF replacement still works and foreign visitors cannot read the source.
 
 Viewport emulation, synthetic microphone tracks and displayed speech text do not prove physical audio or mobile behavior. [Release status](RELEASE.md) distinguishes completed and outstanding checks.

@@ -184,7 +184,7 @@ async function restart(p: Page, m: Mode) {
 }
 
 for (const m of ["voice", "text"] as const) for (const stage of stages[m]) for (const signal of ["persisted", "discarded", "offline"] as const)
-test(`${m} ${stage}: ${signal} synchronously stops; late resources cannot resume`, async ({ page }) => {
+test(`${m} ${stage}: ${signal} releases resources; departure or explicit End cancels recovery`, async ({ page }) => {
   await pending(page, m, stage);
   const old = (await audit(page))[m].at(-1)!;
   const content = await page.locator(".transcript-text").allTextContents();
@@ -203,6 +203,10 @@ test(`${m} ${stage}: ${signal} synchronously stops; late resources cannot resume
   await act(page, "Release all"); await act(page, "Deliver stale events");
   expect(await page.locator(".transcript-text").allTextContents()).toEqual(content);
   if (m === "text") await expect(question(page)).toHaveValue(draft);
+  if (m === "voice" && signal === "offline" && await page.getByRole("button", { name: "End voice", exact: true }).isVisible()) {
+    await expect(selected(page, m)).toContainText("we’ll reconnect");
+    await page.getByRole("button", { name: "End voice", exact: true }).click();
+  }
   await expect(start(page, m)).toBeDisabled();
   if (signal === "offline") { await expect(selected(page, m)).toContainText("appear to be offline"); await connectivity(page, true); }
   else { await expect(selected(page, m)).toContainText("page departure"); await departure(page, true, "pageshow"); }
@@ -228,25 +232,36 @@ for (const m of ["voice", "text"] as const) test(`${m}: partial answer retained,
   await connectivity(page, false);
   await expect(choose(page, m)).toBeFocused();
   await expect(selected(page, m)).not.toContainText(/session ready|Ready for your question|Use Start/);
-  await expect(start(page, m)).toBeDisabled();
+  if (m === "voice") await expect(page.getByRole("button", { name: "End voice", exact: true })).toBeEnabled();
+  else await expect(start(page, m)).toBeDisabled();
   await page.getByRole("button", { name: "Inspect source", exact: true }).click(); await expect(page.locator(".page-text")).toBeVisible();
   expect(await page.locator(".transcript-text").allTextContents()).toEqual(before);
   await expect(page.locator(".transcript-part").last()).toContainText("Text unfinished when the conversation stopped");
   await capture(page, info, `${m}-offline`); await fits(page);
   await connectivity(page, true);
-  await expect(selected(page, m)).toContainText("Connection may be back");
-  expect((await audit(page))[m].at(-1)!.prepare).toBe(1);
-  await capture(page, info, `${m}-online-stopped`);
-  await start(page, m).click();
-  expect((await audit(page))[m].at(-1)!.prepare).toBe(2);
-  await expect(turns(page)).toHaveCount(0);
+  if (m === "voice") {
+    await expect.poll(async () => (await audit(page)).voice.at(-1)!.prepare).toBe(2);
+    await expect(turns(page)).toHaveCount(2);
+  } else {
+    await expect(selected(page, m)).toContainText("Connection may be back");
+    expect((await audit(page))[m].at(-1)!.prepare).toBe(1);
+    await start(page, m).click();
+    expect((await audit(page))[m].at(-1)!.prepare).toBe(2);
+    await expect(turns(page)).toHaveCount(0);
+  }
   if (m === "text") await expect(page.getByRole("button", { name: "Send question", exact: true })).toBeDisabled();
   else expect((await audit(page)).voice.at(-1)!.media).toBe(1);
   await act(page, `${m === "voice" ? "Voice" : "Text"} ACK initial`);
   await act(page, `${m === "voice" ? "Voice" : "Text"} ACK source`);
-  await expect(selected(page, m)).toContainText("Loading your source");
+  await expect(selected(page, m)).toContainText(m === "voice" ? "Reconnecting" : "Loading your source");
   await act(page, `${m === "voice" ? "Voice" : "Text"} ACK final`);
-  await expect(selected(page, m)).toContainText(m === "voice" ? "Voice session ready" : "Ready for your question");
+  if (m === "voice") {
+    expect((await audit(page)).voice.at(-1)!.media).toBe(1);
+    await act(page, "Voice ACK history");
+    await expect(turns(page)).toHaveCount(2);
+    expect(await page.locator(".transcript-text").allTextContents()).toEqual(before);
+  }
+  await expect(selected(page, m)).toContainText(m === "voice" ? "Reconnected" : "Ready for your question");
   const records = await audit(page);
   const commands = m === "voice" ? records.voice.at(-1)!.resources : records.text.at(-1)!.transports;
   expect(commands).toHaveLength(2);
@@ -280,10 +295,13 @@ test(`${m}: authoritative transport closure in ${stage} while browser is online`
   expect(await page.evaluate(() => navigator.onLine)).toBe(true);
   const before = await page.locator(".transcript-text").allTextContents();
   await act(page, `Close ${m} transport`);
-  await expect(selected(page, m)).toContainText("connection failed or closed");
+  if (m === "voice" && stage === "answer") {
+    await expect(selected(page, m)).toContainText("Reconnecting");
+    await page.getByRole("button", { name: "End voice", exact: true }).click();
+  } else await expect(selected(page, m)).toContainText("connection failed or closed");
   await expect(selected(page, m)).not.toContainText("appear to be offline");
   await connectivity(page, true); // duplicate online must not hide the failure
-  await expect(selected(page, m)).toContainText("connection failed or closed");
+  if (m !== "voice" || stage !== "answer") await expect(selected(page, m)).toContainText("connection failed or closed");
   expect(await page.locator(".transcript-text").allTextContents()).toEqual(before);
   expect((await audit(page)).ownership.transferred).toBe(0);
   await capture(page, info, `${m}-${stage}-closed`);
@@ -405,4 +423,38 @@ test("actual browser back/forward navigation observation, BFCache reported separ
   await page.goForward(); await expect(page).toHaveTitle("Away"); await page.goBack();
   await expect(page.getByRole("heading", { name: "Isolated mode switching fixture 10C" })).toBeVisible();
   await page.getByText("Fixture controls", { exact: true }).click();
+});
+
+test("voice reconnect attempts are bounded; manual retry retains chat and End cancels it", async ({ page }) => {
+  await mode(page, "voice"); await begin(page, "voice"); await act(page, "Voice answer");
+  await page.clock.install();
+  await act(page, "Close voice transport");
+  for (const [i, wait] of [1000, 3000, 7000].entries()) {
+    await page.clock.runFor(wait + 100);
+    expect((await audit(page)).voice.at(-1)!.prepare).toBe(i + 2);
+    await act(page, "Close voice transport");
+  }
+  await expect(selected(page, "voice")).toContainText("Couldn’t reconnect");
+  await expect(turns(page)).toHaveCount(2);
+  await page.clock.runFor(30000);
+  expect((await audit(page)).voice.at(-1)!.prepare).toBe(4);
+  await page.getByRole("button", { name: "Retry connection", exact: true }).click();
+  await page.clock.runFor(1100);
+  expect((await audit(page)).voice.at(-1)!.prepare).toBe(5);
+  await page.getByRole("button", { name: "End voice", exact: true }).click();
+  await act(page, "Deliver stale events"); await page.clock.runFor(30000);
+  expect((await audit(page)).voice.at(-1)!.prepare).toBe(5);
+  expect((await audit(page)).ownership.transferred).toBe(0);
+});
+
+for (const action of ["mode", "source", "departure"] as const)
+test(`voice pending reconnect is cancelled by ${action}`, async ({ page }) => {
+  await mode(page, "voice"); await begin(page, "voice"); await act(page, "Voice answer");
+  await page.clock.install(); await act(page, "Close voice transport");
+  if (action === "mode") await choose(page, "text").click();
+  else if (action === "source") await act(page, "Replace source");
+  else await departure(page, true);
+  await page.clock.runFor(15000); await act(page, "Deliver stale events");
+  expect((await audit(page)).voice.every(r => r.prepare <= 1)).toBe(true);
+  expect((await audit(page)).ownership.transferred).toBe(0);
 });

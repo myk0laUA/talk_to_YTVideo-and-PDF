@@ -2,7 +2,8 @@ import { PrimingController, type PrimingClock, type PrimingStatus, type PrimingT
 import { isProviderInput, validateProviderAdmission, type AdmissionInput, type ProviderPrimingInput } from "./priming-admission.ts";
 import { isContextLimit, matchesProviderVoicePolicy } from "./priming-provider-policy.ts";
 import { VoiceResponseController, emptyResponse, type ResponseState } from "./voice-response.ts";
-import { TranscriptStore } from "./transcript.ts";
+import { TranscriptStore, type TranscriptSnapshot } from "./transcript.ts";
+import { joinedTranscript, voiceHistory, VoiceHistoryRestore, type HistoryEvent } from "./voice-history.ts";
 import { VoiceSetupDiagnostics, type VoiceSetupDiagnostic, type VoiceSetupReporter } from "./voice-diagnostics.ts";
 import { VoiceEventDiagnostics } from "./voice-event-diagnostics.ts";
 import { SessionAdmissionError, type AdmissionRejection } from "./session-admission.ts";
@@ -18,8 +19,9 @@ export type VoiceStatus = Readonly<{
   basis?: PrimingStatus["basis"]; failure?: VoiceFailure; message: string;
   diagnostics?: readonly VoiceSetupDiagnostic[];
   admission?: AdmissionRejection;
+  historyOmitted?: boolean;
 }>;
-export type VoiceFailure = "source_too_large" | "admission" | "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider";
+export type VoiceFailure = "source_too_large" | "admission" | "budget_unavailable" | "preparation" | "connection" | "priming" | "microphone" | "track_ended" | "context_limit" | "provider" | "history";
 export interface VoiceTrack {
   enabled: boolean; readonly readyState: string; stop(): void;
   subscribeEnded(callback: () => void): () => void;
@@ -50,6 +52,7 @@ export type VoiceDeadlines = { preparationMs: number; connectionMs: number; prim
 const defaults: VoiceDeadlines = { preparationMs: 25_000, connectionMs: 15_000, primingMs: 25_000, mediaMs: 30_000, interruptionMs: 5_000 };
 const safely = (action: () => void) => { try { action(); } catch { /* Continue releasing other resources. */ } };
 const messages: Record<VoiceFailure, string> = {
+  history: "Conversation history could not be restored. Your received text is still here.",
   source_too_large: SOURCE_SIZE_MESSAGE,
   admission: "Voice cannot start right now. Text mode is available separately.",
   budget_unavailable: "Verified source budgets are unavailable. Setup needs review before starting voice.",
@@ -68,6 +71,7 @@ type Attempt = {
   response?: VoiceResponseController;
   diagnostics: VoiceSetupDiagnostics;
   trace: VoiceEventDiagnostics;
+  resuming?: boolean; history?: HistoryEvent[]; restore?: VoiceHistoryRestore;
 };
 
 /** A data-only bridge permits 07B admission BEFORE any connection acquisition.
@@ -132,6 +136,8 @@ export class VoiceLifecycle {
   private resetting = false;
   private sequence = 0;
   private transcriptStore = new TranscriptStore();
+  private previousTranscript?: TranscriptSnapshot;
+  private continuation?: { sourceId: string; muted: boolean; speakerMuted: boolean };
   private eventTrace?: VoiceEventDiagnostics;
   private clock: PrimingClock;
   private adapters: VoiceAdapters;
@@ -144,7 +150,8 @@ export class VoiceLifecycle {
     if (Object.values(this.deadlines).some(n => !Number.isSafeInteger(n) || n <= 0 || n > 120_000)) throw new Error("Invalid voice deadline.");
   }
   get snapshot() { return this.status; }
-  get transcript() { return this.transcriptStore.snapshot; }
+  get transcript() { return joinedTranscript(this.previousTranscript, this.transcriptStore.snapshot); }
+  get canResume() { return !!this.continuation && !this.attempt && !this.disposed; }
   get eventDiagnostics() { return this.eventTrace?.snapshot; }
   get canSendQuestions() { return !!this.attempt && this.status.phase === "ready" && this.status.microphone === "available" && !this.status.muted
     && this.attempt.response?.canAcceptInput === true; }
@@ -175,6 +182,7 @@ export class VoiceLifecycle {
   }
   private finish(a: Attempt, failure?: VoiceFailure, admission?: AdmissionRejection) {
     if (!this.current(a)) return;
+    if (failure === "connection" && (this.status.microphone === "available" || a.resuming)) this.remember(a);
     a.diagnostics.finish(failure ? a.diagnostics.snapshot.at(-1)?.stage.endsWith("_validation") ? "invalid" : "unavailable" : "cancelled");
     // Invalidate first: abort/close/track callbacks and observers cannot revive this run.
     this.attempt = undefined;
@@ -182,6 +190,7 @@ export class VoiceLifecycle {
     this.transcriptStore.stop();
     this.cleaning = true;
     a.abort.abort();
+    a.restore?.stop(); a.restore = undefined; a.history = undefined;
     a.response?.stop(); a.response = undefined;
     for (const remove of a.listeners.splice(0)) safely(remove);
     const priming = a.priming, media = a.media, connection = a.connection;
@@ -213,16 +222,29 @@ export class VoiceLifecycle {
   /** Call only from an explicit user Start action. Active starts are rejected; retry is explicit.
    * Source replacement MUST call reset(); page departure calls stop(); unmount calls dispose().
    */
-  start(sourceId: string): boolean {
+  start(sourceId: string): boolean { return this.begin(sourceId, false); }
+  private remember(a: Attempt) { this.continuation = { sourceId: a.identity.sourceId, muted: this.status.muted, speakerMuted: this.status.speakerMuted }; }
+  /** Network suspension retains same-source dialogue and user mute choices, but releases all media. */
+  suspend(): boolean {
+    const a = this.attempt;
+    if (a && (this.status.microphone === "available" || a.resuming)) { this.remember(a); this.finish(a); }
+    else if (a) this.finish(a);
+    return this.canResume;
+  }
+  resume(): boolean { return this.canResume && this.begin(this.continuation!.sourceId, true); }
+  private begin(sourceId: string, resuming: boolean): boolean {
     if (this.disposed || this.disposing || this.cleaning || this.resetting || this.attempt || !/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)) return false;
     const n = ++this.sequence;
     const a: Attempt = { identity: Object.freeze({ sourceId, runId: `voice_${n}`, connectionId: `connection_${n}` }),
       abort: new AbortController(), listeners: [], diagnostics: new VoiceSetupDiagnostics(this.clock.now.bind(this.clock)),
-      trace: new VoiceEventDiagnostics(this.clock.now.bind(this.clock)) };
+      trace: new VoiceEventDiagnostics(this.clock.now.bind(this.clock)), resuming };
     this.eventTrace = a.trace; a.trace.mark("session_start");
     this.attempt = a;
+    this.previousTranscript = resuming ? this.transcript : undefined;
+    if (!resuming) this.continuation = undefined;
     this.transcriptStore.reset();
-    this.update({ phase: "connecting", identity: a.identity, muted: false, speakerMuted: false, protocolReady: false, productionReady: false,
+    this.update({ phase: "connecting", identity: a.identity, muted: resuming ? this.continuation!.muted : false,
+      speakerMuted: resuming ? this.continuation!.speakerMuted : false, historyOmitted: undefined, protocolReady: false, productionReady: false,
       microphone: "none", playback: "none", response: emptyResponse(), basis: undefined, failure: undefined, admission: undefined, diagnostics: a.diagnostics.snapshot, message: "Preparing voice setup; questions are disabled." });
     if (this.current(a)) void this.setup(a);
     return true;
@@ -251,9 +273,16 @@ export class VoiceLifecycle {
         || input.manifest.items.some(item => JSON.parse(item.item.content[0].text).source.id !== a.identity.sourceId)) {
         this.finish(a, "preparation"); return;
       }
+      if (a.resuming && this.previousTranscript) {
+        failure = "history";
+        const history = voiceHistory(this.previousTranscript, a.identity.runId, input.manifest.items.at(-1)!.item.id, input.manifest.bytes);
+        a.history = history.events;
+        this.update({ historyOmitted: history.dropped });
+        if (!this.current(a)) return;
+      }
       // One real subscription. Before the complete 07B barrier, only priming owns events.
       // Afterward response errors must not be misclassified as source/transport failures.
-      this.transcriptStore.start(a.identity, input.manifest.items.map(item => item.item.id));
+      this.transcriptStore.start(a.identity, [...input.manifest.items.map(item => item.item.id), ...(a.history?.map(e => e.item.id) ?? [])]);
       const bridge = new PrimingBridge((event, priming) => {
         if (!this.current(a)) return;
         // Provider admission is a permission to attempt generation, never a capacity guarantee.
@@ -273,6 +302,7 @@ export class VoiceLifecycle {
           }
         }
         if (!a.priming?.snapshot.protocolReady) priming();
+        else if (a.restore) a.restore.receive(event);
         else if (this.status.microphone === "available") {
           this.transcriptStore.receive(a.identity, event);
           a.response?.receive(event);
@@ -302,7 +332,7 @@ export class VoiceLifecycle {
         if (s.state === "failed") this.finish(a, s.failure === "budget_unavailable" ? "budget_unavailable"
           : s.failure === "transport" ? "connection" : providerVoice && s.failure === "context_limit" ? "context_limit"
           : providerVoice && s.failure === "provider" ? "provider" : "priming");
-      }, () => { if (this.current(a)) void this.media(a); });
+      }, () => { if (this.current(a)) void this.restoreAndListen(a); });
       // Actual 07B validates admission and manifest against an inert bridge first.
       a.trace.mark("priming_start");
       if (!a.priming.start(a.identity, input, bridge) || !this.current(a)) return;
@@ -316,6 +346,19 @@ export class VoiceLifecycle {
       if (this.current(a)) bridge.bind(connection);
     } catch (error) { if (this.current(a)) this.finish(a, error instanceof SourceSizeError ? "source_too_large" : error instanceof SessionAdmissionError ? "admission" : failure,
       error instanceof SessionAdmissionError ? error.rejection : undefined); }
+  }
+  private async restoreAndListen(a: Attempt) {
+    if (a.history?.length) {
+      const restore = new VoiceHistoryRestore(a.history); a.restore = restore; a.history = undefined;
+      this.update({ message: "Restoring the conversation before enabling the microphone." });
+      const completed = this.wait(a, restore.done, this.deadlines.primingMs);
+      if (this.current(a)) void restore.send(raw => a.connection!.transport.send(raw));
+      try { await completed; }
+      catch { if (this.current(a)) this.finish(a, "history"); return; }
+      if (!this.current(a)) return;
+      a.restore = undefined;
+    }
+    if (this.current(a)) await this.media(a);
   }
   private async media(a: Attempt) {
     try {
@@ -337,6 +380,7 @@ export class VoiceLifecycle {
       await this.wait(a, Promise.resolve(media.attach(a.connection!)), this.deadlines.mediaMs);
       if (!this.current(a)) return;
       this.report(a)("microphone_attach", "ok");
+      a.connection!.playback.setMuted(this.status.speakerMuted);
       a.trace.mark("session_ready");
       this.update({ microphone: "available", message: "Lifecycle ready. Audio and provider behavior require separate verification." });
       if (this.current(a)) { this.applyMute(a); void this.playAudio(); }
@@ -373,12 +417,12 @@ export class VoiceLifecycle {
     catch { if (this.current(a)) this.update({ playback: "blocked" }); }
     finally { playbackAbort.abort(); a.abort.signal.removeEventListener("abort", abortPlayback); }
   }
-  stop() { if (this.attempt) this.finish(this.attempt); }
+  stop() { this.continuation = undefined; if (this.attempt) this.finish(this.attempt); }
   /** Source replacement: existing Stop cleanup plus immediate release of old transcript text. */
   reset() {
     if (this.resetting) return;
     this.resetting = true;
-    try { this.stop(); this.transcriptStore.reset(); this.eventTrace = undefined; } finally { this.resetting = false; }
+    try { this.stop(); this.previousTranscript = undefined; this.transcriptStore.reset(); this.eventTrace = undefined; } finally { this.resetting = false; }
   }
-  dispose() { this.disposing = true; this.stop(); this.eventTrace = undefined; this.transcriptStore.dispose(); this.disposed = true; this.notify = () => {}; }
+  dispose() { this.disposing = true; this.stop(); this.previousTranscript = undefined; this.eventTrace = undefined; this.transcriptStore.dispose(); this.disposed = true; this.notify = () => {}; }
 }

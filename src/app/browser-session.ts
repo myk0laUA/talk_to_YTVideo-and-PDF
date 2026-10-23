@@ -6,9 +6,9 @@ export const initialBrowserSession: BrowserSessionState = { offline: false, depa
 export class BrowserSession {
   private state = initialBrowserSession;
   private disposed = false;
-  private stop: () => void;
+  private stop: (reason: "offline" | "departure") => void;
   private notify: (state: BrowserSessionState) => void;
-  constructor(stop: () => void, notify: (state: BrowserSessionState) => void) {
+  constructor(stop: (reason: "offline" | "departure") => void, notify: (state: BrowserSessionState) => void) {
     this.stop = stop; this.notify = notify;
     for (const type of ["pagehide", "pageshow", "offline", "online"]) window.addEventListener(type, this.receive);
     this.connectivity();
@@ -21,14 +21,14 @@ export class BrowserSession {
     if (this.disposed) return;
     const offline = navigator.onLine === false;
     if (offline === this.state.offline) return;
-    if (offline) this.stop();
+    if (offline) this.stop("offline");
     this.publish({ ...this.state, offline, notice: offline ? "offline" : "online" });
   };
   private receive = (event: Event) => {
     if (this.disposed) return;
     if (event.type === "pagehide") {
       if (this.state.departed) return;
-      this.stop(); this.publish({ ...this.state, departed: true, notice: "departure" });
+      this.stop("departure"); this.publish({ ...this.state, departed: true, notice: "departure" });
     } else if (event.type === "pageshow") {
       this.publish({ ...this.state, departed: false }); this.connectivity();
     } else this.connectivity();

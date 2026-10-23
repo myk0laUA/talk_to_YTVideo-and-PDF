@@ -15,7 +15,11 @@ Both modes prepare the complete source, instructions and settings, and wait for 
 
 Both default to `gpt-realtime-2.1` with a 2,048-token output limit and disabled context truncation. Voice uses Marin, input transcription and server VAD. There is no automatic smaller-model fallback.
 
-Shared lifecycle state machines reject stale events and release pending work on Stop, mode/source changes, expiry or transport failure. One mounted conversation owner is active at a time. Received text is temporary browser state; mode changes and restart clear it.
+Shared lifecycle state machines reject stale events and release pending work on Stop, mode/source changes, expiry or transport failure. One mounted conversation owner is active at a time. Received text is temporary browser state; mode changes and a fresh start clear it.
+
+An active voice conversation can reconnect after network loss. The old peer and microphone are released immediately. A new authorized connection loads the same source and completed dialogue as ordered text history; exact final acknowledgments are required before microphone acquisition. Interrupted/incomplete turns remain visible but are omitted from model history. Restoration never sends a response request, and does not claim to restore audio or confirm what was heard. Mic and speaker mute choices survive.
+
+The UI permits three consecutive connection attempts with 1/3/7-second delays, then offers manual retry. Authorization, source expiry, admission and history errors stop automatic recovery. End, source/mode changes, navigation and unmount cancel it. History remains bounded by the transcript and wire limits; a full page reload cannot restore it. Text-mode recovery still requires a fresh session.
 
 ## Trust boundaries
 

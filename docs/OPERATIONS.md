@@ -42,6 +42,6 @@ Reports omit document text and credentials. Save sanitized results outside track
 
 ## Security and recovery
 
-Keep secrets server-only. Do not log raw provider errors, cookies, credentials, SDP or private document content. Rotating the visitor secret invalidates existing visitor cookies. Stop/restart/mode changes are explicit; the application does not automatically resend a question after an uncertain receipt.
+Keep secrets server-only. Do not log raw provider errors, cookies, credentials, SDP or private document content. Rotating the visitor secret invalidates existing visitor cookies. An active voice conversation automatically reconnects after connection loss, with at most three consecutive attempts and preserved completed dialogue. Each attempt repeats authorization and source preparation and may issue a new provider credential; normal admission limits still apply. End, mode/source changes and navigation cancel recovery. Text recovery is explicit. Neither mode automatically resends a question after an uncertain receipt.
 
 Rate limits are finite but process-local, not a distributed spending guarantee. Review provider usage separately. Use the [database persistence probe](DATABASE_PROBE.md) only when a real persistence check is needed; ordinary build/test never invokes it.
