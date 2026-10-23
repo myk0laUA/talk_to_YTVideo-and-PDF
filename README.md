@@ -2,7 +2,9 @@
 
 A mobile web app for exploring one PDF or YouTube caption source through voice or text. Import a source, inspect its extracted text, then start a conversation. It uses anonymous visitors, PostgreSQL, server-side extraction, OpenAI Realtime voice over WebRTC and a microphone-free text relay. There are no accounts, embeddings, vector database or permanent chat history.
 
-The current local candidate is verified in [Release candidate 13C](docs/RELEASE_CANDIDATE_13C.md). The latest accepted corrections and deployment checks are tracked in [Release 13G](docs/RELEASE_13G.md). Disposable PostgreSQL cleanup validation passed; physical-phone checks and submission links remain separate gates. [Project state](docs/PROJECT_STATE.md) preserves the full history; [submission checklist](docs/SUBMISSION_13C.md) records what PM and the user must finish.
+**[Open the live app](https://talk-to-document-4pre.onrender.com)** — deployed release `a7ef8fb` (23 October 2026). Hosted PDF and text checks pass; fresh physical-phone/audio checks and recording remain pending. Hosted YouTube is disabled; use the documented local demo path.
+
+The offline candidate verification is in [Release candidate 13C](docs/RELEASE_CANDIDATE_13C.md). The latest accepted corrections and deployment checks are tracked in [Release 13G](docs/RELEASE_13G.md). Disposable PostgreSQL cleanup validation passed; physical-phone checks and submission links remain separate gates. [Project state](docs/PROJECT_STATE.md) preserves the full history; [submission checklist](docs/SUBMISSION_13C.md) records what PM and the user must finish.
 
 ## Run without keys
 

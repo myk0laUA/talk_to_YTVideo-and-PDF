@@ -1,23 +1,23 @@
 # Final submission checklist
 
-Status: prepared for PM review on 22 October 2026 (Toronto). This template is not evidence that a deployment, recording or anonymous access check has passed. Use [the release gate matrix](RELEASE_CANDIDATE_13C.md) and [recording script](WALKTHROUGH_14A.md).
+Status: updated after PM deployment on 23 October 2026 (Toronto). Hosted checks passed as recorded in [Release 13G](RELEASE_13G.md); phone and recording gates remain pending. Use [the release gate matrix](RELEASE_CANDIDATE_13C.md) and [recording script](WALKTHROUGH_14A.md).
 
 | Item | Verified public value / result |
 |---|---|
-| Application HTTPS URL | **PENDING PM verification** |
-| Public repository URL | **PENDING anonymous access check** (configured origin: https://github.com/myk0laUA/talk_to_YTVideo-and-PDF) |
+| Application HTTPS URL | https://talk-to-document-4pre.onrender.com — public HTTPS PASS |
+| Public repository URL | https://github.com/myk0laUA/talk_to_YTVideo-and-PDF — unauthenticated HTTP 200 and README visible, 23 October |
 | Final recording URL | **PENDING user recording** |
 | Recording duration, 10–15 minutes | **PENDING** |
-| Release commit / Next build / deployment ID | **PENDING PM freeze and deployment** |
-| Hosted PDF, text, voice, recovery and affected near-limit checks | **PENDING** |
+| Release commit / Next build / deployment ID | a7ef8fb02134c0386011e30818574ec9cdd15c22 / -GBIbY7cdnluCBPKqweeN / dep-dbddpfd9fdbs73apgoc0 |
+| Hosted PDF, text, voice, recovery and affected near-limit checks | PDF/ownership/limits/replacement recovery/text PASS; voice preparation PASS only; actual audio/phone/connectivity PENDING. See 13G. |
 | Physical phone model, OS, browser, date, audio/keyboard results | **PENDING user test after deployment** |
-| Disposable SQL cleanup/races and production cleanup operation plan | **SQL validation PASS** on PostgreSQL18.6,12scenarios/zero fixtures. Production operation plan still **PENDING PM**. See [13D acceptance](PM_ACCEPTANCE_13D.md). |
+| Disposable SQL cleanup/races and production cleanup operation plan | **SQL validation PASS** on PostgreSQL18.6,12scenarios/zero fixtures. Manual operation owner/cadence established; production cleanup removed 21 expired sources, confirmation zero eligible; see 13G. See [13D acceptance](PM_ACCEPTANCE_13D.md). |
 | Retained development-tool advisory disposition | **PM accepted documented assessment residual**; full audit remains FAIL. See [PM review](PM_RELEASE_REVIEW_13C.md). |
 
-PM release sequence:
+PM release sequence (items 1–3 completed to the bounded scope in 13G; physical audio/device remains open):
 
 1. Review the candidate manifest, repair diff, command exits and unresolved gates. Freeze the exact commit, including intended new files and experimental-code deletions. No blanket staging or deletion.
-2. Provision the isolated cleanup database and run the procedure in the release report. Decide production cleanup ownership, cadence, monitoring and failure response.
+2. Completed: disposable SQL suite in 13D, production status/cleanup and manual cadence in 13G.
 3. Apply reviewed migrations to the intended application database, deploy the frozen commit and record all identities. Keep hosted YouTube disabled. Verify the actual hosted PDF, larger text/voice, affected limit and recovery paths under separately authorized spend.
 4. Have the user test a physical phone: permissions, audible speech, interruption, independent microphone/speaker mute, Stop, offline/reconnect, theme, source preview/replacement and keyboard/composer. Record failures honestly; a viewport screenshot is not this test.
 5. Record the walkthrough. Use approved nonprivate sources. Show the real local YouTube application route and disclose the hosted-caption restriction. No scripted response or prerecorded audio may masquerade as live output.

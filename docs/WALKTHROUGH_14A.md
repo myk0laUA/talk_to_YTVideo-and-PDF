@@ -1,3 +1,5 @@
+Current deployment: see [Release 13G](RELEASE_13G.md) for exact a7ef8fb / hosted build / deploy identity and completed checks. Use that release for the recording; phone/audio and the recording itself remain unverified.
+
 # Final walkthrough — Step 14
 
 Updated for candidate13C, 22 October 2026 (Toronto). Target **13 minutes**, within the required 10–15 minutes. This is a recording script, not a recording or a passed deployment gate. The user records; PM checks release identity, prerequisites and public access using [SUBMISSION_13C](SUBMISSION_13C.md).
