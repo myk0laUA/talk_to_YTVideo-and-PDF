@@ -4,7 +4,7 @@ Explore a PDF or YouTube video through voice or text. Upload one source, inspect
 
 **[Live app](https://talk-to-document-4pre.onrender.com)** · [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Operations](docs/OPERATIONS.md)
 
-The hosted app supports PDF, voice and text. YouTube caption import works through the local application; hosted import is disabled because direct caption requests were blocked by the upstream provider. No accounts, embeddings, vector database or permanent conversation history.
+The hosted app supports PDF and English-caption YouTube sources, with voice and text conversation. Hosted captions use Supadata because direct YouTube requests were blocked on Render. No accounts, embeddings, vector database or permanent conversation history.
 
 ## Quick start
 
@@ -29,7 +29,7 @@ Keep all synthetic proof flags disabled for normal use. Never commit `.env`, pre
 
 ## Using the app
 
-- Upload a selectable-text PDF or import a supported video locally.
+- Upload a selectable-text PDF or import a public video with English captions.
 - Open **View source** to inspect the extracted content.
 - Choose **Voice mode** or **Text mode**, then start the conversation.
 - Voice has independent microphone/speaker mute, interruption and End controls. If autoplay is blocked, use **Tap to enable sound**.
@@ -68,13 +68,13 @@ Smoke tests start the production build on port 3100; build first. Offline tests 
 ## Limits and known gaps
 
 - PDFs: 25,000,000 bytes, 500 pages, 2,000,000 extracted characters. No OCR; complex layouts can lose reading order.
-- YouTube: native English captions, up to 20,000 segments and 1,000,000 characters. Hosted import remains disabled.
+- YouTube: native English captions, up to 20,000 segments and 1,000,000 characters. Availability depends on upstream captions and provider quota; no generated transcription fallback.
 - The entire source is prepared before questions. Provider truncation is disabled; a source that exceeds conversation limits fails visibly. Successful extraction does not guarantee model fit or answer accuracy.
 - Answers have a 2,048-token output ceiling. Text sessions allow 20 questions, each up to 1,000 text units, with a 10-minute lifetime and 2-minute idle timeout.
 - Anonymous ownership lasts at most one hour. One active source per visitor; successful replacement is atomic. Expired data becomes inaccessible; physical deletion uses the [cleanup procedure](docs/OPERATIONS.md#expired-data-cleanup).
 - Admission controls are process-local: 60 text and 60 voice starts per visitor/hour, plus finite concurrency and aggregate limits. They are not an account-wide spending cap.
 - The model has omitted a PDF exception in prior evaluation. Verify important answers against the source. Passing transport tests does not establish factual reliability.
 
-[Release status](docs/RELEASE.md) records the deployed revision, verified checks, remaining phone/recording checks and the accepted development dependency advisory. [Walkthrough guide](docs/WALKTHROUGH.md) covers the assessment demo.
+[Release status](docs/RELEASE.md) records the deployed revision, verified checks, remaining phone/recording checks and dated dependency audit results. [Walkthrough guide](docs/WALKTHROUGH.md) covers the assessment demo.
 
 AI coding assistants contributed implementation, tests and documentation. Historical task reports and experiments are retained in Git history rather than the product checkout.

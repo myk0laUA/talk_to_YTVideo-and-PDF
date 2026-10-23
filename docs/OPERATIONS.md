@@ -4,7 +4,9 @@
 
 The existing service is [Talk to a Document](https://talk-to-document-4pre.onrender.com) on Render Free, Ohio. Build: `npm ci --include=dev && npm run build`. Start: `npm run start -- --hostname 0.0.0.0 --port $PORT`. Health check: `/`. Free instances can take 50 seconds or more to wake after inactivity.
 
-Configure `DATABASE_URL`, `OPENAI_API_KEY`, `VISITOR_COOKIE_SECRET` and the exact HTTPS `APP_ORIGIN` privately. Enable `PDF_INGESTION_ENABLED`, `OWNED_SOURCE_TEXT_ENABLED` and `OWNED_SOURCE_VOICE_ENABLED`. Keep all local-HTTP flags and proof gates false. Keep `YOUTUBE_INGESTION_ENABLED=false` on this host until successful hosted caption acquisition is verified.
+Configure `DATABASE_URL`, `OPENAI_API_KEY`, `VISITOR_COOKIE_SECRET` and the exact HTTPS `APP_ORIGIN` privately. Enable `PDF_INGESTION_ENABLED`, `OWNED_SOURCE_TEXT_ENABLED` and `OWNED_SOURCE_VOICE_ENABLED`. Keep all local-HTTP flags and proof gates false. Hosted YouTube uses `YOUTUBE_INGESTION_ENABLED=true`, `YOUTUBE_INGESTION_PROVIDER=supadata` and a private `SUPADATA_API_KEY`. The adapter requests native English captions only. Monitor provider credits; missing captions or exhausted quota fail visibly without generated transcription or automatic retries.
+
+On the current Render service, nonsecret feature flags and `APP_ORIGIN` are explicitly prefixed in the Start Command, while secrets are Environment variables. A Start Command assignment overrides an Environment value of the same name. Change the command when changing those flags, then deploy the reviewed commit. Do not put API keys in the command or repository.
 
 Before publishing, verify the reviewed commit and run `npm run db:status`. Apply outstanding committed migrations with `npm run db:deploy` on the intended target. Never run `db:migrate` or reset a production database. Deploy the exact commit and record the Render deployment ID and served Next build ID. Auto-deploy is disabled on the current service; documentation-only pushes do not replace the running application.
 

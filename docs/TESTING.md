@@ -71,6 +71,6 @@ Use a nonprivate authored source and a deliberate request/cost bound. Record rev
 3. Ask a detail, follow-up and absent-information question in text. Check answers against the actual source; transport success alone is insufficient.
 4. On a physical phone, record model/OS/browser. Test source preview, microphone permission, audible English answer, interruption, independent mic/speaker mute and Stop.
 5. Test text without microphone permission, on-screen keyboard, scrolling, theme and source replacement. Disconnect/reconnect the real network and verify recovery needs explicit action.
-6. Demonstrate local English-caption YouTube import/preview/conversation separately from the hosted PDF path. Do not imply the host supports YouTube when its gate is disabled.
+6. Import a public English-caption YouTube video on the host, inspect first/final captions and ask a source-specific question. Record provider, segment count and bounded credit/model usage. Verify that PDF replacement still works and foreign visitors cannot read the source.
 
 Viewport emulation, synthetic microphone tracks and displayed speech text do not prove physical audio or mobile behavior. [Release status](RELEASE.md) distinguishes completed and outstanding checks.
