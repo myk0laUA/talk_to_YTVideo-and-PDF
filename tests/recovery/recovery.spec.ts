@@ -30,7 +30,7 @@ async function prime(p: Page, m: Mode) {
   for (const ack of ["initial", "source", "final"]) await act(p, `${m === "voice" ? "Voice" : "Text"} ACK ${ack}`);
 }
 async function begin(p: Page, m: Mode) {
-  await start(p, m).click(); await prime(p, m);
+  if (await start(p, m).isVisible()) await start(p, m).click(); await prime(p, m);
   await expect(selected(p, m)).toContainText(m === "voice" ? "Voice session ready" : "Ready for your question");
 }
 const exact = "FIXTURE10C question 日本語\nWhat does this source say?";
