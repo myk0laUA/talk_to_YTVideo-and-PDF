@@ -14,7 +14,11 @@ Initial verification failures were retained: a new malformed-PDF test incorrectl
 
 The final notice build passed 18 smoke tests and all 138 layout states. Recovery ran 248 cases: 240 passed and eight failed solely on the removed "server may still be unreachable" wording. Updating that assertion to "Connection may be back" produced eight passing targeted reruns across all four viewports; behavior assertions were retained. Read-only status confirmed the intended hosted database has all three migrations applied.
 
-Deployment of these changes and fresh hosted checks are pending. The dated deployment below remains the currently verified release until that operation completes. Physical-phone speech/playback/interruption and the public 10–15 minute walkthrough remain submission gates; the user will record after the repository and deployment are ready.
+Revision `cad5cb3c7c67d21abb667f381fe7191727d98701` deployed successfully at 3:25 PM EDT on 23 October. The 19 fresh hosted HTTP checks passed: native English YouTube import/complete preview, PDF replacement/preview, old-source invalidation, foreign visitor read/delete denial, cross-origin/non-English rejection, disabled proof routes, voice preparation/cancel without credentials, and removal of the test's own source. The TED source returned 44 segments and 20,100 characters. Public root returned 200 and the build ID below; warm root latency was 525 ms, not a cold-start guarantee.
+
+In the hosted browser, an authored three-page PDF imported and all pages matched. One live text answer correctly gave Mira Solen, Violet Pier, 18 cobalt tiles, KITE-482 and an unspecified ticket price, with matching page references. Stop preserved the answer and disabled Send. This small semantic check does not establish general accuracy. The hosted import guidance was inspected; phone-sized light/dark layout screenshots were inspected locally. The user's phone screenshot confirms the earlier reconnect notice was displayed, but does not establish audible playback or interruption.
+
+This new live allocation is closed: one native-caption import, one completed text response, zero voice credentials, zero generated transcriptions and no automatic retries. Estimated native-caption use is at most one credit; the conservative prior 128k-input/2048-output text estimate is $0.561152, not measured billing. Evidence is ignored under `artifacts/local/reviewer-remediation/`. Physical-phone speech/playback/interruption and the public 10–15 minute walkthrough remain submission gates; the user will record now that code and deployment are ready. The independent audit of `10eecee` is preserved unchanged locally; these dated corrections do not rewrite its original verdict.
 
 ## Submission-readiness review
 
@@ -63,14 +67,14 @@ The physical-phone audio check and public 10–15 minute recording remain outsta
 | Item | Evidence |
 |---|---|
 | Live application | https://talk-to-document-4pre.onrender.com |
-| Deployed application revision | `5575392997af0578d938a00f6bee2bf69322c140` |
-| Render deployment | `dep-dbdq221srm7s73cjevtg` — succeeded/live at 2:03 PM EDT, 23 October |
-| Hosted Next build | `TMVJ9F5jHR-tDNcJ_DCot` |
+| Deployed application revision | `cad5cb3c7c67d21abb667f381fe7191727d98701` |
+| Render deployment | `dep-dbdr8eoae00c73ao4qng` — succeeded/live at 3:25 PM EDT, 23 October |
+| Hosted Next build | `YYhD9Pz5cLSyqkFKr2LfR` |
 | Public repository | https://github.com/myk0laUA/talk_to_YTVideo-and-PDF — anonymous access/README verified |
 | Database | Three committed migrations applied; no release schema change |
 | Cleanup | 21 expired sources removed after dry-run; confirmation found zero eligible rows |
 
-## Verified on the deployed revision
+## Earlier hosted verification (`5575392`)
 
 Hosted YouTube is enabled through Supadata native English captions. The supplied MIT lecture `OTkq4OsG_Yc` imported all 750 segments; the browser preview showed English, the final caption at 30:46.29, and decoded apostrophes. A separate TED video `Ks-_Mh1QhMc` imported 44 longer segments in English with provider `supadata`, including its final section at 20:31.99. Segment granularity differs by upstream caption track; these two samples do not establish universal video availability.
 
