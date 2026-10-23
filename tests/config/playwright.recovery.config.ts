@@ -1,12 +1,13 @@
 import { defineConfig } from "@playwright/test";
+import { resolve } from "node:path";
 
 export default defineConfig({
-  testDir: "./tests/mode-switch",
+  testDir: "../recovery",
   testMatch: "*.spec.ts",
-  outputDir: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/10c/browser-results`,
+  outputDir: resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11b/browser-results`),
   fullyParallel: true, workers: 4, forbidOnly: true, retries: 0,
-  reporter: [["list"], ["json", { outputFile: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/10c/browser-results.json` }]],
-  use: { baseURL: "http://127.0.0.1:3121", browserName: "chromium", trace: "on", video: "off" },
+  reporter: [["list"], ["json", { outputFile: resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11b/browser-results.json`) }]],
+  use: { baseURL: "http://127.0.0.1:3123", browserName: "chromium", trace: "on", video: "off" },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1000 } } },
     { name: "phone-viewport", use: { viewport: { width: 390, height: 844 } } },

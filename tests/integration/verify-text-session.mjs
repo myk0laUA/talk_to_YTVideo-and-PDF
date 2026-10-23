@@ -82,7 +82,7 @@ try {
   const manifest = JSON.parse(await readFile(".next/server/app-paths-manifest.json", "utf8"));
   assert.ok(Object.keys(manifest).every(route => !/fixture|transcript|harness/.test(route)));
   report.productionExclusion = { checkedJsJsonFiles: files, routeManifest: Object.keys(manifest), fixtureMarkers: "absent" };
-  const test = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "playwright.text-session.config.ts"], { windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" } });
+  const test = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "tests/config/playwright.text-session.config.ts"], { windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" } });
   const code = await new Promise(resolve => test.once("exit", resolve));
   assert.equal(code, 0, "Text-session browser checks"); assert.equal(report.forbiddenProviderCalls, 0);
   report.exit = 0;

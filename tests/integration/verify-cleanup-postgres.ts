@@ -4,9 +4,9 @@ import { randomUUID, randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import { config } from "dotenv";
 import { Pool, type PoolClient } from "pg";
-import { cleanup, defaults, tables, type BatchRequest } from "../src/server/cleanup/service.ts";
-import { createPostgresCleanupStore, type CleanupConnection } from "../src/server/cleanup/postgres.ts";
-import { cleanupDatabaseUrl } from "./lib/cleanup-cli.ts";
+import { cleanup, defaults, tables, type BatchRequest } from "../../src/server/cleanup/service.ts";
+import { createPostgresCleanupStore, type CleanupConnection } from "../../src/server/cleanup/postgres.ts";
+import { cleanupDatabaseUrl } from "../../scripts/lib/cleanup-cli.ts";
 
 // Operator-only. Never runs with the ordinary test suite. No database creation/migration here.
 config({ quiet: true });

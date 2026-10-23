@@ -7,11 +7,11 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import net from 'node:net';
 import { chromium, expect } from '@playwright/test';
-import { createVisitor, visitorCookie } from '../src/server/proof/visitor.ts';
-import { captionRecord, uploadedRecord, sourceDto } from '../src/server/sources/service.ts';
-import { oversizedCaptions } from '../tests/context/caption-boundaries.ts';
-import { pdfFixture } from '../tests/context/fixtures.ts';
-import { SOURCE_SIZE_MESSAGE } from '../src/shared/priming-failure.ts';
+import { createVisitor, visitorCookie } from '../../src/server/proof/visitor.ts';
+import { captionRecord, uploadedRecord, sourceDto } from '../../src/server/sources/service.ts';
+import { oversizedCaptions } from '../context/caption-boundaries.ts';
+import { pdfFixture } from '../context/fixtures.ts';
+import { SOURCE_SIZE_MESSAGE } from '../../src/shared/priming-failure.ts';
 
 const root = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/source-limits');
 await mkdir(root, { recursive: true });

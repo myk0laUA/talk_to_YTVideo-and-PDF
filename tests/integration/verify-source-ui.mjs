@@ -39,7 +39,7 @@ try {
     if (ready) break; await delay(50);
   }
   assert.ok(ready, "production server ready");
-  const browser = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--max-failures=3", "--config", "playwright.source-ui.config.ts"], {
+  const browser = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--max-failures=3", "--config", "tests/config/playwright.source-ui.config.ts"], {
     windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" },
   });
   report.exit = await new Promise(resolve => browser.once("exit", resolve));

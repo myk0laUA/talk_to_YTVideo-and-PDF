@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import net from 'node:net';
 import { chromium, expect } from '@playwright/test';
-import { entityCases, entityXml, entityVideoId } from '../tests/captions/entities.ts';
+import { entityCases, entityXml, entityVideoId } from '../captions/entities.ts';
 
 const root = path.resolve(process.env.VERIFICATION_ROOT ?? 'artifacts/local/caption-entities');
 await mkdir(root, { recursive: true });

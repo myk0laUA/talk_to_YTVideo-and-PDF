@@ -7,7 +7,7 @@ import { captionBounds, type CaptionProvider } from "../../src/server/captions/p
 import { createSupadataCaptionProvider, normalizeSupadata, supadataBounds } from "../../src/server/captions/supadata.ts";
 import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
 import type { CaptionFailureCode } from "../../src/shared/captions.ts";
-import { directCaptionEnvironment } from "../../scripts/lib/caption-proof-env.ts";
+import { directCaptionEnvironment } from "../../tests/integration/lib/caption-proof-env.ts";
 
 const id = "dQw4w9WgXcQ";
 const key = "synthetic-03b-key";

@@ -8,12 +8,12 @@ import path from 'node:path';
 import net from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium, expect } from '@playwright/test';
-import { createVisitor } from '../src/server/proof/visitor.ts';
-import { uploadedRecord, captionRecord, sourceDto } from '../src/server/sources/service.ts';
-import { pdfFixture, captionFixture } from '../tests/context/fixtures.ts';
-import { fakeBrowserVoice } from '../tests/voice-adapter/fakes.mjs';
-import { observeVoiceDiagnostics } from '../tests/voice-adapter/diagnostics.mjs';
-import { PROVIDER_VOICE_POLICY } from '../src/shared/priming-provider-policy.ts';
+import { createVisitor } from '../../src/server/proof/visitor.ts';
+import { uploadedRecord, captionRecord, sourceDto } from '../../src/server/sources/service.ts';
+import { pdfFixture, captionFixture } from '../context/fixtures.ts';
+import { fakeBrowserVoice } from '../voice-adapter/fakes.mjs';
+import { observeVoiceDiagnostics } from '../voice-adapter/diagnostics.mjs';
+import { PROVIDER_VOICE_POLICY } from '../../src/shared/priming-provider-policy.ts';
 
 const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12d/regression/08d`); await mkdir(directory, { recursive: true });
 const port = 3129, origin = `http://127.0.0.1:${port}`;

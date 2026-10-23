@@ -8,7 +8,7 @@ Built for the Genius Innovation Lab assessment, with a mobile-first interface te
 
 ## Quick start
 
-Prerequisites: Git, **Node 24.22.0** and **npm 11.19.1**. Versions are pinned in `.node-version`, `.nvmrc` and `package.json`; `.npmrc` rejects incompatible engines. The full application also needs a reachable PostgreSQL database and an OpenAI API key with access to `gpt-realtime-2.1`. Voice requires a microphone and a browser supporting WebRTC on HTTPS or localhost. Python is optional, used only to generate extended PDF test fixtures.
+Prerequisites: Git, **Node 24.22.0** and **npm 11.19.1**. Versions are pinned in `.node-version` and `package.json`; `.npmrc` rejects incompatible engines. The full application also needs a reachable PostgreSQL database and an OpenAI API key with access to `gpt-realtime-2.1`. Voice requires a microphone and a browser supporting WebRTC on HTTPS or localhost. Python is optional, used only to generate extended PDF test fixtures.
 
 ```sh
 git clone https://github.com/myk0laUA/talk_to_YTVideo-and-PDF.git
@@ -47,7 +47,7 @@ All settings are server-side. `.env.example` intentionally defaults to a disable
 | `SUPADATA_API_KEY` | Required only for `supadata`/`auto`; never needed for direct retrieval. |
 | `PDF_INGESTION_LOCAL_HTTP`, `YOUTUBE_INGESTION_LOCAL_HTTP` | Explicit loopback HTTP opt-ins, including local production-build demonstrations. Keep false on public deployments. |
 
-The example also documents optional cache/adapter diagnostics and proof-only gates. Leave those at their defaults. `OPENAI_REALTIME_MODEL` affects the isolated proof paths only; the normal voice/text model is configured in the source policy.
+The example contains only normal application settings. Diagnostic endpoints default to disabled and need no entries in `.env`. Both conversation modes select their model in the source policy.
 
 ## Using the app
 
@@ -68,8 +68,8 @@ src/app/       Interface and HTTP routes
 src/server/    Extraction, authorization, storage and provider integrations
 src/shared/    Safe contracts and conversation state machines
 prisma/        Schema and committed migrations
-tests/         Unit, browser and integration regression coverage
-scripts/       Verification tools, fixture generation and database operations
+tests/         Unit/browser tests, integration runners, fixtures and test configuration
+scripts/       Database expiry cleanup and persistence checks
 public/        Local font assets and licence
 docs/          Architecture, testing, operations and release information
 ```

@@ -3,7 +3,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {chromium, expect} from '@playwright/test';
-import { workspaceServer } from '../tests/workspace/server.mjs';
+import { workspaceServer } from '../workspace/server.mjs';
 const workspace=await workspaceServer('layout');
 const {dir,css,bundle,font,origin}=workspace,source=workspace.source();
 const browser=await chromium.launch(),results=[];

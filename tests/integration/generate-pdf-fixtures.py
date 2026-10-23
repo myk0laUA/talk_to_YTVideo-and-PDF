@@ -1,5 +1,5 @@
 """Deterministic synthetic fixtures only. Requires reportlab, pypdf, Pillow.
-Run: python scripts/generate-pdf-fixtures.py
+Run: python tests/integration/generate-pdf-fixtures.py
 Independent strict pypdf validation/text checks are recorded in manifest.json.
 """
 import hashlib
@@ -103,7 +103,7 @@ doc.showPage()
 doc.save()
 fixtures["layout-table"] = (output.getvalue(), [[value for _, _, value in layout]], None)
 
-manifest = {"generator": "scripts/generate-pdf-fixtures.py", "fileLimitBytes": 25_000_000, "fixtures": []}
+manifest = {"generator": "tests/integration/generate-pdf-fixtures.py", "fileLimitBytes": 25_000_000, "fixtures": []}
 for name, (data, pages, error) in fixtures.items():
     target = OUT / f"{name}.pdf"
     target.write_bytes(data)

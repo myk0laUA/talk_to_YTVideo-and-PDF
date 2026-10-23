@@ -190,7 +190,7 @@ test("actual CLI connection failure is sanitized and exits without leaked socket
 });
 for (const sameTarget of [false, true]) test(`PostgreSQL harness refuses ${sameTarget ? "ordinary database target" : "missing opt-in"} before connecting`, () => {
   const url = "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic";
-  const result = spawnSync(process.execPath, ["--conditions=react-server", "scripts/verify-cleanup-postgres.ts"],
+  const result = spawnSync(process.execPath, ["--conditions=react-server", "tests/integration/verify-cleanup-postgres.ts"],
     { encoding: "utf8", timeout: 5000, env: { ...process.env, DATABASE_URL: url,
       TEST_CLEANUP_DATABASE_URL: url, CLEANUP_DISPOSABLE_ACK: sameTarget ? "I_CONFIRM_EMPTY_DISPOSABLE_DATABASE" : "" } });
   assert.equal(result.error, undefined); assert.equal(result.status, 1);

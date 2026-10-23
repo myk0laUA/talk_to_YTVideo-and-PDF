@@ -6,13 +6,13 @@ import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import ts from 'typescript';
 import { chromium } from '@playwright/test';
-import { VoiceRegistry } from '../src/server/voice/registry.ts';
-import { createVoiceHandlers } from '../src/server/voice/handlers.ts';
-import { createVisitor, visitorCookie } from '../src/server/proof/visitor.ts';
-import { uploadedRecord } from '../src/server/sources/service.ts';
-import { parsePdf } from '../src/server/pdf/worker.ts';
-import { pdfFixture } from '../tests/context/fixtures.ts';
-import { encodeManifest, serializeData } from '../src/shared/priming-manifest.ts';
+import { VoiceRegistry } from '../../src/server/voice/registry.ts';
+import { createVoiceHandlers } from '../../src/server/voice/handlers.ts';
+import { createVisitor, visitorCookie } from '../../src/server/proof/visitor.ts';
+import { uploadedRecord } from '../../src/server/sources/service.ts';
+import { parsePdf } from '../../src/server/pdf/worker.ts';
+import { pdfFixture } from '../context/fixtures.ts';
+import { encodeManifest, serializeData } from '../../src/shared/priming-manifest.ts';
 
 const out = path.resolve('artifacts/local/08j'); await mkdir(out, { recursive: true });
 const report = { startedUtc: new Date().toISOString(), runtime: process.version,

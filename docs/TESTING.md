@@ -45,8 +45,8 @@ On a resource-constrained machine, `npm run test:recovery -- --workers=2` runs t
 For PDF HTTP/source suites, generate the synthetic fixtures first:
 
 ```sh
-python -m pip install -r scripts/fixture-requirements.txt
-python scripts/generate-pdf-fixtures.py
+python -m pip install -r tests/integration/fixture-requirements.txt
+python tests/integration/generate-pdf-fixtures.py
 npm run test:pdf:http
 npm run test:sources:http
 npm run test:youtube:http

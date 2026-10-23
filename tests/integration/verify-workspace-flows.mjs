@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {chromium, expect} from '@playwright/test';
 
-import { workspaceServer } from '../tests/workspace/server.mjs';
+import { workspaceServer } from '../workspace/server.mjs';
 const workspace=await workspaceServer('flows');
 const {dir,css,bundle,source,origin}=workspace;
 const browser=await chromium.launch(),results=[];

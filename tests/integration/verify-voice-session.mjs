@@ -10,20 +10,22 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
-const directory = path.resolve("artifacts/local/12e/regression/09b");
+const directory = path.resolve(`${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/12e/regression/08c`);
 await mkdir(directory, { recursive: true });
 // Refuse occupied ports; never mistake another server's readiness for ours.
-for (const port of [3115, 3116]) await new Promise((resolve, reject) => {
+for (const port of [3119, 3120]) await new Promise((resolve, reject) => {
   const probe = net.createServer(); probe.once("error", reject);
   probe.listen(port, "127.0.0.1", () => probe.close(resolve));
 });
+const prepared = spawn(process.execPath, ["--conditions=react-server", "tests/voice-session/prepare.ts"], { windowsHide: true, stdio: "inherit" });
+assert.equal(await new Promise(resolve => prepared.once("exit", resolve)), 0);
 const report = { startUtc: new Date().toISOString(), endUtc: null, runtime: process.version,
   productionBuild: (await readFile(".next/BUILD_ID", "utf8")).trim(), fixtureBundleSha256: "", fixtureCssSha256: "",
-  context: "Local Chromium synthetic TranscriptStore events; separate loopback bundle; production root default-disabled. No DB/keys/live audio.",
+  context: "Local Chromium actual08A/08B/07B/09A/09B with deterministic test-only transport/admission; separate loopback bundle; production root default-disabled. No DB/keys/live audio.",
   productionExclusion: {}, forbiddenProviderCalls: 0, exit: null };
 const require = createRequire(import.meta.url);
 const { webpack } = require("next/dist/compiled/webpack/webpack");
-const compiler = webpack({ mode: "development", devtool: false, target: "web", entry: path.resolve("tests/transcript-view/harness.tsx"),
+const compiler = webpack({ mode: "development", devtool: false, target: "web", entry: path.resolve("tests/voice-session/harness.tsx"),
   output: { path: path.join(directory, "harness"), filename: "fixture.js" },
   resolve: { extensions: [".tsx", ".ts", ".js"], extensionAlias: { ".ts": [".ts"], ".js": [".js", ".ts"] } },
   module: { rules: [{ test: /\.tsx?$/, exclude: /node_modules/, use: path.resolve("tests/transcript-view/loader.mjs") }] },
@@ -35,19 +37,20 @@ await new Promise((resolve, reject) => compiler.run((error, stats) => {
 }));
 const bundle = await readFile(path.join(directory, "harness/fixture.js"));
 report.fixtureBundleSha256 = createHash("sha256").update(bundle).digest("hex");
-const css = `${await readFile("src/app/globals.css", "utf8")}\n.fixture-heading { overflow-wrap: anywhere; }`;
+const css = `${await readFile("src/app/globals.css", "utf8")}\n.app-shell > h1 { overflow-wrap: anywhere; } .workspace { grid-template-columns: minmax(0, 1fr); } pre { white-space: pre-wrap; overflow-wrap: anywhere; } details { margin-block: 1rem; } .source-reader { margin-block: 1rem; } .text-composer textarea { font-size: max(1em, 16px); }`;
 report.fixtureCssSha256 = createHash("sha256").update(css).digest("hex");
-const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Isolated 09B fixture</title><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script src="/fixture.js"></script></body></html>';
+const inputs = (await readFile(path.join(directory, "inputs.json"), "utf8")).replace(/</g, "\\u003c");
+const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Isolated 08C fixture</title><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script type="application/json" id="inputs">' + inputs + '</script><script src="/fixture.js"></script></body></html>';
 const harness = createServer((request, response) => {
   const routes = { "/": ["text/html", html], "/fixture.js": ["application/javascript", bundle], "/style.css": ["text/css", css] };
   const route = routes[request.url];
   response.writeHead(route ? 200 : 404, { "content-type": route?.[0] ?? "text/plain", "cache-control": "no-store", "content-security-policy": "default-src 'self'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'" });
   response.end(route?.[1] ?? "Not found");
 });
-await new Promise((resolve, reject) => { harness.once("error", reject); harness.listen(3115, "127.0.0.1", resolve); });
-const server = spawn(process.execPath, ["--require", path.resolve("tests/transcript-view/no-provider.cjs"), "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3116"], {
+await new Promise((resolve, reject) => { harness.once("error", reject); harness.listen(3119, "127.0.0.1", resolve); });
+const server = spawn(process.execPath, ["--require", path.resolve("tests/transcript-view/no-provider.cjs"), "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3120"], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"], env: { ...process.env, NODE_OPTIONS: "", NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1",
-    DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic", APP_ORIGIN: "http://127.0.0.1:3116",
+    DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic", APP_ORIGIN: "http://127.0.0.1:3120",
     PROOF_ENABLED: "false", TEXT_PROOF_ENABLED: "false", REALTIME_ISSUANCE_ENABLED: "false", CAPTION_PROOF_ENABLED: "false", PDF_PROOF_ENABLED: "false",
     PDF_INGESTION_ENABLED: "false", YOUTUBE_INGESTION_ENABLED: "false", OPENAI_API_KEY: "", SUPADATA_API_KEY: "", SCRAPECREATORS_API_KEY: "" },
 });
@@ -58,7 +61,7 @@ const exited = new Promise(resolve => server.once("exit", resolve));
 try {
   let ready = false;
   for (let attempt = 0; attempt < 100; attempt++) {
-    try { ready = (await fetch("http://127.0.0.1:3116", { signal: AbortSignal.timeout(500) })).ok; } catch {}
+    try { ready = (await fetch("http://127.0.0.1:3120", { signal: AbortSignal.timeout(500) })).ok; } catch {}
     if (ready) break;
     await delay(100);
   }
@@ -70,7 +73,7 @@ try {
       if (item.isDirectory()) await audit(file);
       else if (/\.(js|json)$/.test(item.name)) {
         const source = await readFile(file, "utf8"); files++;
-        for (const marker of ["PRIMING_MUST_STAY_PRIVATE_09B", "Isolated transcript presentation fixture", "PRIVATE_PROVIDER_ERROR_09B", "tests/transcript-view", "A separate text part."])
+        for (const marker of ["FIXTURE08C", "PRIVATE08C_ERROR", "STALE08C_MUST_NOT_APPEAR", "tests/voice-session", "Isolated voice controls fixture 08C", "Fixture08cPriming", "Fixture08cVoice"])
           assert.ok(!source.includes(marker), `Fixture excluded from ${file}`);
       }
     }
@@ -79,9 +82,9 @@ try {
   const manifest = JSON.parse(await readFile(".next/server/app-paths-manifest.json", "utf8"));
   assert.ok(Object.keys(manifest).every(route => !/fixture|transcript|harness/.test(route)));
   report.productionExclusion = { checkedJsJsonFiles: files, routeManifest: Object.keys(manifest), fixtureMarkers: "absent" };
-  const test = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "playwright.transcript-view.config.ts"], { windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" } });
+  const test = spawn(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "tests/config/playwright.voice-session.config.ts"], { windowsHide: true, stdio: "inherit", env: { ...process.env, NODE_OPTIONS: "" } });
   const code = await new Promise(resolve => test.once("exit", resolve));
-  assert.equal(code, 0, "Transcript-view browser checks"); assert.equal(report.forbiddenProviderCalls, 0);
+  assert.equal(code, 0, "Voice-controls browser checks"); assert.equal(report.forbiddenProviderCalls, 0);
   report.exit = 0;
 } catch (error) { report.exit = 1; throw error; }
 finally {
@@ -91,3 +94,4 @@ finally {
   await writeFile(path.join(directory, "identity-audit.json"), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 }
+

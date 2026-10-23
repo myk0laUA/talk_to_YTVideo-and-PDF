@@ -1,4 +1,4 @@
-// Never imported by src/. Served only by scripts/verify-transcript-view.mjs on loopback.
+// Never imported by src/. Served only by tests/integration/verify-transcript-view.mjs on loopback.
 import { StrictMode, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { TranscriptStore, type TranscriptIdentity, type TranscriptLimits } from "../../src/shared/transcript";

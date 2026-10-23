@@ -8,9 +8,9 @@ import path from "node:path";
 import net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "@playwright/test";
-import { createVisitor, visitorCookie } from "../src/server/proof/visitor.ts";
-import { uploadedRecord, captionRecord, sourceDto } from "../src/server/sources/service.ts";
-import { pdfFixture, captionFixture } from "../tests/context/fixtures.ts";
+import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
+import { uploadedRecord, captionRecord, sourceDto } from "../../src/server/sources/service.ts";
+import { pdfFixture, captionFixture } from "../context/fixtures.ts";
 
 const directory = path.resolve(process.env.OWNED_TEXT_EVIDENCE_DIRECTORY ?? "artifacts/local/10d"); await mkdir(directory, { recursive: true });
 const port = 3126, origin = `http://127.0.0.1:${port}`;

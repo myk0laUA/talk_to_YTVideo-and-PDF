@@ -42,7 +42,7 @@ Verification used Node 24.22.0/npm 11.19.1 in an isolated export without private
 | `npm run test:text-session`, `npm run test:voice-session`, `npm run test:transcript-view`, `npm run test:mode-switch` | 108, 208, 44 and 156 browser cases passed respectively. |
 | `npm run test:recovery -- --workers=2` | Unchanged full rerun: 248 passed. See the original failure below. |
 | `npm run test:text`, `npm run test:voice` | Ten diagnostic browser cases each passed; synthetic transport/media. |
-| `python -m pip install -r scripts/fixture-requirements.txt`, `python scripts/generate-pdf-fixtures.py` | Exit 0 in a private virtual environment; 13 synthetic PDF fixtures generated. |
+| `python -m pip install -r tests/integration/fixture-requirements.txt`, `python tests/integration/generate-pdf-fixtures.py` | Exit 0 in a private virtual environment; 13 synthetic PDF fixtures generated. |
 | `npm run test:pdf:http`, `npm run test:sources:http`, `npm run test:youtube:http` | All exit 0; actual PDF parsing/size limits and owned-source routes, with synthetic storage/YouTube upstream. |
 | `npm run test:captions:mocked`, `npm run test:captions:cache`, `npm run test:captions:coalescing`, `npm run test:captions:fallback` | All exit 0 with mocked upstreams. |
 | `npm run test:source-limits`, `npm run test:caption-entities` | Both exit 0; full-source preparation and caption decoding passed. |

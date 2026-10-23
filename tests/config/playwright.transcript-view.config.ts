@@ -1,12 +1,13 @@
 import { defineConfig } from "@playwright/test";
+import { resolve } from "node:path";
 
 export default defineConfig({
-  testDir: "./tests/recovery",
+  testDir: "../transcript-view",
   testMatch: "*.spec.ts",
-  outputDir: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11b/browser-results`,
-  fullyParallel: true, workers: 4, forbidOnly: true, retries: 0,
-  reporter: [["list"], ["json", { outputFile: `${process.env.VERIFICATION_ROOT ?? "artifacts/local"}/11b/browser-results.json` }]],
-  use: { baseURL: "http://127.0.0.1:3123", browserName: "chromium", trace: "on", video: "off" },
+  outputDir: resolve("artifacts/local/12e/regression/09b/browser-results"),
+  fullyParallel: true, forbidOnly: true, retries: 0,
+  reporter: [["list"], ["json", { outputFile: resolve("artifacts/local/12e/regression/09b/browser-results.json") }]],
+  use: { baseURL: "http://127.0.0.1:3115", browserName: "chromium", trace: "on", video: "off" },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1000 } } },
     { name: "phone-viewport", use: { viewport: { width: 390, height: 844 } } },
@@ -14,4 +15,3 @@ export default defineConfig({
     { name: "tablet-viewport", use: { viewport: { width: 768, height: 1024 } } },
   ],
 });
-
