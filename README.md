@@ -344,7 +344,9 @@ Do not log credentials, cookies, SDP, raw provider errors or private document te
 
 ## Verification and submission status
 
-As of **23 October 2026**, application revision [`f52faaf`](https://github.com/myk0laUA/talk_to_YTVideo-and-PDF/commit/f52faafde0b0e7dbd4b17e6da2e31601cfb55050) is deployed. Conversation continuity passed **1,655 unit tests**, **160 mode-switch browser checks**, **264 recovery checks**, lint, type checking and a production build. Bounded real-provider checks confirmed context-dependent follow-ups after history restoration through the voice-configured protocol and hosted text relay, with no automatic question replay. The hosted test source was removed afterward. Earlier hosted PDF/YouTube ingestion and source-grounded text checks also passed. These results do not establish general model reliability or audible playback.
+As of **23 October 2026**, application revision [`8fe60f6`](https://github.com/myk0laUA/talk_to_YTVideo-and-PDF/commit/8fe60f69ac5ab2c817a6737b8e6beb558efec8fb) is deployed. Validation passed **1,657 unit tests**, **160 mode-switch browser checks**, **662 built-application checks**, recovery regressions, six responsive workspace scenarios, lint, type checking and a production build.
+
+A live hosted test verified automatic voice → text → voice → text continuation, including a started session with no messages. It preserved received messages and an unsent draft, and real-provider follow-up answers correctly used earlier conversation context. Voice input used prerecorded speech over a real WebRTC connection in an automated mobile-sized browser; this does not verify physical-phone audio or audible playback. The test source was removed afterward. Earlier hosted PDF/YouTube ingestion and source-grounded text checks also passed.
 
 The user has tested the app and reconnection on a physical phone. The latest mode handoff and threshold/status polish still need a phone retest with explicit audio results. A **public 10–15 minute walkthrough is still outstanding**; no recording link is available yet.
 
