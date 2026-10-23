@@ -19,6 +19,8 @@ npm run test:workspace
 
 Generation, lint, types, unit tests, build and browser smoke need no live services. If schema validation requires a URL, set an inert loopback PostgreSQL URL for that command only; it must not point to a real database. Smoke tests start the existing production build on port 3100 and refuse to reuse another server. Boundary tests cover methods, origin checks, authorization and disabled routes with synthetic infrastructure.
 
+The submission-readiness review used a separate export of tracked files without the developer's `.env`, local artifacts or existing `node_modules`. Do not copy private configuration into an offline test export. New text-route regressions cover cancellation before/during body reads, release of admission leases/listeners, and malformed UTF-8 rejection before provider submission. [Release status](RELEASE.md#submission-readiness-review) records current results separately from earlier audits.
+
 ## Extended regression suites
 
 Run the suites relevant to a change after the production build. These exercise real controllers/routes with injected storage, transport or media boundaries; they do not prove audible playback or live model accuracy. Run them sequentially on smaller machines, and do not rebuild while a built-server suite is running.
@@ -36,6 +38,8 @@ Run the suites relevant to a change after the production build. These exercise r
 
 `test:workspace` runs both workspace suites. They generate their own fixtures, use an available loopback port and write a fresh result folder per invocation. They require neither a production build nor historical local reports. HTTP suites require the build. No live provider key is needed for these commands.
 
+On a resource-constrained machine, `npm run test:recovery -- --workers=2` runs the same full recovery suite with reduced browser concurrency. The readiness review observed a four-worker Chromium `ERR_NO_BUFFER_SPACE` during fixture navigation; the unchanged two-worker run passed all 248 cases. Preserve a failed run's log before retrying, and do not treat an environment retry as an application fix.
+
 `test:coverage` excludes generated Prisma code. Node reports coverage only for modules loaded by the unit suite; this is **not whole-application coverage**, and does not include browser-rendered components or real database/provider execution. Use the browser/HTTP suites above and the separate live checks below for those boundaries. A high percentage alone is not an acceptance gate.
 
 For PDF HTTP/source suites, generate the synthetic fixtures first:
@@ -47,6 +51,8 @@ npm run test:pdf:http
 npm run test:sources:http
 npm run test:youtube:http
 ```
+
+Prefer an isolated Python virtual environment (`python -m venv .venv`, then activate it) when installing these optional fixture dependencies. Do not commit the environment or generated PDFs; keep fixtures in the default ignored `artifacts/local/` directory.
 
 `PDF_FIXTURE_DIRECTORY` can select a fresh fixture directory; pass the same value to consumers. `VERIFICATION_ROOT`, `OWNED_TEXT_EVIDENCE_DIRECTORY` and `OWNED_VOICE_EVIDENCE_DIRECTORY` allow fresh result destinations where supported. Outputs belong in ignored `artifacts/local/`, `test-results/` or `playwright-report/`.
 

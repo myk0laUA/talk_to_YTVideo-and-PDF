@@ -94,6 +94,57 @@ test("10D gate absent/key absent/config injected public secret all unavailable",
     { ...base, OWNED_SOURCE_TEXT_ENABLED: "true", NEXT_PUBLIC_OPENAI_API_KEY: "unsafe" }]) assert.deepEqual(textAvailability(env), { available: false });
   assert.ok(parseTextConfig({ ...base, OWNED_SOURCE_TEXT_ENABLED: "true" }));
 });
+for (const alreadyAborted of [false, true]) test(`text request body releases admission on ${alreadyAborted ? "prior" : "in-flight"} cancellation`, async () => {
+  const f = fixture();
+  let leases = 0;
+  const admit = f.registry.admitCommand.bind(f.registry);
+  f.registry.admitCommand = (...args) => {
+    const release = admit(...args); leases++;
+    return () => { leases--; release(); };
+  };
+  const abort = new AbortController();
+  let cancelled = false;
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) { controller.enqueue(new TextEncoder().encode("{")); },
+    cancel() { cancelled = true; },
+  });
+  if (alreadyAborted) abort.abort();
+  const request = new Request(config.origin + "/api/text-sessions", {
+    method: "POST", headers: f.request().headers, body, signal: abort.signal, duplex: "half",
+  } as RequestInit);
+  const pending = f.handlers.start(request);
+  if (!alreadyAborted) { await delay(0); abort.abort(); }
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const response = await Promise.race([pending, new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Cancelled body did not settle promptly")), 1000);
+    })]);
+    assert.equal(response.status, 400);
+    assert.equal(cancelled, true);
+    assert.equal(body.locked, false);
+    assert.equal(getEventListeners(request.signal, "abort").length, 0);
+    assert.equal(f.counts.reads, 0);
+    assert.equal(f.counts.opens, 0);
+    assert.equal(leases, 0);
+  } finally { clearTimeout(timer); await pending; }
+});
+
+test("text rejects malformed UTF-8 without sending a changed question to the provider", async () => {
+  const f = fixture(), session = await f.begin();
+  await wait(() => session.snapshots.at(-1)?.status.phase === "ready");
+  const before = f.counts.sends;
+  const body = Buffer.concat([
+    Buffer.from(`{"sessionId":"${session.id}","questionId":"${randomUUID()}","question":"`),
+    Buffer.from([0xff]), Buffer.from('"}'),
+  ]);
+  const response = await f.handlers.question(new Request(config.origin + "/api/text-sessions/question", {
+    method: "POST", headers: f.request().headers, body,
+  }));
+  assert.equal(response.status, 400);
+  assert.equal(f.counts.sends, before);
+  f.registry.stop(f.visitor, f.startId); await session.consume;
+});
+
 test("10D mutations reject missing/foreign/expired visitor and untrusted model/settings/body", async () => {
   const f = fixture();
   for (const headers of [{ cookie: "" }, { cookie: "td-visitor=forged" }, { cookie: visitorCookie(createVisitor(config, Date.now() - 3600_000), config, Date.now()).split(";", 1)[0] }]) {

@@ -13,8 +13,10 @@ Record **10–15 minutes** using the release in [release status](RELEASE.md). Us
 | 8:30–10:00 | Explain src/app, src/server, src/shared, PostgreSQL ownership and WebRTC versus server-relayed text. |
 | 10:00–11:30 | Show meaningful tests and the exact release evidence. Distinguish synthetic transport checks from live answers. |
 | 11:30–12:30 | Explain accuracy/context limits, temporary history, manual expiry cleanup and dated dependency audit results. |
-| 12:30–13:00 | Disclose AI coding assistance and show app/repository/recording links. |
+| 12:30–13:00 | Disclose verified AI coding assistance, including Codex for the readiness review; explain the editor, terminal, browser tests and hosting tools actually used. Show app/repository links and add the recording link after recording. |
 
 Use actual responses; do not substitute scripted answers or prerecorded audio for live behavior. If a live attempt fails, show and explain it. For phone evidence, record device/OS/browser and audible interruption, keyboard and real connectivity behavior. Other untested platforms remain explicit gaps.
+
+If hosted YouTube is blocked or provider quota is unavailable, explain the limitation and demonstrate the normal local workflow from the [README](../README.md#youtube-on-local-and-hosted-environments). The brief permits this exception. Confirm local extraction first; do not substitute a mocked transcript or claim that local success establishes hosted support.
 
 Before submitting, open all three public links without signing in. Verify the recording's playback, sound, duration and sharing permissions. Include English-caption/provider availability and remaining limitations in the submission description.

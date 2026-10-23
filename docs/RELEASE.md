@@ -2,6 +2,50 @@
 
 Updated 23 October 2026 (Toronto).
 
+## Submission-readiness review
+
+This review starts from `d1ec6f2`. The changes below prepare the repository for submission; deployment is a separate operation. The deployed revision below is unchanged. The existing structure, UI, database schema and conversation architecture are retained.
+
+Changes: cancelled text API bodies now promptly release readers, abort listeners and admission leases; malformed UTF-8 is rejected instead of silently changing a question before provider submission. Three new regression cases failed on the original handler and passed after the fix. The unused `js-tiktoken` dependency and its exclusive `base64-js` dependency were removed, along with the unused ScrapeCreators setting in `.env.example`. Existing guards against public secret variables remain. README/setup/environment/transport/deployment guidance and the walkthrough were clarified.
+
+Verification used Node 24.22.0/npm 11.19.1 in an isolated export without private configuration. Backend integration checks used build `XC8MjOzI66nhxy2GtA_xS` with the handler fix. After dependency removal, a second clean install, core checks, production build and browser suites passed on final build `X1yaJbzxQ02TCpRJpJjhJ`. No application code changed between these builds.
+
+| Commands | Observed result |
+|---|---|
+| `npm ci --no-audit --no-fund` | Exit 0; final lockfile installed 499 packages and generated Prisma. ESLint 9 emits a deprecation warning. |
+| `npm run lint`, `npm run typecheck`, `npm run db:validate`, `npm run build` | All exit 0 after the final clean install; no database or provider key required. |
+| `npm test` | 1,632 passed, zero failures/skips; includes the three new regressions. |
+| `npm run browser:install`, `npm run test:smoke` | Exit 0; 18 smoke tests passed at desktop/390px widths. |
+| `npm run test:boundaries -- --http-only` | 59 HTTP checks passed; zero forbidden network calls. |
+| `npm run test:owned-text` | 533 HTTP/browser checks passed, including a rerun on the final clean build; no live calls. |
+| `npm run test:owned-voice`, `npm run test:voice-adapter`, `npm run test:voice-preparation` | Exit 0; 734 owned-voice checks, 623 adapter checks and 35 preparation scenarios; synthetic provider/media boundaries. |
+| `npm run test:workspace` | Six flow scenarios and six layout scenarios/138 geometry states passed. Welcome and blocked-playback screenshots were inspected at 390px. |
+| `npm run test:source-ui`, `npm run test:youtube-ui` | 87 PDF/source and 99 YouTube UI cases passed. |
+| `npm run test:text-session`, `npm run test:voice-session`, `npm run test:transcript-view`, `npm run test:mode-switch` | 108, 208, 44 and 156 browser cases passed respectively. |
+| `npm run test:recovery -- --workers=2` | Unchanged full rerun: 248 passed. See the original failure below. |
+| `npm run test:text`, `npm run test:voice` | Ten diagnostic browser cases each passed; synthetic transport/media. |
+| `python -m pip install -r scripts/fixture-requirements.txt`, `python scripts/generate-pdf-fixtures.py` | Exit 0 in a private virtual environment; 13 synthetic PDF fixtures generated. |
+| `npm run test:pdf:http`, `npm run test:sources:http`, `npm run test:youtube:http` | All exit 0; actual PDF parsing/size limits and owned-source routes, with synthetic storage/YouTube upstream. |
+| `npm run test:captions:mocked`, `npm run test:captions:cache`, `npm run test:captions:coalescing`, `npm run test:captions:fallback` | All exit 0 with mocked upstreams. |
+| `npm run test:source-limits`, `npm run test:caption-entities` | Both exit 0; full-source preparation and caption decoding passed. |
+| `npm audit --json` | Exit 0; zero reported vulnerabilities on the final lockfile. This is advisory-service evidence, not an exhaustive security guarantee. |
+| `git diff --check`; local documentation/lockfile checks | No whitespace errors; all 22 local Markdown links/anchors resolve; manifest and lockfile dependencies agree. |
+
+The first four-worker `npm run test:recovery` attempt exited 1: 247 passed and one failed at `page.goto` with Chromium `net::ERR_NO_BUFFER_SPACE`, before reaching application assertions. The unchanged two-worker full rerun passed. This is an observed browser-runner/resource flake, not a claimed application fix; the failed log/trace was retained separately. No test assertion or retry policy was weakened.
+
+Repository review covered the tracked tree, imports, manifests/lockfile, configuration, routes, ownership/ingestion/conversation boundaries, tests and documentation. All 116 source code modules are referenced or are framework/worker entry points; no further module deletion was justified. A pattern scan of 1,987 blobs across 146 reachable commits (about 129 MB) found no current private configuration values, private keys or provider-token signatures. The two credential-URL matches were synthetic error strings in database tests. No `.env`, PDF uploads, recordings or private-key files were found in tracked history. This is a scoped scan, not a guarantee that every possible secret format is detectable.
+
+Fresh live checks on 23 October:
+
+- Anonymous access to the public GitHub repository succeeded; the hosted homepage returned HTTP 200.
+- On the existing host, one synthetic 10,778-byte PDF uploaded successfully, all 12 nonempty pages were returned by the preview API, and the review's own source was deleted successfully. No existing visitor's source was accessed or changed.
+- `npm run proof:captions:local -- --allow-public-youtube` exited 0: direct retrieval returned HTTP 200 for `Ks-_Mh1QhMc` (428 English segments, 20,100 characters) and `dQw4w9WgXcQ` (61 English segments, 2,089 characters). This proves local extraction for those attempts, not normal database-backed ingestion or comparison with the original caption tracks. The diagnostic retains `RETRIEVED_REQUIRES_EXCERPT_REVIEW` status.
+- No OpenAI credential was minted and no OpenAI or Supadata request was made during this review. Hosted YouTube and live model/audio evidence below remain historical; they were not rerun or relabeled.
+
+The physical-phone audio check and public 10–15 minute recording remain outstanding. Real PostgreSQL cleanup/race tests could not run because Docker's engine was unavailable and no isolated disposable database was supplied. Existing hosted data was not used for those tests. Current local logs, synthetic fixtures and screenshots are ignored under `artifacts/local/submission-readiness/`.
+
+## Deployed release
+
 | Item | Evidence |
 |---|---|
 | Live application | https://talk-to-document-4pre.onrender.com |

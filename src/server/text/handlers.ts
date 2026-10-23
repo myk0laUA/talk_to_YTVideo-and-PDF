@@ -4,6 +4,7 @@ import { readVisitor } from "../proof/visitor.ts";
 import { TEXT_QUESTION_LIMIT } from "../../shared/text-lifecycle.ts";
 import { textUuid } from "../../shared/text-relay.ts";
 import { RelayError, type TextRegistry } from "./registry.ts";
+import { guardedAwait } from "../context/await.ts";
 
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 const reply = (status: number, body: unknown) => Response.json(body, { status, headers });
@@ -13,26 +14,28 @@ async function body(request: Request): Promise<Record<string, unknown>> {
   if (request.headers.get("content-type")?.split(";", 1)[0].trim() !== "application/json") throw new RelayError(400);
   const reader = request.body?.getReader();
   if (!reader) throw new RelayError(400);
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  const abort = new AbortController(), cancel = () => abort.abort();
+  const timer = setTimeout(cancel, 2000);
+  request.signal.addEventListener("abort", cancel, { once: true });
+  const guard = () => { if (abort.signal.aborted || request.signal.aborted) throw new RelayError(400); };
   try {
-    return await Promise.race([
-      new Promise<never>((_, reject) => { timer = setTimeout(() => { void reader.cancel().catch(() => {}); reject(new RelayError(400)); }, 2000); }),
-      (async () => {
-        const chunks: Uint8Array[] = []; let length = 0;
-        for (;;) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          length += value.byteLength;
-          if (length > 8192) { void reader.cancel().catch(() => {}); throw new RelayError(400); }
-          chunks.push(value);
-        }
-        const result: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-        if (!result || typeof result !== "object" || Array.isArray(result)) throw new RelayError(400);
-        return result as Record<string, unknown>;
-      })(),
-    ]);
+    guard();
+    const chunks: Uint8Array[] = []; let length = 0;
+    for (;;) {
+      const { value, done } = await guardedAwait(() => reader.read(), abort.signal, guard);
+      if (done) break;
+      length += value.byteLength;
+      if (length > 8192) throw new RelayError(400);
+      chunks.push(value);
+    }
+    const result: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+    if (!result || typeof result !== "object" || Array.isArray(result)) throw new RelayError(400);
+    return result as Record<string, unknown>;
   } catch { throw new RelayError(400); }
-  finally { clearTimeout(timer); reader.releaseLock(); }
+  finally {
+    clearTimeout(timer); request.signal.removeEventListener("abort", cancel);
+    void reader.cancel().catch(() => {}); reader.releaseLock();
+  }
 }
 const keys = (input: Record<string, unknown>, expected: string) => Object.keys(input).sort().join(",") === expected;
 
