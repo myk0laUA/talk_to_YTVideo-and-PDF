@@ -240,7 +240,7 @@ try {
           check('08N explicit new session clears old chronology', freshChronology.counts.session_start === 1 && !freshChronology.rows.some(r => r.event === 'response.created'));
           await expect(page.getByText('Voice help', { exact: true })).toHaveCount(0);
           await page.getByRole('button', { name: 'Text mode', exact: true }).click(); await f.clean(kind + ' mode switch');
-          check('mode switch clears conversation', await page.locator('.transcript-turn').count(), 0);
+          check('switching an empty voice session keeps the transcript empty', await page.locator('.transcript-turn').count(), 0);
           await page.getByRole('button', { name: 'Start chat', exact: true }).click(); await page.getByText('Ready for your question.', { exact: true }).waitFor();
           await page.getByLabel('Your question', { exact: true }).fill('Synthetic follow-up in text mode'); await page.getByRole('button', { name: 'Send question', exact: true }).click();
           await expect(page.locator('.transcript')).toContainText('All source markers preserved.');
