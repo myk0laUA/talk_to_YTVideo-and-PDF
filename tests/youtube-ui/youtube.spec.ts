@@ -94,7 +94,7 @@ test("mocked: invalid/long URLs focus inline error; typing never extracts", asyn
 
 const failures: [string, number, string, boolean][] = [
   ["invalid_input", 400, "valid HTTPS", false], ["invalid_request", 400, "could not be sent", false],
-  ["unavailable", 422, "video is unavailable", false], ["no_captions", 422, "No captions are available", false],
+  ["unavailable", 422, "video is unavailable", false], ["no_captions", 422, "English captions are unavailable", false],
   ["blocked", 502, "access was blocked", false], ["rate_limited", 429, "rate limited", false],
   ["quota_exhausted", 503, "no quota remaining", false], ["provider_limited", 503, "operator review", false],
   ["limit_reached", 429, "import is busy", false], ["disabled", 503, "currently unavailable", false],

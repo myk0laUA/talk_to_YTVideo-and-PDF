@@ -92,7 +92,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable 
         <div className="import-choice pdf-choice">
         <h2 className="import-heading"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M14 3H5v18h14V8Z"/><path d="M14 3v5h5M8 12h8M8 16h6"/></svg>PDF document</h2>
         <p className="import-description">Choose a document with selectable text.</p>
-        <p id="pdf-limit" className="note">Up to 25 MB. Text PDFs only.</p>
+        <p id="pdf-limit" className="note">Text PDFs up to 25 MB, 500 pages and 2 million extracted characters.</p>
         <input ref={input} hidden id="pdf-file" type="file" name="file" accept="application/pdf,.pdf"
           aria-label={hasSource ? "Choose replacement PDF" : "Choose PDF"} aria-describedby="pdf-limit"
           disabled={!pdfAvailable || busy} onChange={event => {
@@ -117,7 +117,7 @@ export function SourceWorkspace({ pdfAvailable, youtubeAvailable, textAvailable 
           setUrlError(""); setExpanded(false); setConfirmRemove(false); void importYoutube(video);
         }}>
           <label htmlFor="youtube-url">YouTube URL</label>
-          <p className="note" id="youtube-help">A public video with captions.</p>
+          <p className="note" id="youtube-help">A public video with English captions. Up to 20,000 caption segments and 1 million characters.</p>
           <input ref={videoInput} value={urlDraft} id="youtube-url" name="video" type="url" inputMode="url" autoComplete="off" spellCheck={false}
             placeholder="https://www.youtube.com/watch?v=…" disabled={busy} aria-invalid={!!urlError}
             aria-describedby={`youtube-help${urlError ? " youtube-error" : ""}`} onChange={event => { setUrlDraft(event.target.value); if (urlError) setUrlError(""); }} />

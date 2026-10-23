@@ -12,6 +12,12 @@ Before publishing, verify the reviewed commit and run `npm run db:status`. Apply
 
 After deployment, run the bounded hosted checks from [testing](TESTING.md). Keep real voice/phone observations separate. Do not enable experimental proof routes to make a normal uploaded source work.
 
+## Ingestion admission
+
+Normal imports use resettable one-hour windows, with no process-lifetime ceiling. PDF limits are 6 attempts per visitor and 20 aggregate; caption limits are 4 per visitor and 8 aggregate. Admitted invalid requests count. Network identity is deliberately unverified, so all callers share the aggregate network allowance rather than trusting forwarded IP headers.
+
+Only one PDF parser or incompatible caption extraction runs at a time. Compatible caption requests may share an extraction. A busy rejection asks the visitor to wait for that work to finish; a window rejection includes `Retry-After` and the UI shows the wait. Neither retries automatically. Cancellation releases concurrency but does not refund the request allowance. Provider quota is separate and may require operator action. These process-local controls assume the documented single-instance deployment.
+
 ## Expired-data cleanup
 
 Access expires automatically; physical deletion requires an operator. Current assessment cadence: Myk runs cleanup once daily while access is open, before the demo, and after test data expires. No scheduler or unattended deletion guarantee is configured.

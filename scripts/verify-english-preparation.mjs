@@ -84,7 +84,7 @@ try {
       report.checks.push({ name, theme, width, geometry });
     };
     await page.goto(origin);
-    await expect(page.getByText('Up to 25 MB. Text PDFs only.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Text PDFs up to 25 MB, 500 pages and 2 million extracted characters.', { exact: true })).toBeVisible();
     await expect(page.getByText('Choose a document with selectable text.', { exact: true })).toBeVisible();
     await capture('pdf-helper');
     await page.getByLabel('YouTube URL', { exact: true }).fill(`https://www.youtube.com/watch?v=${oversizedCaptions().videoId}`);
@@ -106,7 +106,7 @@ try {
     assert.equal(content.fullText, row.fullText); assert.equal(content.sections.length, 20_000);
     await page.getByRole('button', { name: 'Source actions', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Replace source', exact: true }).click();
-    await expect(page.getByText('Up to 25 MB. Text PDFs only.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Text PDFs up to 25 MB, 500 pages and 2 million extracted characters.', { exact: true })).toBeVisible();
     await capture('replacement-helper');
     // A new source mount restores the explicit start action, without retrying old content.
     const smaller = uploadedRecord(pdfFixture, visitor); await ipc('seed', { row: smaller });

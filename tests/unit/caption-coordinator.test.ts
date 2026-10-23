@@ -160,7 +160,8 @@ test("eight participants, duplicate visitor, proof exclusivity and every quota r
   leases.forEach(lease => { lease.release(); lease.release(); });
   assert.equal(admission.acquireImport("ninth", "ip", now), null); // global/IP8 consumed
   for (let i = 0; i < 8; i++) admission.acquire(String(i), "ip", now + captionLimits.windowMs)!();
-  assert.equal(admission.acquire("new", "ip", now + 2 * captionLimits.windowMs), null); // lifetime16
+  const recovered = admission.acquire("new", "ip", now + 2 * captionLimits.windowMs);
+  assert.ok(recovered); recovered(); // Ordinary imports recover without restarting the process.
   const perVisitor = new CaptionAdmission(captionLimits);
   for (let i = 0; i < 4; i++) perVisitor.acquire("same", "ip", now)!();
   assert.equal(perVisitor.acquireImport("same", "ip", now), null);

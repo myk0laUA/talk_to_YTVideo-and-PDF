@@ -7,7 +7,7 @@ import { PdfError, pdfErrors } from "./errors.ts";
 import { readPdfMultipart } from "./multipart.ts";
 import type { PdfParser } from "./worker.ts";
 
-export const pdfLimits: Limits = { visitor: 6, ip: 20, global: 20, lifetime: 40, windowMs: 3_600_000, concurrent: 1 };
+export const pdfLimits: Limits = { visitor: 6, ip: 20, global: 20, windowMs: 3_600_000, concurrent: 1 };
 const reply = (status: number, dto: PdfResult, cookie?: string) => Response.json(dto, { status,
   headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", ...(cookie ? { "Set-Cookie": cookie } : {}) } });
 const fail = (code: PdfFailureCode, cookie?: string) => reply(pdfErrors[code][0], { ok: false, error: { code, message: pdfErrors[code][1] } }, cookie);

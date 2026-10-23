@@ -20,3 +20,7 @@ Use actual responses; do not substitute scripted answers or prerecorded audio fo
 If hosted YouTube is blocked or provider quota is unavailable, explain the limitation and demonstrate the normal local workflow from the [README](../README.md#youtube-on-local-and-hosted-environments). The brief permits this exception. Confirm local extraction first; do not substitute a mocked transcript or claim that local success establishes hosted support.
 
 Before submitting, open all three public links without signing in. Verify the recording's playback, sound, duration and sharing permissions. Include English-caption/provider availability and remaining limitations in the submission description.
+
+## Physical-phone evidence to record after deployment
+
+Record the phone model, OS version, browser/version, date and deployed revision. On the public app, use a nonprivate source: speak a question, confirm audible output, interrupt while it speaks, ask a follow-up, independently mute microphone and speaker, then End. Check microphone-denial text fallback, theme, keyboard and scrolling. Briefly disconnect and reconnect: the current implementation stops and preserves received text, but Start creates a fresh conversation. Record the actual result of each check; a screenshot alone cannot prove audible playback or interruption. Then add the public walkthrough URL and verify signed-out playback and sound.

@@ -3,6 +3,7 @@ import type { PdfSourceFailureCode, SourceFailureCode, SourceResult } from "../.
 import type { VisitorConfig } from "../proof/config.ts";
 import { createVisitor, readVisitor, visitorCookie } from "../proof/visitor.ts";
 import { Admission } from "../proof/admission.ts";
+import { sourceAdmissionFailure } from "./admission.ts";
 import { pdfLimits } from "../pdf/handler.ts";
 import { PdfError, pdfErrors } from "../pdf/errors.ts";
 import { readPdfMultipart } from "../pdf/multipart.ts";
@@ -42,8 +43,9 @@ export function createSourceHandlers(deps: { config: () => VisitorConfig | null;
       const guard = () => requireLive(visitor, request.signal, now());
       guard();
       if (upload) {
-        release = admission.acquire(visitor.owner, "unverified-network", now()) ?? undefined;
-        if (!release) return fail("limit_reached");
+        const attempt = admission.attempt(visitor.owner, "unverified-network", now());
+        if ("rejection" in attempt) return sourceAdmissionFailure(attempt.rejection);
+        release = attempt.release;
         const bytes = await readPdfMultipart(request);
         const extraction = await deps.parse(bytes, request.signal);
         guard();

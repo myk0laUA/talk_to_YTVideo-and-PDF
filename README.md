@@ -122,6 +122,7 @@ The text relay and admission registries live in the Node process, so this implem
 - Answers have a 2,048-token output ceiling. Text sessions allow 20 questions, each up to 1,000 text units, with a 10-minute lifetime and 2-minute idle timeout.
 - Anonymous ownership lasts at most one hour. One active source per visitor; successful replacement is atomic. Expired data becomes inaccessible; physical deletion uses the [cleanup procedure](docs/OPERATIONS.md#expired-data-cleanup).
 - Admission controls are process-local: 60 text and 60 voice starts per visitor/hour, plus finite concurrency and aggregate limits. They are not an account-wide spending cap.
+- Imports recover when their hourly window resets: PDFs allow 6 attempts per visitor/20 total, and captions 4 per visitor/8 total. Invalid admitted attempts count. Normal ingestion has no process-lifetime ceiling; timed rejections include a retry delay. See [operations](docs/OPERATIONS.md#ingestion-admission).
 - The model has omitted a PDF exception in prior evaluation. Verify important answers against the source. Passing transport tests does not establish factual reliability.
 
 [Release status](docs/RELEASE.md) records the deployed revision, verified checks, remaining phone/recording checks and dated dependency audit results. [Walkthrough guide](docs/WALKTHROUGH.md) covers the assessment demo.

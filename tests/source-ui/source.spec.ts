@@ -41,7 +41,7 @@ test("mocked: one 401 retry, Unicode/safe filename, source navigation, keyboard,
   await page.goto("/");
   await page.keyboard.press("Tab"); await expect(page.getByRole("link", { name: "Skip to workspace" })).toBeFocused();
   await page.keyboard.press("Enter"); await expect(page.getByRole("main")).toBeFocused();
-  await expect(page.getByText("Up to 25 MB. Text PDFs only.")).toBeVisible();
+  await expect(page.getByText("Text PDFs up to 25 MB, 500 pages and 2 million extracted characters.")).toBeVisible();
   await load(page); expect(posts).toBe(2); expect(gets).toBe(1);
   await expect(page.getByText("Résumé 日本語.pdf", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Source actions", exact: true }).click(); await page.getByRole("menuitem", { name: "Remove source", exact: true }).focus();
@@ -77,6 +77,18 @@ const classes: [string, number, string][] = [
   ["invalid_request", 400, "Choose one PDF"], ["timeout", 504, "outcome is uncertain"], ["cancelled", 408, "outcome is uncertain"],
   ["storage_unavailable", 503, "temporarily unavailable"], ["replacement_conflict", 409, "cannot be identified"], ["internal", 500, "outcome is uncertain"],
 ];
+for (const [reason, text] of [["window", "Try again in 2 minute(s)"], ["busy", "after it finishes"], ["capacity", "operator action"]]) {
+  test(`import admission ${reason} gives truthful recovery without retrying`, async ({ page }) => {
+    let attempts = 0;
+    await page.route("**/api/sources/**", route => { attempts++; return route.fulfill({ status: 429,
+      headers: { "content-type": "application/json", ...(reason === "window" ? { "retry-after": "61" } : {}) },
+      body: JSON.stringify({ ok: false, error: { code: "limit_reached", message: "PRIVATE", admission: { reason } } }),
+    }); });
+    await page.goto("/"); await choose(page);
+    await expect(page.locator(".source-panel > [role=status]")).toContainText(text);
+    expect(attempts).toBe(1); await expect(page.getByText("PRIVATE")).toHaveCount(0);
+  });
+}
 for (const [code, status, text] of classes) test(`mocked: authored ${code} recovery preserves accessible prior source`, async ({ page }) => {
   let posts = 0;
   await page.route("**/api/sources/**", route => route.request().method() === "POST"

@@ -204,7 +204,7 @@ test(`${m} ${stage}: ${signal} synchronously stops; late resources cannot resume
   expect(await page.locator(".transcript-text").allTextContents()).toEqual(content);
   if (m === "text") await expect(question(page)).toHaveValue(draft);
   await expect(start(page, m)).toBeDisabled();
-  if (signal === "offline") { await expect(selected(page, m)).toContainText("browser reports offline"); await connectivity(page, true); }
+  if (signal === "offline") { await expect(selected(page, m)).toContainText("appear to be offline"); await connectivity(page, true); }
   else { await expect(selected(page, m)).toContainText("page departure"); await departure(page, true, "pageshow"); }
   for (let n = 0; n < 3; n++) { await connectivity(page, true); await departure(page, true, "pageshow"); }
   const after = (await audit(page))[m].at(-1)!;
@@ -234,7 +234,7 @@ for (const m of ["voice", "text"] as const) test(`${m}: partial answer retained,
   await expect(page.locator(".transcript-part").last()).toContainText("Text unfinished when the conversation stopped");
   await capture(page, info, `${m}-offline`); await fits(page);
   await connectivity(page, true);
-  await expect(selected(page, m)).toContainText("server may still be unreachable");
+  await expect(selected(page, m)).toContainText("Connection may be back");
   expect((await audit(page))[m].at(-1)!.prepare).toBe(1);
   await capture(page, info, `${m}-online-stopped`);
   await start(page, m).click();
@@ -281,7 +281,7 @@ test(`${m}: authoritative transport closure in ${stage} while browser is online`
   const before = await page.locator(".transcript-text").allTextContents();
   await act(page, `Close ${m} transport`);
   await expect(selected(page, m)).toContainText("connection failed or closed");
-  await expect(selected(page, m)).not.toContainText("browser reports offline");
+  await expect(selected(page, m)).not.toContainText("appear to be offline");
   await connectivity(page, true); // duplicate online must not hide the failure
   await expect(selected(page, m)).toContainText("connection failed or closed");
   expect(await page.locator(".transcript-text").allTextContents()).toEqual(before);

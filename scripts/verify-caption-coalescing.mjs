@@ -195,10 +195,10 @@ for (const scenario of scenarios) {
         && held.captionAdmission.active === 8 && held.captionAdmission.ipCounts[0] === 8 && held.cacheReads === 1 && item.upstream.length === 1);
       await mode("success"); await Promise.all(pending.map(good)); await bad(send(tokens[7]), "limit_reached");
       await store("advance-clock", { ms: 3601000 });
-      // New signed visitors after window change; 8 warm hits consume lifetime16 without extraction.
+      // New signed visitors after window change; attempts remain charged in each hourly window.
       for (let i = 0; i < 8; i++) await good(send(await bootstrap()));
-      await store("advance-clock", { ms: 3601000 }); await bad(send(await bootstrap()), "limit_reached");
-      const done = await store(); check("hour resets do not reset lifetime16; warm hits charged", done.captionAdmission.lifetime === 16 && done.cacheReads === 9 && item.upstream.length === 3);
+      await store("advance-clock", { ms: 3601000 }); await good(send(await bootstrap()));
+      const done = await store(); check("hour resets recover beyond former lifetime16 ceiling using the warm cache", done.captionAdmission.lifetime === 17 && done.cacheReads === 10 && item.upstream.length === 3);
     } else {
       // Load proof first: separately bundled route must share admission without instanceof assumptions.
       const a = await bootstrap(), b = await bootstrap(); await mode("hold"); const proof = send(a, { route: "/api/proof-captions" });

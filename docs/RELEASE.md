@@ -2,6 +2,20 @@
 
 Updated 23 October 2026 (Toronto).
 
+## Reviewer remediation
+
+Starting from reviewed revision `10eecee`, normal PDF and caption ingestion no longer has a process-lifetime ceiling. Hourly and concurrency controls remain; imports recover after the window resets without a server restart. Busy and timed rejections are distinct, with `Retry-After` on timed rejections and actionable UI copy. Caption admission now honors injected limits consistently. Regression checks exceed the former 40/16 totals, including invalid attempts and later successful imports.
+
+Import controls now disclose the existing PDF page/text and caption language/size restrictions. This resolves the mismatch between controls and enforcement; it does not remove those restrictions or establish compliance with an unrestricted-input interpretation of the brief. English-only remains the user's explicit product choice. Offline/online notices were shortened after a physical-phone screenshot; connection recovery still requires a fresh session. No conversation-resume feature or new audible-phone evidence is claimed.
+
+Local checks: lint, typecheck and production build passed; 1,637 unit tests, 96 source UI cases, 99 YouTube UI cases, 62 caption-coalescing checks, 51 source HTTP checks, 59 YouTube HTTP checks, 59 boundary HTTP checks, 533 owned-text checks, 20 source-limit checks, six workspace flow scenarios and 138 layout states passed. These use synthetic provider/storage boundaries, not live model accuracy or physical audio. Admission checks used build `hfbXjo29bsd-vj7-xZ1aF`; the subsequent notice-only build is `fm2q7ELnA2vlbkX65p9Sm`.
+
+Initial verification failures were retained: a new malformed-PDF test incorrectly expected 415 rather than the existing 400 multipart validation result; a new coalescing assertion expected another network request despite the existing 24-hour warm cache; workspace flow assertions still expected the old caption wording. Expectations were corrected to the verified contracts, and complete affected suites passed. No application failure was relabeled as a pass. Sanitized evidence is ignored under `artifacts/local/test-review/remediation-*`.
+
+The final notice build passed 18 smoke tests and all 138 layout states. Recovery ran 248 cases: 240 passed and eight failed solely on the removed "server may still be unreachable" wording. Updating that assertion to "Connection may be back" produced eight passing targeted reruns across all four viewports; behavior assertions were retained. Read-only status confirmed the intended hosted database has all three migrations applied.
+
+Deployment of these changes and fresh hosted checks are pending. The dated deployment below remains the currently verified release until that operation completes. Physical-phone speech/playback/interruption and the public 10–15 minute walkthrough remain submission gates; the user will record after the repository and deployment are ready.
+
 ## Submission-readiness review
 
 This review starts from `d1ec6f2`. The changes below prepare the repository for submission; deployment is a separate operation. The deployed revision below is unchanged. The existing structure, UI, database schema and conversation architecture are retained.

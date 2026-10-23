@@ -34,6 +34,22 @@ const setup = () => {
   return { db, repository, handlers: createSourceHandlers({ config: () => config, repository, parse: async () => extraction }) };
 };
 
+test("invalid PDF attempts remain bounded but recover after every window without a process restart", async () => {
+  const { repository } = setup(); let now = Date.now(), parses = 0;
+  const handlers = createSourceHandlers({ config: () => config, repository, now: () => now,
+    parse: async () => { parses++; return extraction; } });
+  const fresh = () => createVisitor(config, now);
+  for (let window = 0; window < 3; window++) {
+    for (let i = 0; i < pdfLimits.global; i++) await result(await handlers.upload(request(fresh(), "POST", { "content-type": "text/plain" })), 400, "invalid_request");
+    const denied = await handlers.upload(request(fresh()));
+    assert.equal(denied.headers.get("retry-after"), "3600");
+    assert.equal((await result(denied, 429, "limit_reached")).error.admission.reason, "window");
+    now += pdfLimits.windowMs;
+  }
+  assert.equal(parses, 0);
+  await result(await handlers.upload(request(fresh())), 201); assert.equal(parses, 1);
+});
+
 test("ingestion config independent/default-off, signed origin required, production HTTP explicit", () => {
   assert.equal(parseSourceConfig({}), null);
   const env = { PDF_INGESTION_ENABLED: "true", APP_ORIGIN: config.origin, VISITOR_COOKIE_SECRET: config.cookieSecret, NODE_ENV: "production",

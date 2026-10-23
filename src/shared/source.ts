@@ -1,5 +1,6 @@
 import type { PdfFailureCode, PdfSection } from "./pdf.ts";
 import type { CaptionFailureCode, CaptionSegment, CaptionTranscript } from "./captions.ts";
+import type { AdmissionRejection } from "./session-admission.ts";
 
 export type PdfSourceMetadata = {
   id: string; kind: "PDF"; title: string; parser: "pdf-parse@2.4.5";
@@ -18,4 +19,4 @@ export type SourceContent = PdfSourceContent | YoutubeSourceContent;
 export type PdfSourceFailureCode = PdfFailureCode | "unavailable" | "storage_unavailable" | "replacement_conflict";
 export type SourceFailureCode = PdfSourceFailureCode | CaptionFailureCode;
 export type SourceResult = { ok: true; source: SourceMetadata | SourceContent } | { ok: true }
-  | { ok: false; error: { code: SourceFailureCode; message: string } };
+  | { ok: false; error: { code: SourceFailureCode; message: string; admission?: AdmissionRejection } };

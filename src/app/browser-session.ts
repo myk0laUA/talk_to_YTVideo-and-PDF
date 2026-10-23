@@ -46,9 +46,9 @@ export class BrowserSession {
 }
 
 export function browserSessionMessage(state: BrowserSessionState) {
-  if (state.offline) return "Your browser reports offline. The session is stopped. Start, Send and playback are unavailable. Your source, received text and any unconfirmed draft stay here. Wait for connectivity; nothing retries automatically.";
+  if (state.offline) return "You appear to be offline. Chat stopped; received text stays here. Reconnect to start again.";
   if (state.departed) return "Session ended for page departure. Nothing resumes automatically.";
   if (state.notice === "departure") return "Session ended for page departure. Received text stays in this page; a full reload clears it. Use Start for a fresh session.";
-  if (state.notice === "online") return "Your browser reports connectivity again; the server may still be unreachable. The session stays stopped. Use Start for a fresh session; questions are never resent automatically.";
+  if (state.notice === "online") return "Connection may be back. Start a new session when ready; previous questions won’t be resent.";
   return null;
 }

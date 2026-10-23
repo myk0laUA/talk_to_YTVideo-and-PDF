@@ -7,6 +7,7 @@ import { isEnglish, matchesCaptionLanguage, normalizeVideo, validLanguage } from
 import { readBounded } from "../captions/bounded-body.ts";
 import { Admission } from "../proof/admission.ts";
 import { CaptionAdmission, captionLimits } from "../captions/admission.ts";
+import { sourceAdmissionFailure } from "./admission.ts";
 import { CaptionCoordinator, captionJobKey } from "../captions/coordinator.ts";
 import { validatedTranscript } from "../captions/validated.ts";
 import { captionBounds } from "../captions/provider.ts";
@@ -58,10 +59,12 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
       const guard = () => requireLive(visitor, request.signal, now());
       guard();
       // Next may bundle the proof route separately; do not rely on cross-bundle instanceof.
-      const sharedAdmission = "acquireImport" in admission ? admission as CaptionAdmission : null;
-      const lease = sharedAdmission?.acquireImport(visitor.owner, "unverified-network", now());
-      release = sharedAdmission ? lease?.release : admission.acquire(visitor.owner, "unverified-network", now()) ?? undefined;
-      if (!release) return fail("limit_reached");
+      const sharedAdmission = "attemptImport" in admission ? admission as CaptionAdmission : null;
+      const attempt = sharedAdmission ? sharedAdmission.attemptImport(visitor.owner, "unverified-network", now())
+        : admission.attempt(visitor.owner, "unverified-network", now());
+      if ("rejection" in attempt) return sourceAdmissionFailure(attempt.rejection);
+      const lease = "lease" in attempt ? attempt.lease : undefined;
+      release = "lease" in attempt ? attempt.lease.release : attempt.release;
       if (request.headers.get("content-type")?.split(";", 1)[0].trim() !== "application/json") return fail("invalid_request");
       const length = request.headers.get("content-length");
       if (length !== null && (!/^\d+$/.test(length) || Number(length) > 512)) return fail("invalid_request");
@@ -80,7 +83,7 @@ export function createYoutubeSourceHandler(deps: { config: () => YoutubeSourceCo
       const language = (fields.language as string | undefined) ?? "en";
       const key = captionCacheKey(video.videoId, language);
       const jobKey = captionJobKey(key, config);
-      if (lease && !lease.bind(config.cacheBypass ? Symbol() : jobKey)) return fail("limit_reached");
+      if (lease && !lease.bind(config.cacheBypass ? Symbol() : jobKey)) return sourceAdmissionFailure({ reason: "busy" });
       const work = async (signal: AbortSignal) => {
         const live = () => { if (signal.aborted) throw signal.reason instanceof SourceError ? signal.reason : new SourceError("cancelled"); };
         let transcript = config.cacheBypass ? null : await deps.cache.get(key, new Date(now()));

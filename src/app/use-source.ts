@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PDF_MAX_FILE_BYTES } from "@/shared/pdf";
+import { parseAdmissionRejection, type AdmissionRejection } from "@/shared/session-admission";
 import type { SourceContent, SourceFailureCode, SourceMetadata, SourceResult } from "@/shared/source";
 
 type Phase = "idle" | "importing" | "loading" | "loaded" | "removing" | "checking" | "error" | "uncertain";
@@ -13,7 +14,7 @@ const recovery: Record<SourceFailureCode, string> = {
   malformed: "This PDF could not be read. Export a fresh PDF and choose that copy.",
   encrypted: "This PDF is password protected. Choose an unencrypted copy you can share.",
   no_text: "No readable text was found. Choose a PDF with selectable text; scanned images need OCR elsewhere.",
-  extraction_limit: "This PDF exceeds the extraction limit. Choose a copy with fewer pages or less text.",
+  extraction_limit: "This PDF exceeds 500 pages or 2,000,000 extracted characters. Choose a copy with fewer pages or less text.",
   timeout: "The request took too long. Its outcome is uncertain. Wait, then submit a source to try again.",
   cancelled: "The request was cancelled. Its outcome is uncertain. Check the source, or submit a source again.",
   limit_reached: "PDF import is busy or its request limit was reached. Wait before choosing a file again.",
@@ -26,7 +27,7 @@ const recovery: Record<SourceFailureCode, string> = {
   invalid_request: "The file could not be sent. Choose one PDF and try again.",
   internal: "PDF import could not finish. Its outcome is uncertain. Wait and choose your PDF again.",
   invalid_input: "Enter a valid HTTPS YouTube video URL and try again.",
-  no_captions: "No captions are available for this video. Choose a captioned video or a PDF.",
+  no_captions: "English captions are unavailable for this video. Choose a video with English captions or a PDF.",
   blocked: "Caption access was blocked. Try another video or a PDF; this video may still be inaccessible.",
   rate_limited: "Caption retrieval is rate limited. Wait before submitting again.",
   quota_exhausted: "The caption service has no quota remaining. Site operator action is needed. You can use a PDF meanwhile.",
@@ -34,7 +35,7 @@ const recovery: Record<SourceFailureCode, string> = {
   upstream_failure: "The caption service could not finish retrieval. Try again later, or choose a PDF.",
 };
 const youtubeRecovery: Partial<Record<SourceFailureCode, string>> = {
-  too_large: "These captions exceed the supported size. Choose a shorter video or a PDF.",
+  too_large: "These captions exceed 20,000 segments or 1,000,000 characters. Choose a shorter video or a PDF.",
   malformed: "The caption service returned invalid or incomplete captions. Try again later, or choose another video.",
   unavailable: "This video is unavailable for caption retrieval. Choose another video or a PDF.",
   timeout: "Caption retrieval took too long. Its outcome is uncertain. Check the source before submitting again.",
@@ -48,14 +49,16 @@ const youtubeRecovery: Partial<Record<SourceFailureCode, string>> = {
   internal: "YouTube import could not finish. Its outcome is uncertain. Check the source before submitting again.",
 };
 class ApiError extends Error {
-  constructor(readonly code: SourceFailureCode, readonly status: number) { super(code); }
+  constructor(readonly code: SourceFailureCode, readonly status: number, readonly admission?: AdmissionRejection) { super(code); }
 }
 async function request(url: string, signal: AbortSignal, init?: RequestInit) {
   const response = await fetch(url, { ...init, signal, credentials: "same-origin", cache: "no-store" });
   const value: SourceResult = await response.json();
   if (!value.ok) {
     if (!(value.error.code in recovery)) throw new Error("Unexpected source error");
-    throw new ApiError(value.error.code as SourceFailureCode, response.status);
+    const admission = value.error.code === "limit_reached" && value.error.admission
+      ? parseAdmissionRejection({ ...value.error.admission, code: "session_admission" }, response.headers.get("retry-after")) : undefined;
+    throw new ApiError(value.error.code as SourceFailureCode, response.status, admission);
   }
   if (!response.ok) throw new Error("Unexpected response");
   return { value, status: response.status };
@@ -68,7 +71,11 @@ async function read(id: string, signal: AbortSignal): Promise<SourceContent> {
 const uncertain = (error: unknown) => !(error instanceof ApiError)
   || ["storage_unavailable", "replacement_conflict", "timeout", "cancelled", "internal"].includes(error.code);
 const message = (error: unknown, kind?: SourceMetadata["kind"]) => error instanceof ApiError
-  ? kind === "YOUTUBE" ? youtubeRecovery[error.code] ?? recovery[error.code] : recovery[error.code]
+  ? error.admission?.reason === "window" && error.admission.retryAfterSeconds
+    ? `Import request limit reached. Try again in ${Math.ceil(error.admission.retryAfterSeconds / 60)} minute(s). Nothing retries automatically.`
+    : error.admission?.reason === "busy" ? "Another import is running. Try again after it finishes."
+    : error.admission?.reason === "capacity" ? "Import capacity is unavailable. Site operator action is needed."
+    : kind === "YOUTUBE" ? youtubeRecovery[error.code] ?? recovery[error.code] : recovery[error.code]
   : "The connection was lost or the request timed out. It may have completed. Check the source, or submit a source again to replace it deliberately.";
 const ready = (content: SourceContent) => content.kind === "PDF" ? "PDF text ready" : "YouTube captions ready";
 
