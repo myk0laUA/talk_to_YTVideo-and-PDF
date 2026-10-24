@@ -48,6 +48,19 @@ async function until(fn: () => boolean) { for (let i = 0; i < 100; i++) { if (fn
 function clean(f: ReturnType<typeof fixture>, pendingMints = 0) { assert.deepEqual(f.registry.resources,
   { entries: 0, timers: 0, replayEntries: 1, pendingMints }); }
 
+test("caption voice preparation survives six seconds of hosted work before microphone setup", async () => {
+  const f = fixture("YOUTUBE");
+  f.read(async (...args) => {
+    const row = await f.repo.get(...args);
+    if (f.reads === 3) f.advance(6000);
+    return row;
+  });
+  const prepared = await f.start();
+  assert.equal(f.calls, 0);
+  assert.equal((await f.credential(prepared)).status, 200);
+  clean(f);
+});
+
 test("08J server timing is versioned, source-clipped, and reauthorization still expires the ticket", async () => {
   const f = fixture(); f.row.expiresAt = new Date(f.now() + 1500);
   const p = await f.start();

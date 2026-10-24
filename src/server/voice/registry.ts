@@ -20,7 +20,8 @@ export class VoiceError extends Error {
   readonly rejection?: AdmissionRejection;
   constructor(status = 404, rejection?: AdmissionRejection) { super("Voice preparation unavailable"); this.status = status; this.rejection = rejection; }
 }
-export const VOICE_LIMITS = Object.freeze({ ticketMs: 30_000, preparationMs: 5000, acquisitionMs: 10_000,
+// Leave response/transport headroom within the browser's 25-second preparation deadline.
+export const VOICE_LIMITS = Object.freeze({ ticketMs: 30_000, preparationMs: 20_000, acquisitionMs: 10_000,
   entries: 4, replayEntries: ownedVoiceReplayEntries });
 type Entry = { id: string; requestId: string; sourceId: string; visitor: Visitor; runId: string;
   expires: number; abort: AbortController; timer: ReturnType<typeof setTimeout>; input?: ProviderPrimingInput; consumed: boolean };
