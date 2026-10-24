@@ -60,18 +60,20 @@ export function matchesDiagnostic(diagnostic: ReturnType<typeof diagnoseManifest
 const preparationOnly = freeze({ conversationReady: false, providerConfirmed: false, productionReady: false,
   issuanceRequiresRevalidation: true } as const);
 
-const providerPreparations = new WeakMap<ProviderPrimingInput, string>();
+// Only fully validated, deeply frozen server-created projections enter this set.
+// Identity is sufficient for later fidelity checks; rebuilding the manifest on
+// every async guard made caption-heavy voice setup exceed hosted deadlines.
+const providerPreparations = new WeakSet<ProviderPrimingInput>();
 /** Server provenance/fidelity check only, never substitutes for a fresh owned-source read at issuance.
  * Cloned/browser projections cannot satisfy this check. No owner or credential is in the projection.
  */
 export function matchesProviderPreparation(input: ProviderPrimingInput, expected: {
   model: string; mode: Mode; policyVersion: string; sourceId: string; runId: string }, at: number): boolean {
   try {
-    return Number.isFinite(at) && Date.parse(input?.variant?.source.expiresAt) > at
+    return providerPreparations.has(input) && Number.isFinite(at) && Date.parse(input?.variant?.source.expiresAt) > at
       && input.policy.model === expected.model && input.policy.mode === expected.mode && input.policy.policyVersion === expected.policyVersion
       && !!(input.policy.mode === "text" ? resolveProviderTextPolicy : resolveProviderVoicePolicy)(expected.model, expected.mode, expected.policyVersion)
-      && input?.manifest?.runId === expected.runId && input.variant.source.id === expected.sourceId
-      && providerPreparations.get(input) === hash(JSON.stringify(input)) && validateProviderAdmission(input);
+      && input?.manifest?.runId === expected.runId && input.variant.source.id === expected.sourceId;
   } catch { return false; }
 }
 
@@ -121,7 +123,7 @@ function createProviderPreparation(preparationMode: Mode, deps: ProviderPreparat
       const current = await guardedAwait(() => deps.repository.get(sourceId, visitor.owner, new Date(now())), signal, live);
       live(); requireOwned(current, visitor, now());
       if (current.id !== sourceId || contextVariants(sourceContext(current)).B.serialized !== prepared.variants.B.serialized) throw new SourceError("unavailable");
-      live(); providerPreparations.set(projection, hash(JSON.stringify(projection)));
+      live(); providerPreparations.add(projection);
       return freeze({ ...preparationOnly, status: "prepared", input: projection } as const);
     } catch (error) {
       try { guard(); } catch (guardError) { error = guardError; }

@@ -316,6 +316,15 @@ for (const kind of ["PDF", "YOUTUBE"] as const) for (const variant of ["A", "B"]
     assert.equal(validateProviderAdmission(p), true); assert.equal(validateAdmission(p), false);
     assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId }, start), true);
     assert.equal(matchesProviderPreparation(structuredClone(p), { ...h.args, runId: m.runId }, start), false);
+    // Cached server provenance is safe only while every nested projection remains immutable.
+    const frozenTree = (value: unknown): void => {
+      if (value && typeof value === "object") { assert.equal(Object.isFrozen(value), true); Object.values(value).forEach(frozenTree); }
+    };
+    frozenTree(p);
+    assert.throws(() => { (p.manifest.items[0].item.content[0] as { text: string }).text = "altered"; }, TypeError);
+    const forged = structuredClone(p); (forged.manifest.items[0].item.content[0] as { text: string }).text = "altered";
+    Object.freeze(forged);
+    assert.equal(matchesProviderPreparation(forged, { ...h.args, runId: m.runId }, start), false);
     for (const patch of [{ model: "gpt-realtime-2.1-mini" }, { mode: "text" as const }, { runId: "old" }, { sourceId: "old" }, { policyVersion: PROVIDER_TEXT_POLICY.policyVersion }])
       assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId, ...patch }, start), false);
     assert.equal(matchesProviderPreparation(p, { ...h.args, runId: m.runId }, h.row.expiresAt.getTime()), false);

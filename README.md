@@ -228,7 +228,7 @@ Retained diagnostic routes—`/api/proof-source`, `/api/proof-pdf`, `/api/proof-
 | Temporary anonymous ownership | No sign-up or permanent chat database. Access expires within one hour; reloading loses the current workspace. Expired rows require physical cleanup. |
 | Bounded conversations | **2,048 output tokens** per answer. Text allows **20 questions**, each up to **1,000 UTF-16 code units**, a **10-minute lifetime** and **2-minute idle timeout**. |
 | Voice activity detection | Threshold **0.65**, silence duration **600 ms**. Helps reduce noise activation but may miss quiet speech; requires real-device tuning. |
-| Voice source preparation | Up to **20 seconds** for server validation and source preparation, within the browser's 25-second deadline. Caption-heavy sources can take longer on a small host; failures here occur before microphone access. |
+| Voice source preparation | Up to **20 seconds** for server validation and source preparation, within the browser's 25-second deadline. Validated source projections are deeply frozen and reused; ownership, expiry and current source content are rechecked before issuing credentials. Failures here occur before microphone access. |
 | Process-local coordination | Simple single-instance deployment. Session state and limits do not coordinate across replicas or survive server restarts. |
 
 PDF and YouTube imports each allow **120 attempts per browser visitor/hour / 1,200 aggregate/hour**. Reimporting the same source and invalid admitted attempts count. Windows reset automatically; there is no process-lifetime ingestion ceiling. One PDF extraction or incompatible caption job runs at a time. External caption-provider quotas are separate.
