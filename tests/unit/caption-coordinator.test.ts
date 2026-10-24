@@ -152,7 +152,8 @@ test("one visitor expires while a later-expiring follower independently commits 
 });
 
 test("eight participants, duplicate visitor, proof exclusivity and every quota remain bounded", () => {
-  const admission = new CaptionAdmission(captionLimits), now = Date.now();
+  const limits = { ...captionLimits, visitor: 4, ip: 8, global: 8 };
+  const admission = new CaptionAdmission(limits), now = Date.now();
   const leases = Array.from({ length: 8 }, (_, i) => admission.acquireImport(String(i), "ip", now)!);
   leases.forEach(lease => assert.equal(lease.bind("same"), true));
   assert.equal(admission.acquireImport("0", "ip", now), null); assert.equal(admission.acquireImport("ninth", "ip", now), null);
@@ -162,7 +163,7 @@ test("eight participants, duplicate visitor, proof exclusivity and every quota r
   for (let i = 0; i < 8; i++) admission.acquire(String(i), "ip", now + captionLimits.windowMs)!();
   const recovered = admission.acquire("new", "ip", now + 2 * captionLimits.windowMs);
   assert.ok(recovered); recovered(); // Ordinary imports recover without restarting the process.
-  const perVisitor = new CaptionAdmission(captionLimits);
+  const perVisitor = new CaptionAdmission(limits);
   for (let i = 0; i < 4; i++) perVisitor.acquire("same", "ip", now)!();
   assert.equal(perVisitor.acquireImport("same", "ip", now), null);
   const exclusive = new CaptionAdmission(captionLimits), release = exclusive.acquire("proof", "ip", now)!;

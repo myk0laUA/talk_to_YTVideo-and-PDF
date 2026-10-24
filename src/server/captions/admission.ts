@@ -2,7 +2,7 @@ import "server-only";
 import { Admission, type Limits } from "../proof/admission.ts";
 import type { AdmissionRejection } from "../../shared/session-admission.ts";
 
-export const captionLimits = { visitor: 4, ip: 8, global: 8, windowMs: 3600000, concurrent: 1 };
+export const captionLimits = { visitor: 120, ip: 1200, global: 1200, windowMs: 3600000, concurrent: 1 };
 export type CaptionLease = { bind(key: string | symbol): boolean; release(): void };
 
 // Caption-only distinction: eight admitted requests, but one compatible extraction slot.

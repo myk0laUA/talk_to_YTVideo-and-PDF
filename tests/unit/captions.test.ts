@@ -4,6 +4,7 @@ import { normalizeVideo } from "../../src/server/captions/input.ts";
 import { parseCaptionConfig } from "../../src/server/captions/config.ts";
 import { createDirectCaptionProvider, normalizeSegments, captionBounds, CAPTION_PROVIDER } from "../../src/server/captions/provider.ts";
 import { createCaptionHandler } from "../../src/server/captions/handler.ts";
+import { CaptionAdmission } from "../../src/server/captions/admission.ts";
 import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
 import { readBounded } from "../../src/server/captions/bounded-body.ts";
 import type { CaptionResult } from "../../src/shared/captions.ts";
@@ -203,7 +204,8 @@ test("route gate, origin, fields, body and URL rejections precede provider work"
 test("route minimal DTO/cookie, error sanitation, reuse, per-visitor and global admission", async () => {
   let calls = 0;
   const success: CaptionResult = { ok: true, transcript: normalizeSegments([{ text: "safe", offset: 1, duration: 2, lang: "en" }], id) };
-  const handler = createCaptionHandler({ config: () => config, provider: async value => {
+  const handler = createCaptionHandler({ config: () => config,
+    admission: new CaptionAdmission({ visitor: 4, ip: 8, global: 8, windowMs: 3600000, concurrent: 1 }), provider: async value => {
     calls++; assert.equal(value.videoId, id); return success;
   } });
   const response = await handler(request());

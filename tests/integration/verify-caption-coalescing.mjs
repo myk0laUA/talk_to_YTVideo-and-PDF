@@ -163,6 +163,7 @@ for (const scenario of scenarios) {
       }
       check("failed/settled job removed", (await store()).coordinatorJobs === 0);
       if (scenario !== "expiry") { await mode("success"); const before = item.upstream.length; await good(send(await bootstrap()));
+        await store(); // Drain earlier child IPC evidence before asserting upstream counts.
         check("deliberate retry succeeds, Source failure reuses populated cache", item.upstream.length === before + (scenario === "source-write" ? 0 : 3)); }
     } else if (scenario === "incompatible") {
       const a = await bootstrap(), b = await bootstrap(); await mode("hold"); const pending = send(a);
@@ -193,12 +194,13 @@ for (const scenario of scenarios) {
       await bad(send(tokens[8]), "limit_reached"); await bad(send(tokens[8], { route: "/api/proof-captions" }), "limit_reached");
       const held = await store(); check("each waiter charged, duplicate/proof/budget rejects no cache/provider work", held.captionAdmission.total === 8 && held.captionAdmission.lifetime === 8
         && held.captionAdmission.active === 8 && held.captionAdmission.ipCounts[0] === 8 && held.cacheReads === 1 && item.upstream.length === 1);
-      await mode("success"); await Promise.all(pending.map(good)); await bad(send(tokens[7]), "limit_reached");
+      await mode("success"); await Promise.all(pending.map(good));
+      await good(send(tokens[7])); // Releasing the eight concurrent slots allows another import.
       await store("advance-clock", { ms: 3601000 });
       // New signed visitors after window change; attempts remain charged in each hourly window.
       for (let i = 0; i < 8; i++) await good(send(await bootstrap()));
       await store("advance-clock", { ms: 3601000 }); await good(send(await bootstrap()));
-      const done = await store(); check("hour resets recover beyond former lifetime16 ceiling using the warm cache", done.captionAdmission.lifetime === 17 && done.cacheReads === 10 && item.upstream.length === 3);
+      const done = await store(); check("hour resets recover beyond former lifetime16 ceiling using the warm cache", done.captionAdmission.lifetime === 18 && done.cacheReads === 11 && item.upstream.length === 3);
     } else {
       // Load proof first: separately bundled route must share admission without instanceof assumptions.
       const a = await bootstrap(), b = await bootstrap(); await mode("hold"); const proof = send(a, { route: "/api/proof-captions" });
@@ -213,7 +215,8 @@ for (const scenario of scenarios) {
       await store("configure-cache", { bypass: true }); await good(send(a));
       check("each deliberate bypass extracts exactly once", item.upstream.length === 9 && (await store()).cacheWrites === 0);
       await good(send(a));
-      await bad(send(a), "limit_reached"); check("per-visitor4 enforced across proof/bypass/waiter attempts", (await store()).captionAdmission.visitorCounts.includes(4));
+      for (let i = 4; i < 120; i++) await good(send(a));
+      await bad(send(a), "limit_reached"); check("per-visitor120 enforced across proof/bypass/waiter attempts", (await store()).captionAdmission.visitorCounts.includes(120));
     }
     await until(async () => (await store()).captionAdmission.participants === 0 && (await store()).coordinatorJobs === 0, "bounded teardown");
     check("zero forbidden server fetch, map/participants/active empty", item.forbiddenNetwork === 0 && (await store()).captionAdmission.active === 0);

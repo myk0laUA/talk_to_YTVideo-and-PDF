@@ -124,9 +124,13 @@ for (const scenario of ["browser-ownership", "cache-io", "source-io-expiry", "pr
         const r = await contexts[0].request.post(origin + "/api/proof-captions", { headers: { origin }, data: { video: videoId } }); assert.equal(r.status(), 200);
       }
       check("proof remains uncached", item.upstream.length === 9 && (await ipc("snapshot")).cacheReads === reads);
-      // Four combined admissions for A: initial import, replacement, two proofs. A hit cannot bypass quota.
+      // Initial import, replacement and two proofs count toward the same 120-attempt budget.
+      for (let i = 4; i < 120; i++) {
+        const hit = await contexts[0].request.post(origin + "/api/sources/youtube", { headers: { origin }, data: { video: videoId } });
+        assert.equal(hit.status(), 201);
+      }
       const limited = await contexts[0].request.post(origin + "/api/sources/youtube", { headers: { origin }, data: { video: videoId } });
-      check("cached import obeys shared proof/import quota", limited.status() === 429 && item.upstream.length === 9 && (await ipc("snapshot")).cacheReads === reads);
+      check("cached import obeys shared proof/import quota", limited.status() === 429 && item.upstream.length === 9 && (await ipc("snapshot")).cacheReads === reads + 116);
       check("no browser JS errors", errors.length === 0);
       check("zero external browser requests", browserExternal === 0);
     } else if (scenario === "cache-io") {

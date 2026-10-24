@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { CaptionAdmission } from "../../src/server/captions/admission.ts";
 import { test } from "node:test";
 import { parseCaptionConfig } from "../../src/server/captions/config.ts";
 import { createConfiguredCaptionHandler } from "../../src/server/captions/configured.ts";
@@ -252,7 +253,8 @@ test("managed gate/origin/body/fields/URL rejection does zero upstream work", as
 test("alternating direct and managed selection shares visitor/global limits and concurrency", async () => {
   let selected = "direct"; let calls = 0;
   let finish: (() => void) | undefined;
-  const handler = createConfiguredCaptionHandler({ env: () => ({ ...env, CAPTION_PROOF_PROVIDER: selected }), fetch: async () => {
+  const handler = createConfiguredCaptionHandler({ env: () => ({ ...env, CAPTION_PROOF_PROVIDER: selected }),
+    admission: new CaptionAdmission({ visitor: 4, ip: 8, global: 8, concurrent: 1, windowMs: 3600000 }), fetch: async () => {
     calls++;
     if (finish === undefined) await new Promise<void>(resolve => { finish = resolve; });
     return new Response(null, { status: 403 });

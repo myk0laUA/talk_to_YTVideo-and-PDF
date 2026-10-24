@@ -5,7 +5,7 @@ import { Worker } from "node:worker_threads";
 import { PDF_MAX_FILE_BYTES, type PdfExtraction } from "../../src/shared/pdf.ts";
 import { createVisitor, visitorCookie } from "../../src/server/proof/visitor.ts";
 import { parsePdfConfig } from "../../src/server/pdf/config.ts";
-import { createPdfHandler } from "../../src/server/pdf/handler.ts";
+import { createPdfHandler, pdfLimits } from "../../src/server/pdf/handler.ts";
 import { PdfError } from "../../src/server/pdf/errors.ts";
 import { PDF_MAX_REQUEST_BYTES, readPdfMultipart } from "../../src/server/pdf/multipart.ts";
 import { parsePdf } from "../../src/server/pdf/worker.ts";
@@ -52,9 +52,9 @@ test("gate, origin, visitor and admission run before body/parser", async () => {
     assert.ok(response.headers.get("set-cookie")); await dto(response, 401, "visitor_required");
   }
   const fixedCookie = cookie();
-  for (let i = 0; i < 6; i++) await dto(await handler(request(multipart(), { cookie: fixedCookie })), 200);
+  for (let i = 0; i < pdfLimits.visitor; i++) await dto(await handler(request(multipart(), { cookie: fixedCookie })), 200);
   await dto(await handler(request(body(), { cookie: fixedCookie })), 429, "limit_reached");
-  assert.equal(parses, 6); assert.equal(reads, 0);
+  assert.equal(parses, pdfLimits.visitor); assert.equal(reads, 0);
 });
 
 for (const [label, body, headers, status, code] of [

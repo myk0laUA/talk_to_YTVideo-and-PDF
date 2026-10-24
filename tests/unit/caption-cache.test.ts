@@ -101,9 +101,9 @@ test("expiry is rechecked after DB await; cache reads never renew TTL", async ()
 test("server-only bypass skips both cache operations while preserving validation/admission", async () => {
   const s = setup(); s.current.cacheBypass = true;
   await s.cache.put(key, { ...transcript, provider: "supadata" }, at);
-  for (let i = 0; i < 4; i++) await status(await s.handler(s.request()), 201);
+  for (let i = 0; i < captionLimits.visitor; i++) await status(await s.handler(s.request()), 201);
   await status(await s.handler(s.request()), 429, "limit_reached");
-  assert.equal(s.calls(), 4); assert.equal(s.db.cacheReads, 0); assert.equal(s.db.cacheWrites, 1);
+  assert.equal(s.calls(), captionLimits.visitor); assert.equal(s.db.cacheReads, 0); assert.equal(s.db.cacheWrites, 1);
   const env = { YOUTUBE_INGESTION_ENABLED: "true", YOUTUBE_INGESTION_PROVIDER: "direct", APP_ORIGIN: config.origin,
     VISITOR_COOKIE_SECRET: config.cookieSecret, DATABASE_URL: "postgresql://synthetic:synthetic@127.0.0.1:1/synthetic" };
   assert.equal(parseYoutubeSourceConfig({ ...env, YOUTUBE_CAPTION_CACHE_BYPASS: "true" })?.cacheBypass, true);

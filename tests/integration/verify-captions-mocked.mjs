@@ -77,8 +77,9 @@ for (const scenario of ["disabled", "missing-key", "invalid-provider", "sync", "
       await check("quota sanitized, no retry", 503, "quota_exhausted", { body: { video: "Ks-_Mh1QhMc", language: "en" }, headers: { cookie } });
       await check("admission released after quota", 200, null, { headers: { cookie } });
       await check("fourth admitted attempt", 200, null, { headers: { cookie } });
+      for (let i = 4; i < 120; i++) await check(`admitted attempt ${i + 1}`, 200, null, { headers: { cookie } });
       await check("visitor quota rejects before upstream", 429, "limit_reached", { headers: { cookie } });
-      assert.deepEqual(item.upstream, Array(4).fill("supadata-initial"));
+      assert.deepEqual(item.upstream, Array(120).fill("supadata-initial"));
     } else if (scenario === "wrong-language") {
       await check("English request rejects a French provider result", 422, "no_captions");
       assert.deepEqual(item.upstream, ["supadata-initial"]);

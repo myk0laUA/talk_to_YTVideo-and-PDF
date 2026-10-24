@@ -230,7 +230,7 @@ Retained diagnostic routes—`/api/proof-source`, `/api/proof-pdf`, `/api/proof-
 | Voice activity detection | Threshold **0.65**, silence duration **600 ms**. Helps reduce noise activation but may miss quiet speech; requires real-device tuning. |
 | Process-local coordination | Simple single-instance deployment. Session state and limits do not coordinate across replicas or survive server restarts. |
 
-Imports use resettable hourly windows: **6 PDF attempts per visitor / 20 aggregate**, and **4 caption attempts per visitor / 8 aggregate**. Invalid admitted attempts count. There is no process-lifetime ingestion ceiling. One PDF extraction or incompatible caption job runs at a time.
+PDF and YouTube imports each allow **120 attempts per browser visitor/hour / 1,200 aggregate/hour**. Reimporting the same source and invalid admitted attempts count. Windows reset automatically; there is no process-lifetime ingestion ceiling. One PDF extraction or incompatible caption job runs at a time. External caption-provider quotas are separate.
 
 Text and voice starts each allow **60 per visitor/hour / 600 aggregate/hour**, plus concurrency limits and finite process-lifetime replay/admission bounds. These are not distributed or account-wide spending guarantees. Voice's short-lived client credential protects the permanent key, but browser-side settings and session controls are not a trusted server-enforced spending cap.
 

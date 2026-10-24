@@ -154,6 +154,7 @@ for (const scenario of ["disabled", "invalid-provider", "missing-key", "direct",
       }
       check("shared visitor budget 3", await yt(a, undefined, "/api/proof-captions"), 200);
       check("shared visitor budget 4", await yt(a), 201);
+      for (let i = 4; i < 120; i++) check(`shared visitor budget ${i + 1}`, await yt(a), 201);
       const count = item.upstream.length; check("combined proof plus import quota", await yt(a), 429, "limit_reached"); assert.equal(item.upstream.length, count);
     }
     await delay(50); assert.equal(item.forbiddenNetwork, 0);

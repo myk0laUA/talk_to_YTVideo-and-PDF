@@ -148,9 +148,9 @@ for (const scenario of ["disabled", "missing-config", "real", "invalid", "admiss
       assert.equal(item.workerEvents.length, 0);
     } else if (scenario === "admission") {
       const cookie = await visitor();
-      for (let i = 0; i < 6; i++) { const response = await upload("small", cookie); checkStatus(response, 200); record(`visitor attempt ${i + 1}`, response); }
-      const response = await upload("small", cookie); checkStatus(response, 429, "limit_reached"); record("seventh attempt before worker", response);
-      assert.equal(item.workerEvents.filter(e => e.pdfWorker === "created").length, 6);
+      for (let i = 0; i < 120; i++) { const response = await upload("small", cookie); checkStatus(response, 200); record(`visitor attempt ${i + 1}`, response); }
+      const response = await upload("small", cookie); checkStatus(response, 429, "limit_reached"); record("attempt 121 rejected before worker", response);
+      assert.equal(item.workerEvents.filter(e => e.pdfWorker === "created").length, 120);
     } else if (["timeout", "disconnect"].includes(scenario)) {
       const cookie = await visitor(); const controller = new AbortController();
       const pending = send({ data: Buffer.concat([prefix, fixtures.get("small").data, suffix]), chunks: true,

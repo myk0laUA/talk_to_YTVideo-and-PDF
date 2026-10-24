@@ -5,6 +5,21 @@ import { pdfLimits } from "../../src/server/pdf/handler.ts";
 import { CaptionAdmission, captionLimits } from "../../src/server/captions/admission.ts";
 import { sourceAdmissionFailure } from "../../src/server/sources/admission.ts";
 
+for (const kind of ["PDF", "captions"] as const) test(`${kind}: repeated imports allow 120 attempts per visitor and recover next hour`, () => {
+  const limits = kind === "PDF" ? pdfLimits : captionLimits;
+  const admission = kind === "PDF" ? new Admission(limits) : new CaptionAdmission(limits);
+  const now = 1_800_000_000_000;
+  for (let i = 0; i < 120; i++) {
+    const release = admission.acquire("same-browser", "unverified-network", now);
+    assert.ok(release, `attempt ${i + 1}`); release();
+  }
+  assert.equal(admission.acquire("same-browser", "unverified-network", now), null);
+  const other = admission.acquire("another-browser", "unverified-network", now);
+  assert.ok(other); other();
+  const recovered = admission.acquire("same-browser", "unverified-network", now + limits.windowMs);
+  assert.ok(recovered); recovered();
+});
+
 for (const kind of ["PDF", "captions"] as const) test(`${kind}: window recovery survives old lifetime ceiling and 30 days without restart`, () => {
   const limits = kind === "PDF" ? pdfLimits : captionLimits;
   const admission = kind === "PDF" ? new Admission(limits) : new CaptionAdmission(limits);
