@@ -92,10 +92,3 @@ The security scan found zero known configured-secret matches and zero checked hi
 
 **Dependency security is not clean:** `npm audit --json` exited 1 with eight moderate affected dependency entries (not eight distinct exploits); `npm audit --omit=dev --json` exited 1 with one. [Full audit](npm-audit.json) · [Production graph audit](npm-audit-production.json). No high or critical entries were reported at audit time. `fast-uri@3.1.8` is reached through `@prisma/streams-local → ajv`, via Prisma CLI/dev tooling and the client's optional Prisma peer. npm includes it in the production graph; no application request-path exploit was demonstrated. [fast-uri advisory and patched versions](https://github.com/advisories/GHSA-w74x-v6f9-j3xg). The other entries propagate from `minimatch@10.2.6` through TypeScript ESLint tooling; [minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249). ESLint 9.39.5 also prints an unsupported-version warning on installation. Dependency remediation is outstanding; versions were retained to keep this audit's measured environment reproducible. This is suitable evidence for a technical review with disclosed limitations, not an all-clear security/release assessment.
 
-## Corrected resume candidates
-
-- Built a Next.js/TypeScript voice app for PDFs and YouTube with 11 backend HTTP operations, PostgreSQL and OpenAI Realtime/WebRTC; component-tested replay of 128 role-tagged messages.
-- Benchmarked source handlers with local PostgreSQL at 50 k6 VUs: median 1,312 req/s and 54.48 ms run p95 across three 10-second stages; removed redundant transactions to improve throughput 39.4% and p95 13.9%.
-- Added bounded operational metrics and real PostgreSQL lock/outage tests; verified safe errors and first successful reads 195–350 ms from restart invocation across four local probes.
-
-These candidates deliberately qualify the scope. Explain the increased RSS and missing Next/WebRTC load coverage when discussing the second bullet. The deployment claim can be retained separately as a historical accomplishment, but this audit verified only the hosted homepage, not current live provider functionality.
