@@ -1,0 +1,127 @@
+{
+  "version": "0.1.0",
+  "name": "talk-to-a-document",
+  "dependencies": {
+    "eslint-config-next": {
+      "version": "16.4.2",
+      "resolved": "https://registry.npmjs.org/eslint-config-next/-/eslint-config-next-16.4.2.tgz",
+      "overridden": false,
+      "dependencies": {
+        "eslint-plugin-import": {
+          "version": "2.32.0",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.32.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "minimatch": {
+              "version": "3.1.5"
+            }
+          }
+        },
+        "eslint-plugin-jsx-a11y": {
+          "version": "6.10.2",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-jsx-a11y/-/eslint-plugin-jsx-a11y-6.10.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "minimatch": {
+              "version": "3.1.5"
+            }
+          }
+        },
+        "eslint-plugin-react": {
+          "version": "7.37.5",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-react/-/eslint-plugin-react-7.37.5.tgz",
+          "overridden": false,
+          "dependencies": {
+            "minimatch": {
+              "version": "3.1.5"
+            }
+          }
+        },
+        "typescript-eslint": {
+          "version": "8.72.2",
+          "resolved": "https://registry.npmjs.org/typescript-eslint/-/typescript-eslint-8.72.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@typescript-eslint/typescript-estree": {
+              "version": "8.72.2",
+              "resolved": "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-8.72.2.tgz",
+              "overridden": false,
+              "dependencies": {
+                "minimatch": {
+                  "version": "11.0.1",
+                  "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-11.0.1.tgz",
+                  "overridden": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "eslint": {
+      "version": "9.39.5",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-9.39.5.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@eslint/config-array": {
+          "version": "0.21.2",
+          "resolved": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.21.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "minimatch": {
+              "version": "3.1.5"
+            }
+          }
+        },
+        "@eslint/eslintrc": {
+          "version": "3.3.7",
+          "resolved": "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-3.3.7.tgz",
+          "overridden": false,
+          "dependencies": {
+            "minimatch": {
+              "version": "3.1.5"
+            }
+          }
+        },
+        "minimatch": {
+          "version": "3.1.5",
+          "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-3.1.5.tgz",
+          "overridden": false
+        }
+      }
+    },
+    "prisma": {
+      "version": "7.10.1",
+      "resolved": "https://registry.npmjs.org/prisma/-/prisma-7.10.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@prisma/dev": {
+          "version": "0.24.17",
+          "resolved": "https://registry.npmjs.org/@prisma/dev/-/dev-0.24.17.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@prisma/streams-local": {
+              "version": "0.1.11",
+              "resolved": "https://registry.npmjs.org/@prisma/streams-local/-/streams-local-0.1.11.tgz",
+              "overridden": false,
+              "dependencies": {
+                "ajv": {
+                  "version": "8.20.0",
+                  "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "fast-uri": {
+                      "version": "3.1.9",
+                      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.9.tgz",
+                      "overridden": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

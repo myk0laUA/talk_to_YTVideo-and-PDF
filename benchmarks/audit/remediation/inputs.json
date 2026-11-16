@@ -1,0 +1,23 @@
+{
+  "baseCommit": "ef45cd2490afab1c9e37c520eec60327ade41438",
+  "runtime": "Node 24.22.0 / npm 11.19.1",
+  "packageJsonSha256": "7b16e7763cbcb34607c545c22c2c5e47690dbe1ab59aa5d09db2d7eca43236d4",
+  "lockfileSha256": "3c2a74a7d7d7544d9f06a2f073cb6988e83d6f4c0b668516b4ccfbd79af73aef",
+  "applicationSourceChanged": false,
+  "fullAuditFindings": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "productionAuditFindings": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  }
+}

@@ -1,0 +1,105 @@
+{"command":"node --conditions=react-server scripts/bench/run.mjs smoke","at":"2026-11-16T06:16:26.089Z","outputRoot":"C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\remediation\\database","memoryProfile":false,"runtime":"v24.22.0","platform":"win32 10.0.22631 x64","cpu":"13th Gen Intel(R) Core(TM) i5-13600KF","logicalCpus":20,"systemMemoryBytes":34115325952,"k6":"k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)","postgres":"postgres (PostgreSQL) 17.5","poolMax":5,"metricsSampleMs":20,"scope":"production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked","baselineRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8","currentRepositorySha256":"f9e8c301904d18db001df8a8f1885244d737b9246e7ba96b644c8908f4a0b428"}
+{"command":"node --conditions=react-server tests/integration/verify-cleanup-postgres.ts","scope":"Two disposable local databases; no configured user database","exitCode":0}
+{"status":"PASS","environment":"explicit disposable PostgreSQL; synthetic fixtures","results":[{"scenario":"actual CLI dry-run/execute/no-op","before":{"Source":5,"TranscriptCache":5},"dry":{"mode":"dry-run","cutoff":"2026-11-16T06:16:30.971Z","elapsedMs":26,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"executed":{"mode":"execute","cutoff":"2026-11-16T06:16:31.110Z","elapsedMs":145,"status":"complete","batches":6,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"noop":{"mode":"execute","cutoff":"2026-11-16T06:16:31.367Z","elapsedMs":25,"status":"complete","batches":2,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"remaining":{"Source":1,"TranscriptCache":1},"byteIdenticalDryRun":true,"livePreserved":true},{"scenario":"exact boundary","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.401Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"refresh before cache selection","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.406Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":3,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cache refresh after selection","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.413Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"overlapping cleaners","reports":[{"mode":"execute","cutoff":"2026-11-16T06:16:31.417Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},{"mode":"execute","cutoff":"2026-11-16T06:16:31.417Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}]},{"scenario":"simultaneous replacement transaction","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.423Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"failure before commit rolls back","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.429Z","elapsedMs":0,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"unknown"}},{"scenario":"bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.438Z","elapsedMs":503,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel during bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T06:16:31.946Z","elapsedMs":512,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel before","report":{"mode":"execute","cutoff":"2026-11-16T06:16:32.461Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cancel during","report":{"mode":"execute","cutoff":"2026-11-16T06:16:32.465Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel between","report":{"mode":"execute","cutoff":"2026-11-16T06:16:32.468Z","elapsedMs":0,"status":"cancelled","batches":1,"counts":{"Source":{"selected":2,"deleted":2,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}}],"ownFixturesRemaining":0,"teardown":{"clientsReleased":4,"poolsClosed":4}}
+
+{"input":{"sources":50,"charactersEach":45614,"pagesEach":8},"workload":"closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup"}
+{"label":"warmup","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\remediation\\database\\raw\\smoke-warmup.json scripts/load-test.js","config":{"VUS":1,"DURATION":"1s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=2.76ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 491     490.683705/s
+    checks_succeeded...: 100.00% 491 out of 491
+    checks_failed......: 0.00%   0 out of 491
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 491
+
+    HTTP
+    http_req_duration..............: avg=2ms    min=502.6µs med=1.87ms max=15.97ms p(95)=2.76ms p(99)=3.67ms
+      { expected_response:true }...: avg=2ms    min=502.6µs med=1.87ms max=15.97ms p(95)=2.76ms p(99)=3.67ms
+    http_req_failed................: 0.00%  0 out of 491
+    http_reqs......................: 491    490.683705/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.03ms min=502.9µs med=1.89ms max=17.06ms p(95)=2.84ms p(99)=3.68ms
+    iterations.....................: 491    490.683705/s
+    vus............................: 1      min=1        max=1
+    vus_max........................: 1      min=1        max=1
+
+    NETWORK
+    data_received..................: 45 MB  45 MB/s
+    data_sent......................: 147 kB 147 kB/s
+
+
+
+
+{"label":"warmup","exitCode":0,"resources":{"elapsedMs":1244.3587,"cpuCorePercent":6.268289039165315,"peakRssBytes":256495616,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":16.146431,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":491,"errors":0,"totalMs":313.9921000000005,"maxMs":1.862799999999993,"buckets":[483,8,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":491,"errors":0,"totalMs":525.2075000000025,"maxMs":9.072499999999991,"buckets":[224,266,1,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":491,"errors":0,"totalMs":734.082700000003,"maxMs":11.223999999999933,"buckets":[0,490,0,1,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-5-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\remediation\\database\\raw\\smoke-read-5-r1.json scripts/load-test.js","config":{"VUS":5,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=5.93ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 11091   1108.569638/s
+    checks_succeeded...: 100.00% 11091 out of 11091
+    checks_failed......: 0.00%   0 out of 11091
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 11091
+
+    HTTP
+    http_req_duration..............: avg=4.47ms min=2.08ms med=4.22ms max=29.06ms p(95)=5.93ms p(99)=7.74ms
+      { expected_response:true }...: avg=4.47ms min=2.08ms med=4.22ms max=29.06ms p(95)=5.93ms p(99)=7.74ms
+    http_req_failed................: 0.00%  0 out of 11091
+    http_reqs......................: 11091  1108.569638/s
+
+    EXECUTION
+    iteration_duration.............: avg=4.5ms  min=2.08ms med=4.25ms max=30.32ms p(95)=5.98ms p(99)=7.8ms 
+    iterations.....................: 11091  1108.569638/s
+    vus............................: 5      min=5          max=5
+    vus_max........................: 5      min=5          max=5
+
+    NETWORK
+    data_received..................: 1.0 GB 102 MB/s
+    data_sent......................: 3.3 MB 333 kB/s
+
+
+
+
+{"label":"read-5-r1","exitCode":0,"resources":{"elapsedMs":10256.8644,"cpuCorePercent":21.63429205518209,"peakRssBytes":331501568,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.032319,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":11091,"errors":0,"totalMs":21397.72709999993,"maxMs":25.44979999999987,"buckets":[1380,9671,36,3,1,0,0,0,0,0,0,0]},"db.source.get":{"count":11091,"errors":0,"totalMs":24929.70189999998,"maxMs":25.780099999999948,"buckets":[3,11030,54,3,1,0,0,0,0,0,0,0]},"http.source.read":{"count":11091,"errors":0,"totalMs":28271.898399999976,"maxMs":26.145299999999907,"buckets":[0,10992,95,3,1,0,0,0,0,0,0,0]}}}}
+{"failures":[{"scenario":"malformed JSON","status":400,"ms":23.59440000000177},{"scenario":"foreign source","status":404,"ms":3.101599999998143},{"scenario":"table lock timeout","status":503,"ms":1513.393799999998},{"scenario":"recovery after lock release","status":200,"ms":3.6494999999995343},{"scenario":"database stopped","status":503,"ms":4.130600000000413},{"readinessMs":262.16259999999966,"sameProcess":true,"fullSourcePreserved":true,"scenario":"database restart to first success (includes pg_ctl readiness)","ms":401.8644999999997,"requestMs":139.59120000000257},{"scenario":"mock caption timeout","status":504,"ms":61.22929999999906},{"scenario":"mock caption upstream_failure","status":502,"ms":61.798900000001595},{"scenario":"mock caption success","status":201,"ms":75.28429999999935},{"scenario":"five visitors same caption, real DB writes, mocked provider","statuses":[201,201,201,201,201],"providerCalls":1,"maxMs":99.35009999999966},{"scenario":"same owner concurrent replacement admission","statuses":[201,429]},{"scenario":"real one-page PDF parse + persist","bytes":616,"status":201,"ms":144.71140000000014}],"finalResources":{"elapsedMs":13632.5781,"cpuCorePercent":16.62194768574258,"peakRssBytes":368726016,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":16.080895,"providerCalls":5,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":11155,"errors":4,"totalMs":21587.564499999935,"maxMs":137.1222999999991,"buckets":[1426,9688,36,3,1,0,1,0,0,0,0,0]},"db.source.get":{"count":11097,"errors":2,"totalMs":26585.089899999977,"maxMs":1512.1242000000002,"buckets":[5,11032,54,3,1,0,1,0,0,1,0,0]},"http.source.read":{"count":11097,"errors":3,"totalMs":29928.784899999977,"maxMs":1512.2597999999998,"buckets":[0,10996,95,3,1,0,1,0,0,1,0,0]},"http.voice.prepare":{"count":1,"errors":1,"totalMs":1.7795999999998457,"maxMs":1.7795999999998457,"buckets":[0,1,0,0,0,0,0,0,0,0,0,0]},"http.youtube":{"count":10,"errors":3,"totalMs":710.867199999997,"maxMs":95.91909999999916,"buckets":[1,0,0,0,0,9,0,0,0,0,0,0]},"pdf.parse":{"count":1,"errors":0,"totalMs":139.3244999999988,"maxMs":139.3244999999988,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]},"http.source.upload":{"count":1,"errors":0,"totalMs":142.88250000000153,"maxMs":142.88250000000153,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]}}},"loadExitCodes":[0,0]}
+{"status":"PASS","serverLog":""}

@@ -1,5 +1,7 @@
 # Audit verification and Git status
 
+**Historical audit snapshot.** The subsequently patched lockfile has zero known npm audit findings. See [current remediation checks and deployment status](remediation/README.md); the original failed audit output remains unchanged below.
+
 Executed November 16, 2026 with Node 24.22.0/npm 11.19.1. **All 30 regression commands passed**, including **1,663 unit tests** and **1,017 Playwright cases**. This does not include the failed dependency-security audit. Raw command/output/exit evidence: [verification.txt](verification.txt).
 
 The full suite ran with `BENCH_OUTPUT_DIR=benchmarks/audit node scripts/verify-reliability.mjs`. Providers were disabled/mocked and fixture servers local. Browser suites include isolated bundles of real UI/controllers with injected transports; they are not all end-to-end Next routing or live WebRTC tests. Production-build HTTP and default-disabled-route checks are separate. Test timings overlap clean-clone installation/smoke and must not be used as performance evidence.
@@ -64,4 +66,4 @@ At audit completion, before the subsequently authorized commit and push, `main` 
 
 **At that snapshot, audit changes were uncommitted and unstaged.** The user subsequently authorized committing and pushing the complete audit. The inventories below preserve the pre-publication state; consult Git history for the current publication state. [Exact changed/untracked file inventory](git-status.txt). Original raw benchmark files are unchanged. Existing benchmark links targeted committed files; new audit links resolved locally and their targets are included with this audit. [Link inventory](links.json), [audited source/dependency hashes](source-manifest.json).
 
-The evidence is suitable for an engineering review **with its stated limitations**. Dependency remediation remains outstanding: eight moderate transitive entries, including the Prisma-tooling URI parser in npm's production graph; do not say every security check passed. This audit is not a deployment recommendation. No commit or push occurred during the audit itself. Publication was authorized separately; no force-push, visibility change or deployment is part of that authorization.
+The evidence is suitable for an engineering review **with its stated limitations**. The eight moderate dependency entries reported at this snapshot were subsequently fixed; see the linked remediation report. The original dependency-audit commands below correctly retain their exit-1 results. This audit is not a deployment recommendation. No commit or push occurred during the audit itself. Publication was authorized separately; no force-push, visibility change or deployment is part of that authorization.

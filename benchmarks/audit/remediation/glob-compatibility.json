@@ -1,0 +1,39 @@
+{
+  "command": "node artifacts/local/check-lint-glob-compatibility.mjs",
+  "consumer": "@typescript-eslint/typescript-estree",
+  "resolvedMinimatch": "11.0.1",
+  "scope": "CommonJS named minimatch function with dot:true, matching the consumer call; representative positive/negative/dotfile/path/brace cases; not an exhaustive upstream suite",
+  "cases": [
+    [
+      "eslint.config.mjs",
+      "*.mjs",
+      true
+    ],
+    [
+      ".config.ts",
+      "*.ts",
+      true
+    ],
+    [
+      "src/app/page.tsx",
+      "src/app/*.tsx",
+      true
+    ],
+    [
+      "src/app/page.tsx",
+      "*.tsx",
+      false
+    ],
+    [
+      "src/app/page.tsx",
+      "src/app/*.ts",
+      false
+    ],
+    [
+      "src/app/page.tsx",
+      "src/{app,shared}/*.tsx",
+      true
+    ]
+  ],
+  "status": "PASS"
+}

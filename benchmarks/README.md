@@ -77,6 +77,8 @@ There is no database-backed conversation-history endpoint. Conversation history 
 
 ## Regression evidence
 
+**Latest dependency remediation:** [zero known npm audit findings and refreshed checks](audit/remediation/README.md). The original before/after measurements and raw files are preserved. They used the pre-remediation lockfile at `ef45cd2`; current reproduction uses the patched lockfile. No new throughput improvement is attributed to these dependency updates.
+
 Run `npm run test:reliability` for the safe offline/local suite. It records commands, raw output and exit codes in [verification.txt](verification.txt); repeated invocations append, including failed attempts and their subsequent fixes. The PDF HTTP regressions require the existing generated fixtures: `python tests/integration/generate-pdf-fixtures.py` after installing `tests/integration/fixture-requirements.txt`. The main benchmark generates its own PDF and does not require Python. Browser checks require `npm run browser:install`.
 
 The new regression checks cover single-statement authorization/expiry/record validation, redacted storage errors, pool deadlines, and metrics privacy/reset behavior. See [verification status](verification-status.md) for final outcomes and unrun checks. Historical test counts are not used as performance evidence.

@@ -1,0 +1,87 @@
+[
+  {
+    "packagePath": "node_modules/@isaacs/nonrecursive-glob-match",
+    "before": null,
+    "after": "1.1.0"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/eslint-plugin",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/eslint-plugin/node_modules/ignore",
+    "before": "7.0.12",
+    "after": "7.0.14"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/parser",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/project-service",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/scope-manager",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/tsconfig-utils",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/type-utils",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/types",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/typescript-estree",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/typescript-estree/node_modules/brace-expansion",
+    "before": "5.0.12",
+    "after": "5.0.13"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch",
+    "before": "10.2.6",
+    "after": "11.0.1"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/typescript-estree/node_modules/semver",
+    "before": "7.8.5",
+    "after": "7.8.6"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/utils",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/@typescript-eslint/visitor-keys",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  },
+  {
+    "packagePath": "node_modules/fast-uri",
+    "before": "3.1.8",
+    "after": "3.1.9"
+  },
+  {
+    "packagePath": "node_modules/typescript-eslint",
+    "before": "8.71.2",
+    "after": "8.72.2"
+  }
+]

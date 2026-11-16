@@ -1,0 +1,158 @@
+{
+  "command": "BENCH_OUTPUT_DIR=benchmarks/audit/remediation node scripts/verify-reliability.mjs",
+  "tests": [
+    {
+      "test": "unit",
+      "exitCode": 0,
+      "elapsedMs": 20948.2972
+    },
+    {
+      "test": "lint",
+      "exitCode": 0,
+      "elapsedMs": 4880.660400000001
+    },
+    {
+      "test": "typecheck",
+      "exitCode": 0,
+      "elapsedMs": 1239.3650000000016
+    },
+    {
+      "test": "build",
+      "exitCode": 0,
+      "elapsedMs": 3326.679100000001
+    },
+    {
+      "test": "smoke",
+      "exitCode": 0,
+      "elapsedMs": 3093.5485999999983
+    },
+    {
+      "test": "text-proof-browser",
+      "exitCode": 0,
+      "elapsedMs": 7209.780500000001
+    },
+    {
+      "test": "voice-proof-browser",
+      "exitCode": 0,
+      "elapsedMs": 5867.415000000001
+    },
+    {
+      "test": "sources-http",
+      "exitCode": 0,
+      "elapsedMs": 11549.708299999998
+    },
+    {
+      "test": "youtube-sources-http",
+      "exitCode": 0,
+      "elapsedMs": 6296.0553999999975
+    },
+    {
+      "test": "pdf-http",
+      "exitCode": 0,
+      "elapsedMs": 65625.9358
+    },
+    {
+      "test": "captions-mocked",
+      "exitCode": 0,
+      "elapsedMs": 14142.66829999999
+    },
+    {
+      "test": "caption-cache",
+      "exitCode": 0,
+      "elapsedMs": 5329.725999999995
+    },
+    {
+      "test": "caption-coalescing",
+      "exitCode": 0,
+      "elapsedMs": 21517.843699999998
+    },
+    {
+      "test": "caption-fallback",
+      "exitCode": 0,
+      "elapsedMs": 37893.298700000014
+    },
+    {
+      "test": "owned-text",
+      "exitCode": 0,
+      "elapsedMs": 23388.263000000006
+    },
+    {
+      "test": "owned-voice",
+      "exitCode": 0,
+      "elapsedMs": 11993.743100000022
+    },
+    {
+      "test": "voice-preparation",
+      "exitCode": 0,
+      "elapsedMs": 1767.5542000000132
+    },
+    {
+      "test": "voice-adapter",
+      "exitCode": 0,
+      "elapsedMs": 31747.223800000007
+    },
+    {
+      "test": "mode-switch",
+      "exitCode": 0,
+      "elapsedMs": 74689.38789999997
+    },
+    {
+      "test": "recovery",
+      "exitCode": 0,
+      "elapsedMs": 117553.98249999998
+    },
+    {
+      "test": "workspace-flows",
+      "exitCode": 0,
+      "elapsedMs": 16889.671999999962
+    },
+    {
+      "test": "workspace-layout",
+      "exitCode": 0,
+      "elapsedMs": 36392.360000000044
+    },
+    {
+      "test": "english-preparation",
+      "exitCode": 0,
+      "elapsedMs": 31785.36229999998
+    },
+    {
+      "test": "caption-entities",
+      "exitCode": 0,
+      "elapsedMs": 2200.6060999999754
+    },
+    {
+      "test": "boundaries",
+      "exitCode": 0,
+      "elapsedMs": 2954.4202000000514
+    },
+    {
+      "test": "text-session",
+      "exitCode": 0,
+      "elapsedMs": 31786.90280000004
+    },
+    {
+      "test": "voice-session",
+      "exitCode": 0,
+      "elapsedMs": 72524.17130000005
+    },
+    {
+      "test": "transcript-view",
+      "exitCode": 0,
+      "elapsedMs": 13658.594000000041
+    },
+    {
+      "test": "source-ui",
+      "exitCode": 0,
+      "elapsedMs": 61974.421100000036
+    },
+    {
+      "test": "youtube-ui",
+      "exitCode": 0,
+      "elapsedMs": 42446.56670000008
+    }
+  ],
+  "unitPassed": 1663,
+  "playwrightPassed": 1017,
+  "status": "PASS"
+}

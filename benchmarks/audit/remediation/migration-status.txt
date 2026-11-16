@@ -1,0 +1,22 @@
+Command: node node_modules/prisma/build/index.js migrate status
+Read-only; configured host matched the existing Render project database. No migrations applied.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "talk_to_document_db", schema "public" at "<verified Render database host>"
+
+3 migrations found in prisma/migrations
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.33                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+Database schema is up to date!
+
+exit: 0
