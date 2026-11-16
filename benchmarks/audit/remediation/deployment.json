@@ -1,0 +1,17 @@
+{
+  "service": "talk-to-document",
+  "serviceId": "srv-dba4fuvbtjjs73dong50",
+  "deployId": "dep-dbta4mmi0phs73f51ocg",
+  "commit": "75d697f9c8e86d83d6e69bdc7bb3516b2ee37a2f",
+  "dashboardUrl": "https://dashboard.render.com/web/srv-dba4fuvbtjjs73dong50/deploys/dep-dbta4mmi0phs73f51ocg",
+  "publicUrl": "https://talk-to-document-4pre.onrender.com",
+  "observedStatus": "Deploy succeeded | Live",
+  "startedAt": "2026-11-16T06:27:38Z",
+  "liveLogAt": "2026-11-16T06:28:58Z",
+  "dashboardDuration": "1m 20s",
+  "method": "Manual deployment of specific tested commit through existing Render dashboard",
+  "configurationChanged": false,
+  "migrationsApplied": false,
+  "paidProviderCalls": 0,
+  "evidence": "Dashboard source commit and final status visually confirmed; bounded HTTP acceptance in live-acceptance.json. Screenshot retained locally outside Git."
+}

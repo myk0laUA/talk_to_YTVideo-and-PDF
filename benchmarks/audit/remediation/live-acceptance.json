@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-16T06:30:01.588Z",
+  "origin": "https://talk-to-document-4pre.onrender.com",
+  "scope": "Bounded release acceptance: one synthetic PDF in a new anonymous visitor, read then delete only that source. No model, captions, credentials, voice/media or load test.",
+  "checks": [
+    {
+      "operation": "homepage",
+      "status": 200,
+      "ms": 219.57649999999998
+    },
+    {
+      "operation": "fresh anonymous visitor",
+      "status": 401
+    },
+    {
+      "operation": "real PDF parse and persist",
+      "bytes": 1383,
+      "status": 201,
+      "ms": 6654.5553
+    },
+    {
+      "operation": "owned persisted source read",
+      "status": 200,
+      "ms": 103.26019999999971
+    },
+    {
+      "operation": "remove only synthetic source",
+      "status": 200
+    },
+    {
+      "operation": "removed source unavailable",
+      "status": 404
+    }
+  ],
+  "status": "PASS"
+}

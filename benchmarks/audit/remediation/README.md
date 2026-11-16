@@ -2,6 +2,8 @@
 
 **Both full and production-only npm audits now report zero known vulnerabilities.** The eight moderate affected dependency entries from the earlier audit are resolved. [Full audit JSON](npm-audit.json) · [Production audit JSON](npm-audit-production.json) · [Install output, including the intermediate unsuccessful fix](install.txt).
 
+**Deployed successfully on Render:** application commit [`75d697f`](https://github.com/myk0laUA/talk_to_YTVideo-and-PDF/commit/75d697f9c8e86d83d6e69bdc7bb3516b2ee37a2f), November 16, 2026. [Live app](https://talk-to-document-4pre.onrender.com) · [Deployment record](deployment.json) · [Live HTTP acceptance](live-acceptance.json). The subsequent publication commit only records deployment evidence/documentation; the live application code and lockfile match `75d697f`.
+
 ## Changes and rationale
 
 | Dependency | Before | After | Reason |
@@ -42,3 +44,9 @@ All **30 regression commands passed**, including **1,663 unit tests and 1,017 Pl
 Fresh command results are recorded in [verification.txt](verification.txt), [database smoke](database/smoke.txt), and [128-message restoration](restoration.txt). The database smoke overlapped browser regression work and is functional evidence only. No fresh saturation-performance claim is made: the published before/after numbers still describe the earlier lockfile, preserved at commit `ef45cd2`.
 
 The existing Render database was checked read-only before release: all three migrations were already applied, and no schema change or migration was needed. [Redacted migration status](migration-status.txt). The production service uses the existing free instance, existing start command and disabled auto-deploy setting; no infrastructure upgrade, new service or paid provider call is required.
+
+## Deployed acceptance
+
+Render's dashboard confirmed **Deploy succeeded | Live** for the exact tested commit, with a displayed deployment duration of 1m 20s. Existing auto-deploy remains disabled. The homepage returned 200; a fresh anonymous visitor uploaded one synthetic 1,383-byte PDF (201), retrieved its persisted expected text (200), deleted only that new source (200), and confirmed it was unavailable afterward (404). The initial visitor-cookie response was the expected 401. No credentials/cookies, source identifiers, or private documents were saved in the evidence.
+
+The single upload request took **6.65 seconds**, and the subsequent owned read took **103 ms**. These are one-off acceptance timings on the existing free service, not a production load test or an improvement claim. No OpenAI, caption-provider, voice/media or paid API calls were made. YouTube/live conversations were covered locally with deterministic transports, not re-exercised with paid providers after deployment.
