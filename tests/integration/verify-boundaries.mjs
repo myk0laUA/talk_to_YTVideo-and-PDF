@@ -91,7 +91,8 @@ try {
   const snapshot = await ipc("snapshot");
   report.sideEffects = { transactions: snapshot.transactions, creates: snapshot.creates, reads: snapshot.reads, deletes: snapshot.deletes,
     remainingSources: snapshot.uploaded, cacheReads: snapshot.cacheReads, cacheWrites: snapshot.cacheWrites };
-  assert.deepEqual(report.sideEffects, { transactions: 6, creates: 0, reads: 6, deletes: 1, remainingSources: 0, cacheReads: 0, cacheWrites: 0 });
+  // Only the two DELETE attempts need transactions; the four standalone reads do not.
+  assert.deepEqual(report.sideEffects, { transactions: 2, creates: 0, reads: 6, deletes: 1, remainingSources: 0, cacheReads: 0, cacheWrites: 0 });
   assert.equal(report.pdfWorkers, 0); assert.equal(report.forbiddenNetwork, 0);
   report.passed = true;
 } finally {

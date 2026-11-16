@@ -1,4 +1,5 @@
 import "server-only";
+import { measured } from "../observability.ts";
 import { sourceChanged } from "./invalidation.ts";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { checkedSource, SourceError, UPLOADED_PDF_PARSER, type SourceRepository, type UploadedSource } from "./service.ts";
@@ -49,9 +50,14 @@ export function createSourceRepository(database: () => PrismaClient): SourceRepo
       sourceChanged(value.ownerSessionHash);
       return saved;
     },
-    get: (id, owner, at) => transaction(async tx => {
-      const row = await tx.source.findFirst({ where: owned(id, owner, at), select });
-      return row ? record(row) : null;
+    get: (id, owner, at) => measured("db.source.get", async () => {
+      // One SELECT already has statement-level consistency. Avoid reserving a pool
+      // connection for BEGIN / set_config / COMMIT. The shared pool sets server-side
+      // lock/statement deadlines; mutations still use guarded transactions below.
+      try {
+        const row = await database().source.findFirst({ where: owned(id, owner, at), select });
+        return row ? record(row) : null;
+      } catch (error) { return storageError(error); }
     }),
     remove: async (id, owner, at, guard) => {
       const removed = await transaction(async tx => {

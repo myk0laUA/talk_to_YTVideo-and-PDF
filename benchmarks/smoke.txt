@@ -1,0 +1,105 @@
+{"command":"node --conditions=react-server scripts/bench/run.mjs smoke","at":"2026-11-16T04:57:44.280Z","runtime":"v24.22.0","platform":"win32 10.0.22631 x64","cpu":"13th Gen Intel(R) Core(TM) i5-13600KF","logicalCpus":20,"systemMemoryBytes":34115325952,"k6":"k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)","postgres":"postgres (PostgreSQL) 17.5","poolMax":5,"metricsSampleMs":20,"scope":"production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked","baselineRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8","currentRepositorySha256":"f9e8c301904d18db001df8a8f1885244d737b9246e7ba96b644c8908f4a0b428"}
+{"command":"node --conditions=react-server tests/integration/verify-cleanup-postgres.ts","scope":"Two disposable local databases; no configured user database","exitCode":0}
+{"status":"PASS","environment":"explicit disposable PostgreSQL; synthetic fixtures","results":[{"scenario":"actual CLI dry-run/execute/no-op","before":{"Source":5,"TranscriptCache":5},"dry":{"mode":"dry-run","cutoff":"2026-11-16T04:57:49.977Z","elapsedMs":28,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"executed":{"mode":"execute","cutoff":"2026-11-16T04:57:50.122Z","elapsedMs":141,"status":"complete","batches":6,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"noop":{"mode":"execute","cutoff":"2026-11-16T04:57:50.381Z","elapsedMs":26,"status":"complete","batches":2,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"remaining":{"Source":1,"TranscriptCache":1},"byteIdenticalDryRun":true,"livePreserved":true},{"scenario":"exact boundary","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.418Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"refresh before cache selection","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.424Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":3,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cache refresh after selection","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.433Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"overlapping cleaners","reports":[{"mode":"execute","cutoff":"2026-11-16T04:57:50.438Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},{"mode":"execute","cutoff":"2026-11-16T04:57:50.438Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}]},{"scenario":"simultaneous replacement transaction","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.445Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"failure before commit rolls back","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.452Z","elapsedMs":0,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"unknown"}},{"scenario":"bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.465Z","elapsedMs":511,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel during bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T04:57:50.984Z","elapsedMs":516,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel before","report":{"mode":"execute","cutoff":"2026-11-16T04:57:51.501Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cancel during","report":{"mode":"execute","cutoff":"2026-11-16T04:57:51.505Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel between","report":{"mode":"execute","cutoff":"2026-11-16T04:57:51.509Z","elapsedMs":0,"status":"cancelled","batches":1,"counts":{"Source":{"selected":2,"deleted":2,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}}],"ownFixturesRemaining":0,"teardown":{"clientsReleased":4,"poolsClosed":4}}
+
+{"input":{"sources":50,"charactersEach":45614,"pagesEach":8},"workload":"closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup"}
+{"label":"warmup","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-warmup.json scripts/load-test.js","config":{"VUS":1,"DURATION":"1s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=3.72ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 377     376.335843/s
+    checks_succeeded...: 100.00% 377 out of 377
+    checks_failed......: 0.00%   0 out of 377
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 377
+
+    HTTP
+    http_req_duration..............: avg=2.59ms min=502.7µs med=2.4ms  max=12.6ms  p(95)=3.72ms p(99)=4.55ms
+      { expected_response:true }...: avg=2.59ms min=502.7µs med=2.4ms  max=12.6ms  p(95)=3.72ms p(99)=4.55ms
+    http_req_failed................: 0.00%  0 out of 377
+    http_reqs......................: 377    376.335843/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.65ms min=1.5ms   med=2.44ms max=14.15ms p(95)=4.02ms p(99)=4.76ms
+    iterations.....................: 377    376.335843/s
+    vus............................: 1      min=1        max=1
+    vus_max........................: 1      min=1        max=1
+
+    NETWORK
+    data_received..................: 35 MB  35 MB/s
+    data_sent......................: 113 kB 113 kB/s
+
+
+
+
+{"label":"warmup","exitCode":0,"resources":{"elapsedMs":1253.7040000000002,"cpuCorePercent":7.418018926317536,"peakRssBytes":263110656,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":16.080895,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":377,"errors":0,"totalMs":318.8037000000004,"maxMs":1.7025999999999613,"buckets":[266,111,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":377,"errors":0,"totalMs":526.9625000000011,"maxMs":6.2006000000000085,"buckets":[53,323,1,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":377,"errors":0,"totalMs":719.9763999999957,"maxMs":8.357099999999946,"buckets":[0,376,1,0,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-5-r1","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-read-5-r1.json scripts/load-test.js","config":{"VUS":5,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=7.29ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 10111   1010.611329/s
+    checks_succeeded...: 100.00% 10111 out of 10111
+    checks_failed......: 0.00%   0 out of 10111
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 10111
+
+    HTTP
+    http_req_duration..............: avg=4.91ms min=2.37ms med=4.58ms max=37.22ms p(95)=7.29ms p(99)=9.43ms
+      { expected_response:true }...: avg=4.91ms min=2.37ms med=4.58ms max=37.22ms p(95)=7.29ms p(99)=9.43ms
+    http_req_failed................: 0.00%  0 out of 10111
+    http_reqs......................: 10111  1010.611329/s
+
+    EXECUTION
+    iteration_duration.............: avg=4.94ms min=2.37ms med=4.62ms max=38.79ms p(95)=7.32ms p(99)=9.44ms
+    iterations.....................: 10111  1010.611329/s
+    vus............................: 5      min=5          max=5
+    vus_max........................: 5      min=5          max=5
+
+    NETWORK
+    data_received..................: 931 MB 93 MB/s
+    data_sent......................: 3.0 MB 303 kB/s
+
+
+
+
+{"label":"read-5-r1","exitCode":0,"resources":{"elapsedMs":10256.732899999999,"cpuCorePercent":36.415104462747586,"peakRssBytes":350658560,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.474687,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":10111,"errors":0,"totalMs":21327.7591999999,"maxMs":33.6409000000001,"buckets":[941,9082,84,0,4,0,0,0,0,0,0,0]},"db.source.get":{"count":10111,"errors":0,"totalMs":24797.32829999998,"maxMs":33.96400000000017,"buckets":[1,9959,147,0,4,0,0,0,0,0,0,0]},"http.source.read":{"count":10111,"errors":0,"totalMs":28067.04440000015,"maxMs":34.325799999999845,"buckets":[0,9848,259,0,4,0,0,0,0,0,0,0]}}}}
+{"failures":[{"scenario":"malformed JSON","status":400,"ms":23.910899999998946},{"scenario":"foreign source","status":404,"ms":2.8128000000033353},{"scenario":"table lock timeout","status":503,"ms":1511.8244000000013},{"scenario":"recovery after lock release","status":200,"ms":5.199099999997998},{"scenario":"database stopped","status":503,"ms":6.742500000000291},{"scenario":"database restart to first success (includes pg_ctl readiness)","ms":341.9076000000023,"requestMs":43.14770000000135},{"scenario":"mock caption timeout","status":504,"ms":65.42259999999806},{"scenario":"mock caption upstream_failure","status":502,"ms":59.768199999998615},{"scenario":"mock caption success","status":201,"ms":72.51879999999801},{"scenario":"five visitors same caption, real DB writes, mocked provider","statuses":[201,201,201,201,201],"providerCalls":1,"maxMs":98.67679999999746},{"scenario":"same owner concurrent replacement admission","statuses":[201,429]},{"scenario":"real one-page PDF parse + persist","bytes":616,"status":201,"ms":139.0589}],"finalResources":{"elapsedMs":13585.919699999999,"cpuCorePercent":28.065821705099584,"peakRssBytes":362524672,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":16.269311,"providerCalls":5,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":10175,"errors":4,"totalMs":21410.965599999894,"maxMs":40.125,"buckets":[989,9097,84,0,5,0,0,0,0,0,0,0]},"db.source.get":{"count":10117,"errors":2,"totalMs":26354.902699999977,"maxMs":1508.7513,"buckets":[3,9961,147,0,5,0,0,0,0,1,0,0]},"http.source.read":{"count":10117,"errors":3,"totalMs":29626.210000000152,"maxMs":1508.9637999999995,"buckets":[2,9849,260,0,5,0,0,0,0,1,0,0]},"http.voice.prepare":{"count":1,"errors":1,"totalMs":1.8187999999991007,"maxMs":1.8187999999991007,"buckets":[0,1,0,0,0,0,0,0,0,0,0,0]},"http.youtube":{"count":10,"errors":3,"totalMs":695.9032000000007,"maxMs":95.67639999999847,"buckets":[1,0,0,0,0,9,0,0,0,0,0,0]},"pdf.parse":{"count":1,"errors":0,"totalMs":133.26870000000054,"maxMs":133.26870000000054,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]},"http.source.upload":{"count":1,"errors":0,"totalMs":137.46010000000024,"maxMs":137.46010000000024,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]}}},"loadExitCodes":[0,0]}
+{"status":"PASS","serverLog":""}

@@ -42,6 +42,14 @@ try{
   const end=()=>page.getByRole('button',{name:'End voice',exact:true});
   const audit=()=>page.evaluate(()=>window.fixture.audit());
   const online=async value=>page.evaluate(value=>{Object.defineProperty(navigator,'onLine',{configurable:true,value});dispatchEvent(new Event(value?'online':'offline'));},value);
+  // Idle/error geometry requires a fresh workspace. Switching an already-started
+  // conversation now intentionally auto-connects and preserves its transcript.
+  const freshSource=async()=>{
+   await page.goto(origin+'/?noYoutube');await page.evaluate(()=>document.fonts.ready);
+   if(size.reflow)await page.evaluate(()=>document.documentElement.style.fontSize='200%');
+   await page.locator('input[type=file]').setInputFiles({name:'Alder station.pdf',mimeType:'application/pdf',buffer:Buffer.from('synthetic acquisition')});
+   await expect(page.locator('#source-heading')).toBeFocused();
+  };
   await page.goto(origin+'/?noYoutube');await page.evaluate(()=>document.fonts.ready);if(size.reflow)await page.evaluate(()=>document.documentElement.style.fontSize='200%');
   await capture('welcome-pdf');
   await page.goto(origin);await page.evaluate(()=>document.fonts.ready);if(size.reflow)await page.evaluate(()=>document.documentElement.style.fontSize='200%');await capture('welcome-both');
@@ -62,7 +70,7 @@ try{
   }
 
   await page.getByRole('button',{name:'Source actions',exact:true}).click();await capture('source-menu');await page.getByRole('menuitem',{name:'Replace source',exact:true}).click();await capture('replacement');await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Source actions',exact:true})).toBeFocused();
-  await page.getByRole('button',{name:'Voice mode',exact:true}).click();await expect(start()).toBeEnabled();await capture('voice-idle','.voice-start');
+  await freshSource();await page.getByRole('button',{name:'Voice mode',exact:true}).click();await expect(start()).toBeEnabled();await capture('voice-idle','.voice-start');
   const voiceIdle=entry.states.at(-1);for(const key of ['padding','font','paddingAction','minHeight'])assert.equal(voiceIdle[key],reference[key],`same text/voice ${key}`);
   assert.equal(voiceIdle.action.width,reference.action.width);assert.equal(voiceIdle.action.height,reference.action.height);assert.equal(voiceIdle.actionGap,reference.actionGap);
   assert.equal((await audit()).voice.at(-1).prepare,0);
@@ -76,8 +84,8 @@ try{
   await online(false);await expect(page.locator('.voice-session-status')).toBeVisible();await expect(page.locator('.voice-session-status')).toContainText('offline');await capture('voice-offline','.voice-start');
   const beforeOnline=await audit();await online(true);await expect(page.locator('.voice-session-status')).toContainText('Connection may be back');await expect(start()).toBeEnabled({timeout:5000});assert.deepEqual(await audit(),beforeOnline);await capture('voice-reconnected','.voice-start');
   // A fresh owner with denied microphone: real controller and ACK gates, fake media only.
-  await page.getByRole('button',{name:'Text mode',exact:true}).click();await page.evaluate(()=>window.fixture.voiceScenario('denied-microphone'));await page.getByRole('button',{name:'Voice mode',exact:true}).click();await start().click();await page.evaluate(()=>window.fixture.prime('voice'));await expect(page.locator('.voice-session-status')).toContainText('Microphone access was denied');await capture('voice-permission-failed','.voice-start');
-  await page.getByRole('button',{name:'Text mode',exact:true}).click();await page.evaluate(()=>window.fixture.voiceScenario('blocked-playback'));await page.getByRole('button',{name:'Voice mode',exact:true}).click();await start().click();await page.evaluate(()=>window.fixture.prime('voice'));await expect(page.getByRole('button',{name:'Tap to enable sound',exact:true})).toBeVisible();await capture('voice-playback-blocked');
+  await freshSource();await page.evaluate(()=>window.fixture.voiceScenario('denied-microphone'));await page.getByRole('button',{name:'Voice mode',exact:true}).click();await start().click();await page.evaluate(()=>window.fixture.prime('voice'));await expect(page.locator('.voice-session-status')).toContainText('Microphone access was denied');await capture('voice-permission-failed','.voice-start');
+  await freshSource();await page.evaluate(()=>window.fixture.voiceScenario('blocked-playback'));await page.getByRole('button',{name:'Voice mode',exact:true}).click();await start().click();await page.evaluate(()=>window.fixture.prime('voice'));await expect(page.getByRole('button',{name:'Tap to enable sound',exact:true})).toBeVisible();await capture('voice-playback-blocked');
   await page.getByRole('button',{name:'Tap to enable sound',exact:true}).click();await expect(page.getByRole('button',{name:'Tap to enable sound',exact:true})).toBeHidden();await page.getByRole('button',{name:'Mute speaker',exact:true}).click();await expect(page.getByRole('button',{name:'Mute microphone',exact:true})).toHaveAttribute('aria-pressed','false');await page.getByRole('button',{name:'Unmute speaker',exact:true}).click();
   await page.evaluate(()=>window.fixture.voicePartial());await expect(page.locator('.transcript-turn')).toHaveCount(2);await capture('voice-partial');
   await page.getByRole('button',{name:'Interrupt answer',exact:true}).click();await page.evaluate(()=>window.fixture.voiceInterruptDone());await expect(page.locator('.voice-media-announcement')).toBeHidden();await expect(page.locator('.transcript').getByText('Interrupted',{exact:true})).toBeVisible();await capture('voice-interrupted');

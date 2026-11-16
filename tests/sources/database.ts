@@ -31,6 +31,16 @@ export class SyntheticSourceDatabase {
       : row[key as keyof UploadedSource] === value);
   }
   asClient(): PrismaClient { return this as unknown as PrismaClient; }
+  // Single-statement reads use committed state, without taking the synthetic write queue.
+  source = { findFirst: async ({ where }: { where: Where }) => {
+    this.reads++;
+    assert.ok(where.id); assert.ok(where.expiresAt);
+    assert.equal(where.ownerSessionHash, where.activeSourceOwner);
+    assert.equal(where.extractionStatus, "READY"); assert.equal((where.OR as unknown[]).length, 2);
+    const row = [...this.rows.values()].find(row => this.matches(row, where));
+    if (this.delayReadMs) await new Promise(resolve => setTimeout(resolve, this.delayReadMs));
+    return row ? structuredClone(row) : null;
+  } };
   $transaction<T>(callback: (tx: unknown) => Promise<T>, options: unknown): Promise<T> {
     assert.deepEqual(options, { maxWait: 2000, timeout: 5000, isolationLevel: "ReadCommitted" });
     const work = this.queue.then(async () => {

@@ -2,3 +2,9 @@
 *.cmd text eol=crlf
 *.png binary
 *.ico binary
+
+# Preserve captured benchmark evidence verbatim, including tool-produced spacing.
+benchmarks/*.txt -text -whitespace
+benchmarks/pilot/*.txt -text -whitespace
+benchmarks/raw/*.json -text
+benchmarks/pilot/*.json -text

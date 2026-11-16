@@ -95,7 +95,12 @@ try {
     await expect(page.getByText(SOURCE_SIZE_MESSAGE, { exact: true })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('button', { name: 'Retry voice', exact: true })).toHaveCount(0);
     assert.deepEqual(statuses, [413]); await capture('voice-size');
-    await page.getByRole('button', { name: 'Text mode', exact: true }).click();
+    // Mode handoff carries continuation state. Reload/reimport to independently
+    // exercise text HTTP preparation from an explicit fresh Start action.
+    await page.goto(origin);
+    await page.getByLabel('YouTube URL', { exact: true }).fill(`https://www.youtube.com/watch?v=${oversizedCaptions().videoId}`);
+    await page.getByRole('button', { name: 'Import YouTube video', exact: true }).click();
+    await page.getByRole('button', { name: 'View source', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Start chat', exact: true }).click();
     await expect(page.getByText(SOURCE_SIZE_MESSAGE, { exact: true })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('button', { name: 'Start chat', exact: true })).toHaveCount(0);

@@ -1,0 +1,104 @@
+{"command":"node --conditions=react-server scripts/bench/run.mjs smoke","at":"2026-11-16T04:38:37.225Z","runtime":"v24.22.0","platform":"win32 10.0.22631 x64","cpu":"13th Gen Intel(R) Core(TM) i5-13600KF","logicalCpus":20,"systemMemoryBytes":34115325952,"k6":"k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)","postgres":"postgres (PostgreSQL) 17.5","poolMax":5,"metricsSampleMs":20,"scope":"production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked","baselineRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8","currentRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8"}
+{"input":{"sources":50,"charactersEach":45614,"pagesEach":8},"workload":"closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup"}
+{"label":"warmup","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-warmup.json scripts/load-test.js","config":{"VUS":1,"DURATION":"1s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+time="2026-11-15T23:38:42-05:00" level=warning msg="There were unknown fields in the options exported in the script" error="json: unknown field \"gracefulStop\""
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=5.23ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 350     349.599813/s
+    checks_succeeded...: 100.00% 350 out of 350
+    checks_failed......: 0.00%   0 out of 350
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 350
+
+    HTTP
+    http_req_duration..............: avg=2.8ms  min=1.08ms med=2.34ms max=15.5ms  p(95)=5.23ms p(99)=6.04ms
+      { expected_response:true }...: avg=2.8ms  min=1.08ms med=2.34ms max=15.5ms  p(95)=5.23ms p(99)=6.04ms
+    http_req_failed................: 0.00%  0 out of 350
+    http_reqs......................: 350    349.599813/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.85ms min=1.08ms med=2.36ms max=17.65ms p(95)=5.33ms p(99)=6.11ms
+    iterations.....................: 350    349.599813/s
+    vus............................: 1      min=1        max=1
+    vus_max........................: 1      min=1        max=1
+
+    NETWORK
+    data_received..................: 32 MB  32 MB/s
+    data_sent......................: 105 kB 105 kB/s
+
+
+
+
+{"label":"warmup","exitCode":0,"resources":{"elapsedMs":1254.3381,"cpuCorePercent":4.942845951980571,"peakRssBytes":273178624,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":16.064511,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":1050,"errors":0,"totalMs":308.4065999999989,"maxMs":2.1849999999999454,"buckets":[998,52,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":350,"errors":0,"totalMs":597.0647999999978,"maxMs":8.326199999999972,"buckets":[0,348,2,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":350,"errors":0,"totalMs":786.6358999999993,"maxMs":10.6416999999999,"buckets":[0,343,6,1,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-5-r1","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-read-5-r1.json scripts/load-test.js","config":{"VUS":5,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+time="2026-11-15T23:38:44-05:00" level=warning msg="There were unknown fields in the options exported in the script" error="json: unknown field \"gracefulStop\""
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=8.1ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 8487    848.415687/s
+    checks_succeeded...: 100.00% 8487 out of 8487
+    checks_failed......: 0.00%   0 out of 8487
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 8487
+
+    HTTP
+    http_req_duration..............: avg=5.78ms min=2.75ms med=5.5ms  max=33.58ms p(95)=8.1ms  p(99)=10.42ms
+      { expected_response:true }...: avg=5.78ms min=2.75ms med=5.5ms  max=33.58ms p(95)=8.1ms  p(99)=10.42ms
+    http_req_failed................: 0.00%  0 out of 8487
+    http_reqs......................: 8487   848.415687/s
+
+    EXECUTION
+    iteration_duration.............: avg=5.88ms min=2.75ms med=5.61ms max=34.61ms p(95)=8.22ms p(99)=10.48ms
+    iterations.....................: 8487   848.415687/s
+    vus............................: 5      min=5         max=5
+    vus_max........................: 5      min=5         max=5
+
+    NETWORK
+    data_received..................: 781 MB 78 MB/s
+    data_sent......................: 2.5 MB 255 kB/s
+
+
+
+
+{"label":"read-5-r1","exitCode":0,"resources":{"elapsedMs":10260.367100000001,"cpuCorePercent":27.104293373674704,"peakRssBytes":335384576,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.122431,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":25461,"errors":0,"totalMs":26313.53260000026,"maxMs":6.760600000000068,"buckets":[12906,12551,4,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":8487,"errors":0,"totalMs":36745.562100000156,"maxMs":30.494500000000244,"buckets":[0,6968,1500,16,3,0,0,0,0,0,0,0]},"http.source.read":{"count":8487,"errors":0,"totalMs":39445.75579999983,"maxMs":30.87390000000005,"buckets":[0,6262,2202,20,3,0,0,0,0,0,0,0]}}}}
+{"failures":[{"scenario":"malformed JSON","status":400,"ms":25.503199999999197},{"scenario":"foreign source","status":404,"ms":3.3211999999984982},{"scenario":"table lock timeout","status":503,"ms":1524.1440000000002},{"scenario":"recovery after lock release","status":200,"ms":4.546200000000681},{"scenario":"database stopped","status":503,"ms":6.106800000001385},{"scenario":"database restart to first success (includes pg_ctl readiness)","ms":349.5330999999969,"requestMs":47.62970000000132},{"scenario":"mock caption timeout","status":504,"ms":59.873399999996764},{"scenario":"mock caption upstream_failure","status":502,"ms":60.05069999999978},{"scenario":"mock caption success","status":201,"ms":87.26979999999821},{"scenario":"five visitors same caption, real DB writes, mocked provider","statuses":[201,201,201,201,201],"providerCalls":1,"maxMs":208.85189999999784},{"scenario":"same owner concurrent replacement admission","statuses":[201,429]},{"scenario":"real one-page PDF parse + persist","bytes":616,"status":201,"ms":1327.3074000000015}],"finalResources":{"elapsedMs":14800.177200000002,"cpuCorePercent":18.89842237834828,"peakRssBytes":362672128,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":16.146431,"providerCalls":5,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":25536,"errors":5,"totalMs":26381.65880000026,"maxMs":12.3778999999995,"buckets":[12963,12568,4,1,0,0,0,0,0,0,0,0]},"db.source.get":{"count":8493,"errors":2,"totalMs":38322.748500000154,"maxMs":1522.5955000000013,"buckets":[0,6972,1500,16,4,0,0,0,0,1,0,0]},"http.source.read":{"count":8493,"errors":3,"totalMs":41024.50549999983,"maxMs":1522.7792000000009,"buckets":[0,6266,2202,20,4,0,0,0,0,1,0,0]},"http.voice.prepare":{"count":1,"errors":1,"totalMs":2.1067999999995664,"maxMs":2.1067999999995664,"buckets":[0,1,0,0,0,0,0,0,0,0,0,0]},"http.youtube":{"count":10,"errors":3,"totalMs":946.6511000000028,"maxMs":205.40839999999844,"buckets":[1,0,0,0,0,7,2,0,0,0,0,0]},"pdf.parse":{"count":1,"errors":0,"totalMs":1321.7888999999996,"maxMs":1321.7888999999996,"buckets":[0,0,0,0,0,0,0,0,0,1,0,0]},"http.source.upload":{"count":1,"errors":0,"totalMs":1325.4941000000017,"maxMs":1325.4941000000017,"buckets":[0,0,0,0,0,0,0,0,0,1,0,0]}}},"loadExitCodes":[0,0]}
+{"status":"PASS","serverLog":""}

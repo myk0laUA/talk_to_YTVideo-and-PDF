@@ -142,10 +142,16 @@ try {
           await page.getByRole("button", { name: "Send question", exact: true }).click();
           await page.getByText("Answer arriving. You can stop and keep the text received so far.", { exact: true }).waitFor();
           if (width === 1440) {
+            const submitted = (await ipc("snapshot")).questions;
             await page.getByRole("button", { name: "Voice mode", exact: true }).click();
             await page.getByRole("button", { name: "Text mode", exact: true }).click();
-            check(`${kind} mode switch empties transcript`, await page.locator(".transcript-turn").count(), 0);
-            check(`${kind} mode switch requires explicit fresh Start`, await page.getByRole("button", { name: "Start chat", exact: true }).isEnabled());
+            // Source-scoped conversation memory intentionally survives mode switches.
+            // Wait for the real HTTP relay to restore before accepting another question.
+            await page.getByText("Ready for your question.", { exact: true }).waitFor();
+            check(`${kind} mode switch retains interrupted dialogue`, await page.locator(".transcript-turn").count(), 2);
+            check(`${kind} mode switch retains the submitted question`, (await page.locator(".transcript").textContent()).includes("Pending question before departure"));
+            check(`${kind} mode switch reconnects without a fresh Start`, await page.getByRole("button", { name: "Start chat", exact: true }).count(), 0);
+            check(`${kind} restore never resubmits the question`, (await ipc("snapshot")).questions, submitted);
           } else await page.goto(origin); // Real pagehide/unmount, no synthetic event.
           await context.close(); await wait(async () => (await ipc("snapshot")).active === 0);
           await ipc("scenario", { scenario: "success", answerDelay: 100 });
