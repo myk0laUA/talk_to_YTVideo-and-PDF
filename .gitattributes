@@ -8,3 +8,8 @@ benchmarks/*.txt -text -whitespace
 benchmarks/pilot/*.txt -text -whitespace
 benchmarks/raw/*.json -text
 benchmarks/pilot/*.json -text
+
+benchmarks/audit/**/*.txt -text -whitespace
+benchmarks/audit/**/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+benchmarks/audit/*.txt -text -whitespace
+benchmarks/audit/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

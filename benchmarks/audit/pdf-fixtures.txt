@@ -1,0 +1,93 @@
+Command: python tests/integration/generate-pdf-fixtures.py; PDF_FIXTURE_DIRECTORY=artifacts/local/sre-audit-fixtures
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'reportlab'
+Traceback (most recent call last):
+  File "C:\Users\Myk\Desktop\projects\Genius_Innovation_lab\talk_to_YTVideo-and-PDF\tests\integration\generate-pdf-fixtures.py", line 12, in <module>
+    from reportlab.pdfgen import canvas
+ModuleNotFoundError: No module named 'reportlab'
+exit: 1
+Rerun with isolated Python environment after installing fixture-requirements.txt
+3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]
+reportlab 4.4.9 pypdf 6.10.0 Pillow 11.1.0
+[
+  {
+    "name": "multi",
+    "bytes": 10778,
+    "sha256": "13bb3ee1735c42a73060ad7dade7be1688e34a84f55d572377847d1702490ae9",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "empty-page",
+    "bytes": 2201,
+    "sha256": "99ef5e3a64e3023e64b84b670e45a078ee5729c1b05e957f8ea394c4e26a463f",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "small",
+    "bytes": 1383,
+    "sha256": "5ad8bd8fb87ceff28c3c407160f05939a3b7d04bb99e2649bffe4fb7bcffc227",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "exact-25000000",
+    "bytes": 25000000,
+    "sha256": "5b418870ab53aed7090e714b177ef7b63539195969d14e85ccdb8083a72cd888",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "over-25000001",
+    "bytes": 25000001,
+    "sha256": "d3833e789754e3a4f34474ad2095f0d654e1ee4da654ac9a41702c3bbba685f2",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "image-only",
+    "bytes": 1683,
+    "sha256": "87caf6f850656bd7ffa793f6ef3b20424bcd33416c34bd533939fe367858b8ad",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "encrypted",
+    "bytes": 1675,
+    "sha256": "02366a628e60d48fa2696fd65cec0e3e1d63d5c2d43c4a7398a319986e64b46b",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "encrypted-empty-password",
+    "bytes": 1675,
+    "sha256": "4d23eca92513e319083a9b93aef8c72da912fe29ee08f4c79b26a52b6ea475d5",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "corrupt",
+    "bytes": 64,
+    "sha256": "ede7237180102c4f1be8955a6775b39bb8ef517e7218494db5bc17ba9dec370c",
+    "independentValidation": "PASS: strict pypdf rejects invalid fixture"
+  },
+  {
+    "name": "wrong-bytes",
+    "bytes": 55,
+    "sha256": "b289b734033653caa959a627b5e857009fa71505821c8c322a7edacd53eec0db",
+    "independentValidation": "PASS: strict pypdf rejects invalid fixture"
+  },
+  {
+    "name": "page-limit",
+    "bytes": 203846,
+    "sha256": "e782d898c1e4f57009c0a680a83eeca2c7b746f0615d6afc8d40e21f70d824bc",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "text-limit",
+    "bytes": 61496,
+    "sha256": "88c5035e1a302df091c74e2c23abeae6fbd27d6725192fd6f85e96d25baf176d",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  },
+  {
+    "name": "layout-table",
+    "bytes": 1475,
+    "sha256": "b3cf9de191d2c483532b5e8296fc9d6ed9b983dd022aceccf520c3dff46d58ad",
+    "independentValidation": "PASS: strict pypdf structure, page count, every expected line; decrypt where applicable"
+  }
+]
+rerun exit: 0

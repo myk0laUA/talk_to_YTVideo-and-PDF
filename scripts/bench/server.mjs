@@ -2,7 +2,7 @@
 import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { performance, monitorEventLoopDelay } from 'node:perf_hooks';
+import { performance, monitorEventLoopDelay, PerformanceObserver } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createDatabaseClient } from '../../src/server/database-client.ts';
 import { createSourceRepository } from '../../src/server/sources/repository.ts';
@@ -78,6 +78,9 @@ const server = createServer(async (req, res) => {
 server.requestTimeout = 20000;
 server.headersTimeout = 5000;
 await new Promise((resolve, reject) => { server.once('error', reject); server.listen(3149, '127.0.0.1', resolve); });
+let gcCount = 0, gcDurationMs = 0;
+const gcObserver = new PerformanceObserver(list => { for (const entry of list.getEntries()) { gcCount++; gcDurationMs += entry.duration; } });
+if (process.env.BENCH_MEMORY === 'true') gcObserver.observe({ entryTypes: ['gc'] });
 const lag = monitorEventLoopDelay({ resolution: 10 }); lag.enable();
 let peakRss = 0, peakConnections = 0, peakWaiting = 0, cpu, started;
 function reset() { metricSnapshot(true); peakRss = process.memoryUsage().rss; peakConnections = 0; peakWaiting = 0;
@@ -93,6 +96,10 @@ process.on('message', async message => {
   try {
     let result;
     if (command === 'reset') { reset(); result = true; }
+    else if (command === 'memory') {
+      if (message.collect) { if (!globalThis.gc) throw Error('GC unavailable'); globalThis.gc(); await delay(20); }
+      result = { ...process.memoryUsage(), gcCount, gcDurationMs, connections: pool.totalCount, waiting: pool.waitingCount };
+    }
     else if (command === 'snapshot') {
       const usage = process.cpuUsage(cpu), elapsedMs = performance.now() - started;
       result = { elapsedMs, cpuCorePercent: (usage.user + usage.system) / (elapsedMs * 10), peakRssBytes: peakRss,
@@ -100,7 +107,7 @@ process.on('message', async message => {
         eventLoopP99Ms: lag.percentile(99) / 1e6, providerCalls, voiceResources: registry.resources, ...metricSnapshot() };
     } else if (command === 'provider') { providerMode = message.mode; result = true; }
     else if (command === 'close') {
-      clearInterval(sampler); lag.disable(); registry.dispose();
+      clearInterval(sampler); lag.disable(); gcObserver.disconnect(); registry.dispose();
       server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
       await database.$disconnect();
       if (!pool.ended) throw Error('Benchmark pool not released');

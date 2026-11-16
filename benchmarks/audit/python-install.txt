@@ -1,0 +1,18 @@
+Collecting reportlab==4.4.9 (from -r tests/integration/fixture-requirements.txt (line 2))
+  Using cached reportlab-4.4.9-py3-none-any.whl.metadata (1.7 kB)
+Collecting pypdf==6.10.0 (from -r tests/integration/fixture-requirements.txt (line 3))
+  Using cached pypdf-6.10.0-py3-none-any.whl.metadata (7.1 kB)
+Collecting Pillow==11.1.0 (from -r tests/integration/fixture-requirements.txt (line 4))
+  Using cached pillow-11.1.0-cp312-cp312-win_amd64.whl.metadata (9.3 kB)
+Collecting charset-normalizer (from reportlab==4.4.9->-r tests/integration/fixture-requirements.txt (line 2))
+  Using cached charset_normalizer-3.5.2-cp312-cp312-win_amd64.whl.metadata (47 kB)
+Using cached reportlab-4.4.9-py3-none-any.whl (2.0 MB)
+Using cached pypdf-6.10.0-py3-none-any.whl (334 kB)
+Using cached pillow-11.1.0-cp312-cp312-win_amd64.whl (2.6 MB)
+Using cached charset_normalizer-3.5.2-cp312-cp312-win_amd64.whl (207 kB)
+Installing collected packages: pypdf, Pillow, charset-normalizer, reportlab
+Successfully installed Pillow-11.1.0 charset-normalizer-3.5.2 pypdf-6.10.0 reportlab-4.4.9
+
+[notice] A new release of pip is available: 24.2 -> 26.3
+[notice] To update, run: C:\Users\Myk\Desktop\projects\Genius_Innovation_lab\talk_to_YTVideo-and-PDF\artifacts\local\sre-audit-python\Scripts\python.exe -m pip install --upgrade pip
+install exit: 0

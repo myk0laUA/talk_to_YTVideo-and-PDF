@@ -1,0 +1,80 @@
+Branch: main
+HEAD and origin/main: 7f5ef0c42a2b6a951b44ea247dcc388a5fffc0eb
+Ahead/behind: 0	0
+Visibility: PUBLIC (gh repo view)
+Staged files: none
+Unpushed commits: none
+Original evidence commit b786404 is already remote. New audit files below require a new commit and approved push.
+
+COMMAND git status --short --untracked-files=all
+ M .gitattributes
+ M README.md
+ M benchmarks/README.md
+ M benchmarks/architecture.md
+ M scripts/bench/report.mjs
+ M scripts/bench/restore.mjs
+ M scripts/bench/run.mjs
+ M scripts/bench/server.mjs
+ M scripts/load-test.js
+ M scripts/verify-reliability.mjs
+?? benchmarks/audit/README.md
+?? benchmarks/audit/claims.json
+?? benchmarks/audit/clean-clone.txt
+?? benchmarks/audit/final-lint.txt
+?? benchmarks/audit/fixture-comparison.json
+?? benchmarks/audit/git-status.txt
+?? benchmarks/audit/hygiene.json
+?? benchmarks/audit/links.json
+?? benchmarks/audit/live-homepage.txt
+?? benchmarks/audit/memory/baseline.txt
+?? benchmarks/audit/memory/optimized.txt
+?? benchmarks/audit/memory/raw/baseline-memory-500-r1.json
+?? benchmarks/audit/memory/raw/baseline-memory-500-r2.json
+?? benchmarks/audit/memory/raw/baseline-memory-500-r3.json
+?? benchmarks/audit/memory/raw/baseline-memory-500-r4.json
+?? benchmarks/audit/memory/raw/optimized-memory-500-r1.json
+?? benchmarks/audit/memory/raw/optimized-memory-500-r2.json
+?? benchmarks/audit/memory/raw/optimized-memory-500-r3.json
+?? benchmarks/audit/memory/raw/optimized-memory-500-r4.json
+?? benchmarks/audit/memory/summary.json
+?? benchmarks/audit/npm-audit-production.json
+?? benchmarks/audit/npm-audit.json
+?? benchmarks/audit/operating-system.json
+?? benchmarks/audit/pdf-fixtures.txt
+?? benchmarks/audit/python-install.txt
+?? benchmarks/audit/reproduction/baseline.txt
+?? benchmarks/audit/reproduction/comparison.json
+?? benchmarks/audit/reproduction/optimized.txt
+?? benchmarks/audit/reproduction/raw/baseline-prepare-1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-1-r1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-10-r1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-25-r1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-25-r2.json
+?? benchmarks/audit/reproduction/raw/baseline-read-25-r3.json
+?? benchmarks/audit/reproduction/raw/baseline-read-5-r1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-50-r1.json
+?? benchmarks/audit/reproduction/raw/baseline-read-50-r2.json
+?? benchmarks/audit/reproduction/raw/baseline-read-50-r3.json
+?? benchmarks/audit/reproduction/raw/baseline-spike-50.json
+?? benchmarks/audit/reproduction/raw/baseline-sustained-10.json
+?? benchmarks/audit/reproduction/raw/baseline-warmup.json
+?? benchmarks/audit/reproduction/raw/optimized-prepare-1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-1-r1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-10-r1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-25-r1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-25-r2.json
+?? benchmarks/audit/reproduction/raw/optimized-read-25-r3.json
+?? benchmarks/audit/reproduction/raw/optimized-read-5-r1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-50-r1.json
+?? benchmarks/audit/reproduction/raw/optimized-read-50-r2.json
+?? benchmarks/audit/reproduction/raw/optimized-read-50-r3.json
+?? benchmarks/audit/reproduction/raw/optimized-spike-50.json
+?? benchmarks/audit/reproduction/raw/optimized-sustained-10.json
+?? benchmarks/audit/reproduction/raw/optimized-warmup.json
+?? benchmarks/audit/reproduction/results.txt
+?? benchmarks/audit/restoration.txt
+?? benchmarks/audit/source-manifest.json
+?? benchmarks/audit/teardown.txt
+?? benchmarks/audit/verification-status.md
+?? benchmarks/audit/verification.txt
+?? scripts/bench/audit.mjs

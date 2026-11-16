@@ -1,0 +1,17 @@
+{
+  "trackedFiles": 335,
+  "historyBlobsScanned": 1921,
+  "knownLocalCredentialMatches": [],
+  "highConfidencePatternMatches": [],
+  "trackedFilesOver1MB": [],
+  "trackedEnvFiles": [
+    ".env.example"
+  ],
+  "scope": "All reachable git refs and tracked files; heuristic and known-local-value scan, not a proof of absence. Values never printed.",
+  "finalWorkingTreeScan": {
+    "files": 396,
+    "knownPrivateValueMatches": [],
+    "newEvidenceTokenPatternMatches": [],
+    "filesOver1MB": []
+  }
+}

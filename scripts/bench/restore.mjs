@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import { historyEvents, VoiceHistoryRestore } from '../../src/shared/conversation-restore.ts';
 import { parseHistory } from '../../src/shared/conversation-history.ts';
@@ -33,5 +33,7 @@ for (const concurrency of [1, 5, 10]) for (let repeat = 1; repeat <= 3; repeat++
 record.interruptedAttemptMs = await restore('interrupted', true);
 record.freshRestoreAfterInterruptionMs = await restore('recovered');
 record.status = 'PASS';
+const outputRoot = process.env.BENCH_OUTPUT_DIR ?? 'benchmarks';
+await mkdir(outputRoot, { recursive: true });
 const text = JSON.stringify(record, null, 2) + '\n';
-await writeFile('benchmarks/restoration.txt', text); console.log(text);
+await writeFile(`${outputRoot}/restoration.txt`, text); console.log(text);

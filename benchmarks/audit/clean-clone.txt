@@ -1,0 +1,203 @@
+Command: git clone --no-hardlinks . artifacts/local/sre-audit-clean; npm ci; npm run build; npm run bench:smoke
+Pinned Node 24.22.0/npm 11.19.1; no .env; local PG 17.5 and k6 2.4.0 paths explicitly supplied.
+Cloning into 'C:\Users\Myk\Desktop\projects\Genius_Innovation_lab\talk_to_YTVideo-and-PDF\artifacts\local\sre-audit-clean'...
+done.
+clone exit: 0
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+> talk-to-a-document@0.1.0 postinstall
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 31ms
+
+
+added 499 packages, and audited 500 packages in 1m
+
+160 packages are looking for funding
+  run `npm fund` for details
+
+8 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm ci exit: 0
+
+> talk-to-a-document@0.1.0 build
+> prisma generate && next build
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.33                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 42ms
+
+▲ Next.js 16.4.2 (Turbopack)
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\Myk\Desktop\projects\Genius_Innovation_lab\talk_to_YTVideo-and-PDF because it is outside the current Git repository (C:\Users\Myk\Desktop\projects\Genius_Innovation_lab\talk_to_YTVideo-and-PDF\artifacts\local\sre-audit-clean).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 40ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1764ms
+  Running TypeScript ...
+  Finished TypeScript in 5.0s ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/10) ...
+  Generating static pages using 19 workers (2/10) 
+  Generating static pages using 19 workers (4/10) 
+  Generating static pages using 19 workers (7/10) 
+✓ Generating static pages using 19 workers (10/10) in 171ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /api/proof-captions
+├ ƒ /api/proof-pdf
+├ ƒ /api/proof-source
+├ ƒ /api/realtime/client-secret
+├ ƒ /api/sources/[id]
+├ ƒ /api/sources/pdf
+├ ƒ /api/sources/youtube
+├ ƒ /api/text-sessions
+├ ƒ /api/text-sessions/[id]/stream
+├ ƒ /api/text-sessions/question
+├ ƒ /api/text-sessions/stop
+├ ƒ /api/voice-preparations
+├ ƒ /api/voice-preparations/cancel
+├ ƒ /api/voice-preparations/credential
+├ ○ /icon.svg
+├ ƒ /proof/text
+└ ƒ /proof/voice
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+build exit: 0
+
+> talk-to-a-document@0.1.0 bench:smoke
+> node --conditions=react-server scripts/bench/run.mjs smoke
+
+{"command":"node --conditions=react-server scripts/bench/run.mjs smoke","at":"2026-11-16T05:46:36.794Z","runtime":"v24.22.0","platform":"win32 10.0.22631 x64","cpu":"13th Gen Intel(R) Core(TM) i5-13600KF","logicalCpus":20,"systemMemoryBytes":34115325952,"k6":"k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)","postgres":"postgres (PostgreSQL) 17.5","poolMax":5,"metricsSampleMs":20,"scope":"production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked","baselineRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8","currentRepositorySha256":"f9e8c301904d18db001df8a8f1885244d737b9246e7ba96b644c8908f4a0b428"}
+{"command":"node --conditions=react-server tests/integration/verify-cleanup-postgres.ts","scope":"Two disposable local databases; no configured user database","exitCode":0}
+{"status":"PASS","environment":"explicit disposable PostgreSQL; synthetic fixtures","results":[{"scenario":"actual CLI dry-run/execute/no-op","before":{"Source":5,"TranscriptCache":5},"dry":{"mode":"dry-run","cutoff":"2026-11-16T05:46:42.830Z","elapsedMs":26,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"executed":{"mode":"execute","cutoff":"2026-11-16T05:46:42.975Z","elapsedMs":34,"status":"complete","batches":6,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"noop":{"mode":"execute","cutoff":"2026-11-16T05:46:43.127Z","elapsedMs":24,"status":"complete","batches":2,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},"remaining":{"Source":1,"TranscriptCache":1},"byteIdenticalDryRun":true,"livePreserved":true},{"scenario":"exact boundary","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.161Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"refresh before cache selection","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.167Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":3,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cache refresh after selection","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.176Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":3,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"overlapping cleaners","reports":[{"mode":"execute","cutoff":"2026-11-16T05:46:43.181Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":4,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":0,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"},{"mode":"execute","cutoff":"2026-11-16T05:46:43.181Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}]},{"scenario":"simultaneous replacement transaction","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.189Z","elapsedMs":0,"status":"complete","batches":2,"counts":{"Source":{"selected":4,"deleted":0,"unscanned":0},"TranscriptCache":{"selected":4,"deleted":4,"unscanned":0}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"failure before commit rolls back","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.195Z","elapsedMs":0,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"unknown"}},{"scenario":"bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.206Z","elapsedMs":503,"status":"error","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel during bounded row-lock wait","report":{"mode":"execute","cutoff":"2026-11-16T05:46:43.716Z","elapsedMs":508,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel before","report":{"mode":"execute","cutoff":"2026-11-16T05:46:44.225Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}},{"scenario":"cancel during","report":{"mode":"execute","cutoff":"2026-11-16T05:46:44.228Z","elapsedMs":0,"status":"cancelled","batches":0,"counts":{"Source":{"selected":0,"deleted":0,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"rolled_back"}},{"scenario":"cancel between","report":{"mode":"execute","cutoff":"2026-11-16T05:46:44.232Z","elapsedMs":0,"status":"cancelled","batches":1,"counts":{"Source":{"selected":2,"deleted":2,"unscanned":"unknown"},"TranscriptCache":{"selected":0,"deleted":0,"unscanned":"unknown"}},"countsBasis":"completed_batches_only","failedBatch":"none"}}],"ownFixturesRemaining":0,"teardown":{"clientsReleased":4,"poolsClosed":4}}
+
+{"input":{"sources":50,"charactersEach":45614,"pagesEach":8},"workload":"closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup"}
+{"label":"warmup","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-warmup.json scripts/load-test.js","config":{"VUS":1,"DURATION":"1s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=3.57ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 411     410.587114/s
+    checks_succeeded...: 100.00% 411 out of 411
+    checks_failed......: 0.00%   0 out of 411
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 411
+
+    HTTP
+    http_req_duration..............: avg=2.37ms min=503.1µs med=2.08ms max=12.12ms p(95)=3.57ms p(99)=4.14ms
+      { expected_response:true }...: avg=2.37ms min=503.1µs med=2.08ms max=12.12ms p(95)=3.57ms p(99)=4.14ms
+    http_req_failed................: 0.00%  0 out of 411
+    http_reqs......................: 411    410.587114/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.43ms min=1.01ms  med=2.12ms max=13.67ms p(95)=3.65ms p(99)=4.48ms
+    iterations.....................: 411    410.587114/s
+    vus............................: 1      min=1        max=1
+    vus_max........................: 1      min=1        max=1
+
+    NETWORK
+    data_received..................: 38 MB  38 MB/s
+    data_sent......................: 123 kB 123 kB/s
+
+
+
+
+{"label":"warmup","exitCode":0,"resources":{"elapsedMs":1261.6423,"cpuCorePercent":2.4571148256522473,"peakRssBytes":264286208,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":16.138239,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":411,"errors":0,"totalMs":318.60910000000365,"maxMs":2.5634000000000015,"buckets":[331,80,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":411,"errors":0,"totalMs":525.687800000001,"maxMs":6.3571000000000595,"buckets":[126,284,1,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":411,"errors":0,"totalMs":721.8749000000009,"maxMs":8.201299999999947,"buckets":[0,410,1,0,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-5-r1","command":"k6 run --quiet --summary-export benchmarks/raw/smoke-read-5-r1.json scripts/load-test.js","config":{"VUS":5,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=6.39ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 10946   1094.169619/s
+    checks_succeeded...: 100.00% 10946 out of 10946
+    checks_failed......: 0.00%   0 out of 10946
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 10946
+
+    HTTP
+    http_req_duration..............: avg=4.53ms min=2.05ms med=4.22ms max=37.2ms  p(95)=6.39ms p(99)=8.2ms 
+      { expected_response:true }...: avg=4.53ms min=2.05ms med=4.22ms max=37.2ms  p(95)=6.39ms p(99)=8.2ms 
+    http_req_failed................: 0.00%  0 out of 10946
+    http_reqs......................: 10946  1094.169619/s
+
+    EXECUTION
+    iteration_duration.............: avg=4.56ms min=2.05ms med=4.25ms max=38.38ms p(95)=6.4ms  p(99)=8.22ms
+    iterations.....................: 10946  1094.169619/s
+    vus............................: 5      min=5          max=5
+    vus_max........................: 5      min=5          max=5
+
+    NETWORK
+    data_received..................: 1.0 GB 101 MB/s
+    data_sent......................: 3.3 MB 328 kB/s
+
+
+
+
+{"label":"read-5-r1","exitCode":0,"resources":{"elapsedMs":10255.000900000001,"cpuCorePercent":34.90004569380389,"peakRssBytes":337342464,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.024127,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":10946,"errors":0,"totalMs":21212.972199999913,"maxMs":32.02009999999996,"buckets":[1445,9467,30,0,4,0,0,0,0,0,0,0]},"db.source.get":{"count":10946,"errors":0,"totalMs":24734.848999999926,"maxMs":32.3922,"buckets":[7,10868,67,0,4,0,0,0,0,0,0,0]},"http.source.read":{"count":10946,"errors":0,"totalMs":28060.617099999945,"maxMs":32.784200000000055,"buckets":[0,10800,142,0,4,0,0,0,0,0,0,0]}}}}
+{"failures":[{"scenario":"malformed JSON","status":400,"ms":22.733400000000984},{"scenario":"foreign source","status":404,"ms":2.657199999997829},{"scenario":"table lock timeout","status":503,"ms":1514.1214999999975},{"scenario":"recovery after lock release","status":200,"ms":3.8919999999998254},{"scenario":"database stopped","status":503,"ms":4.112199999999575},{"scenario":"database restart to first success (includes pg_ctl readiness)","ms":289.43099999999686,"requestMs":139.44150000000081},{"scenario":"mock caption timeout","status":504,"ms":61.30769999999757},{"scenario":"mock caption upstream_failure","status":502,"ms":62.5067999999992},{"scenario":"mock caption success","status":201,"ms":73.74329999999827},{"scenario":"five visitors same caption, real DB writes, mocked provider","statuses":[201,201,201,201,201],"providerCalls":1,"maxMs":100.69539999999688},{"scenario":"same owner concurrent replacement admission","statuses":[201,429]},{"scenario":"real one-page PDF parse + persist","bytes":616,"status":201,"ms":140.4318999999996}],"finalResources":{"elapsedMs":13429.0851,"cpuCorePercent":27.5744771324742,"peakRssBytes":371916800,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":16.252927,"providerCalls":5,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":11010,"errors":4,"totalMs":21398.8285999999,"maxMs":137.19700000000012,"buckets":[1491,9484,30,0,4,0,1,0,0,0,0,0]},"db.source.get":{"count":10952,"errors":2,"totalMs":26391.04339999993,"maxMs":1512.8027000000002,"buckets":[8,10871,67,0,4,0,1,0,0,1,0,0]},"http.source.read":{"count":10952,"errors":3,"totalMs":29718.051499999943,"maxMs":1512.9480000000003,"buckets":[1,10803,142,0,4,0,1,0,0,1,0,0]},"http.voice.prepare":{"count":1,"errors":1,"totalMs":1.9086999999999534,"maxMs":1.9086999999999534,"buckets":[0,1,0,0,0,0,0,0,0,0,0,0]},"http.youtube":{"count":10,"errors":3,"totalMs":714.2472999999973,"maxMs":98.10590000000047,"buckets":[1,0,0,0,0,9,0,0,0,0,0,0]},"pdf.parse":{"count":1,"errors":0,"totalMs":134.61759999999958,"maxMs":134.61759999999958,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]},"http.source.upload":{"count":1,"errors":0,"totalMs":138.86459999999897,"maxMs":138.86459999999897,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]}}},"loadExitCodes":[0,0]}
+{"status":"PASS","serverLog":""}
+smoke exit: 0

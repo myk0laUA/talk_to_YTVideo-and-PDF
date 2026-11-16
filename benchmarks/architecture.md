@@ -21,7 +21,7 @@ Repository inspection (2026-11-15), before optimization. Targets below are **acc
 | `/api/proof-captions` | Disabled-by-default caption proof |
 | `/api/realtime/client-secret` | Disabled-by-default credential proof |
 
-There are **14 route files**, including four proof routes; the historical “11 endpoints” claim is stale. Unsupported methods on conversation routes explicitly return 405.
+There are **14 route files**: ten ordinary paths exposing **11 supported method/path operations** (GET and DELETE share `/api/sources/[id]`), plus four default-disabled proof paths. Thus “11 backend HTTP operations” is defensible; “11 APIs” is ambiguous and does not mean 11 external integrations. Unsupported methods on conversation routes explicitly return 405.
 
 PostgreSQL contains `Source` and `TranscriptCache`, **not conversation history**. The source primary key, unique active-owner slot, owner/expiry and expiry indexes already exist. Cache identity is unique on video/language/mode. Writes replace the owned source in a transaction; invalidation closes associated in-process sessions. Cleanup is an explicit bounded CLI, not an automatic scheduler. The original source GET used an interactive transaction plus `set_config` despite making one SELECT. The lazy singleton Prisma client has a five-connection pool with a five-second acquisition timeout. Writes retain row-lock (1.5 s), statement (3 s), transaction (5 s) and transaction acquisition (2 s) deadlines.
 

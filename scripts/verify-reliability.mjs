@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+const evidence = path.resolve(process.env.BENCH_OUTPUT_DIR ?? 'benchmarks'); await mkdir(evidence, { recursive: true });
 const root = path.resolve('artifacts/local/sre/verification'); await mkdir(root, { recursive: true });
 const env = { ...process.env, PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? process.env.Path ?? ''}`,
   NODE_OPTIONS: '', NEXT_TELEMETRY_DISABLED: '1', VERIFICATION_ROOT: root,
@@ -27,7 +28,7 @@ const cases = [
     .map(name => [name, ['--conditions=react-server', `tests/integration/verify-${name}.mjs`]]),
 ];
 const requested = process.argv.slice(2);
-let output = await readFile('benchmarks/verification.txt', 'utf8').catch(() => '');
+let output = await readFile(path.join(evidence, 'verification.txt'), 'utf8').catch(() => '');
 output += `\nRun: ${new Date().toISOString()}\nCommand: node scripts/verify-reliability.mjs ${requested.join(' ')}\nRuntime: ${process.version}\nProviders disabled/mocked; local fixture servers only.\n`;
 let failures = 0;
 for (const [name, args] of cases.filter(([name]) => !requested.length || requested.includes(name))) {
@@ -41,7 +42,7 @@ for (const [name, args] of cases.filter(([name]) => !requested.length || request
   const result = { test: name, exitCode: code, elapsedMs: performance.now() - started };
   output += JSON.stringify(result) + '\n'; console.log(result);
   await writeFile(path.join(root, 'verification.txt'), output);
-  await writeFile('benchmarks/verification.txt', output);
+  await writeFile(path.join(evidence, 'verification.txt'), output);
   if (code !== 0) { failures++; if (['build', 'typecheck'].includes(name)) break; }
 }
 if (failures) process.exitCode = 1;

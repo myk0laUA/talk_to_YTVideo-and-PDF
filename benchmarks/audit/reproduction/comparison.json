@@ -1,0 +1,472 @@
+{
+  "1": {
+    "baseline": {
+      "runs": [
+        {
+          "throughput": 550.1342644567401,
+          "requests": 5502,
+          "p50": 1.7298499999999999,
+          "p95": 2.506495,
+          "p99": 3.2950209999999984,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 303.32421875,
+          "cpuCorePercent": 11.147146822314316,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 1.1411176481279577,
+          "peakConnections": 1,
+          "peakWaiting": 0
+        }
+      ],
+      "median": {
+        "throughput": 550.1342644567401,
+        "requests": 5502,
+        "p50": 1.7298499999999999,
+        "p95": 2.506495,
+        "p99": 3.2950209999999984,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 303.32421875,
+        "cpuCorePercent": 11.147146822314316,
+        "queryEventsPerRead": 3,
+        "meanRepositoryMs": 1.1411176481279577,
+        "peakConnections": 1,
+        "peakWaiting": 0
+      }
+    },
+    "optimized": {
+      "runs": [
+        {
+          "throughput": 699.4809181605526,
+          "requests": 6995,
+          "p50": 1.3533,
+          "p95": 2.02042,
+          "p99": 2.5586879999999974,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 290.796875,
+          "cpuCorePercent": 5.492823382342293,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 0.7749135096497302,
+          "peakConnections": 1,
+          "peakWaiting": 0
+        }
+      ],
+      "median": {
+        "throughput": 699.4809181605526,
+        "requests": 6995,
+        "p50": 1.3533,
+        "p95": 2.02042,
+        "p99": 2.5586879999999974,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 290.796875,
+        "cpuCorePercent": 5.492823382342293,
+        "queryEventsPerRead": 1,
+        "meanRepositoryMs": 0.7749135096497302,
+        "peakConnections": 1,
+        "peakWaiting": 0
+      }
+    }
+  },
+  "5": {
+    "baseline": {
+      "runs": [
+        {
+          "throughput": 968.9367535357643,
+          "requests": 9691,
+          "p50": 4.8933,
+          "p95": 6.4376,
+          "p99": 8.176270000000004,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 318.98046875,
+          "cpuCorePercent": 36.34608009375613,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 3.8390579197193104,
+          "peakConnections": 5,
+          "peakWaiting": 0
+        }
+      ],
+      "median": {
+        "throughput": 968.9367535357643,
+        "requests": 9691,
+        "p50": 4.8933,
+        "p95": 6.4376,
+        "p99": 8.176270000000004,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 318.98046875,
+        "cpuCorePercent": 36.34608009375613,
+        "queryEventsPerRead": 3,
+        "meanRepositoryMs": 3.8390579197193104,
+        "peakConnections": 5,
+        "peakWaiting": 0
+      }
+    },
+    "optimized": {
+      "runs": [
+        {
+          "throughput": 1222.1963453180058,
+          "requests": 12225,
+          "p50": 3.8147,
+          "p95": 5.262699999999998,
+          "p99": 7.018856000000002,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 328.3203125,
+          "cpuCorePercent": 37.93255965343565,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 2.069397546012276,
+          "peakConnections": 5,
+          "peakWaiting": 0
+        }
+      ],
+      "median": {
+        "throughput": 1222.1963453180058,
+        "requests": 12225,
+        "p50": 3.8147,
+        "p95": 5.262699999999998,
+        "p99": 7.018856000000002,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 328.3203125,
+        "cpuCorePercent": 37.93255965343565,
+        "queryEventsPerRead": 1,
+        "meanRepositoryMs": 2.069397546012276,
+        "peakConnections": 5,
+        "peakWaiting": 0
+      }
+    }
+  },
+  "10": {
+    "baseline": {
+      "runs": [
+        {
+          "throughput": 991.3201086441276,
+          "requests": 9921,
+          "p50": 9.7418,
+          "p95": 11.8171,
+          "p99": 14.6336,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 321.34765625,
+          "cpuCorePercent": 42.85763796694144,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 8.513955720189488,
+          "peakConnections": 5,
+          "peakWaiting": 5
+        }
+      ],
+      "median": {
+        "throughput": 991.3201086441276,
+        "requests": 9921,
+        "p50": 9.7418,
+        "p95": 11.8171,
+        "p99": 14.6336,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 321.34765625,
+        "cpuCorePercent": 42.85763796694144,
+        "queryEventsPerRead": 3,
+        "meanRepositoryMs": 8.513955720189488,
+        "peakConnections": 5,
+        "peakWaiting": 5
+      }
+    },
+    "optimized": {
+      "runs": [
+        {
+          "throughput": 1340.1175861742076,
+          "requests": 13410,
+          "p50": 6.93395,
+          "p95": 10.05373,
+          "p99": 12.85503,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 338.92578125,
+          "cpuCorePercent": 40.69789753607787,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 3.5896291797166215,
+          "peakConnections": 5,
+          "peakWaiting": 4
+        }
+      ],
+      "median": {
+        "throughput": 1340.1175861742076,
+        "requests": 13410,
+        "p50": 6.93395,
+        "p95": 10.05373,
+        "p99": 12.85503,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 338.92578125,
+        "cpuCorePercent": 40.69789753607787,
+        "queryEventsPerRead": 1,
+        "meanRepositoryMs": 3.5896291797166215,
+        "peakConnections": 5,
+        "peakWaiting": 4
+      }
+    }
+  },
+  "25": {
+    "baseline": {
+      "runs": [
+        {
+          "throughput": 1007.551426808873,
+          "requests": 10097,
+          "p50": 24.3159,
+          "p95": 28.51692,
+          "p99": 31.491643999999987,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 422.21484375,
+          "cpuCorePercent": 40.49286272139293,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 23.25097669604835,
+          "peakConnections": 5,
+          "peakWaiting": 20
+        },
+        {
+          "throughput": 972.544647399816,
+          "requests": 9744,
+          "p50": 24.96745,
+          "p95": 30.55341,
+          "p99": 36.23297999999998,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 420.60546875,
+          "cpuCorePercent": 27.397181852270293,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 24.072559154351488,
+          "peakConnections": 5,
+          "peakWaiting": 20
+        },
+        {
+          "throughput": 1008.6385889921249,
+          "requests": 10111,
+          "p50": 24.1435,
+          "p95": 28.7637,
+          "p99": 37.402439999999956,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 428.23046875,
+          "cpuCorePercent": 34.68373984309025,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 23.22117413707847,
+          "peakConnections": 5,
+          "peakWaiting": 20
+        }
+      ],
+      "median": {
+        "throughput": 1007.551426808873,
+        "requests": 10097,
+        "p50": 24.3159,
+        "p95": 28.7637,
+        "p99": 36.23297999999998,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 422.21484375,
+        "cpuCorePercent": 34.68373984309025,
+        "queryEventsPerRead": 3,
+        "meanRepositoryMs": 23.25097669604835,
+        "peakConnections": 5,
+        "peakWaiting": 20
+      }
+    },
+    "optimized": {
+      "runs": [
+        {
+          "throughput": 1381.2085326036754,
+          "requests": 13833,
+          "p50": 17.3349,
+          "p95": 24.08438,
+          "p99": 30.667728000000004,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 444.73046875,
+          "cpuCorePercent": 42.62294449510595,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 8.94511547748142,
+          "peakConnections": 5,
+          "peakWaiting": 19
+        },
+        {
+          "throughput": 1396.1279088415347,
+          "requests": 13982,
+          "p50": 17.18515,
+          "p95": 24.02489,
+          "p99": 29.247043000000005,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 527.015625,
+          "cpuCorePercent": 40.778137238523826,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 8.849063996567025,
+          "peakConnections": 5,
+          "peakWaiting": 19
+        },
+        {
+          "throughput": 1393.184140624337,
+          "requests": 13954,
+          "p50": 17.211350000000003,
+          "p95": 23.90347999999999,
+          "p99": 30.89036699999997,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 539.453125,
+          "cpuCorePercent": 43.379202675642446,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 8.893430063064343,
+          "peakConnections": 5,
+          "peakWaiting": 19
+        }
+      ],
+      "median": {
+        "throughput": 1393.184140624337,
+        "requests": 13954,
+        "p50": 17.211350000000003,
+        "p95": 24.02489,
+        "p99": 30.667728000000004,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 527.015625,
+        "cpuCorePercent": 42.62294449510595,
+        "queryEventsPerRead": 1,
+        "meanRepositoryMs": 8.893430063064343,
+        "peakConnections": 5,
+        "peakWaiting": 19
+      }
+    }
+  },
+  "50": {
+    "baseline": {
+      "runs": [
+        {
+          "throughput": 994.5931880535428,
+          "requests": 9996,
+          "p50": 49.2726,
+          "p95": 56.0991,
+          "p99": 59.51096999999999,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 426.04296875,
+          "cpuCorePercent": 31.095918244111196,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 48.59076907763102,
+          "peakConnections": 5,
+          "peakWaiting": 45
+        },
+        {
+          "throughput": 1000.9592683940426,
+          "requests": 10055,
+          "p50": 48.9943,
+          "p95": 55.41657,
+          "p99": 61.17954199999989,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 461.83203125,
+          "cpuCorePercent": 33.33865794800779,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 48.29258854301337,
+          "peakConnections": 5,
+          "peakWaiting": 45
+        },
+        {
+          "throughput": 986.5499821389446,
+          "requests": 9908,
+          "p50": 49.547650000000004,
+          "p95": 57.42481,
+          "p99": 70.475131,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 458.30859375,
+          "cpuCorePercent": 35.96110296383386,
+          "queryEventsPerRead": 3,
+          "meanRepositoryMs": 48.99557445498615,
+          "peakConnections": 5,
+          "peakWaiting": 45
+        }
+      ],
+      "median": {
+        "throughput": 994.5931880535428,
+        "requests": 9996,
+        "p50": 49.2726,
+        "p95": 56.0991,
+        "p99": 61.17954199999989,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 458.30859375,
+        "cpuCorePercent": 33.33865794800779,
+        "queryEventsPerRead": 3,
+        "meanRepositoryMs": 48.59076907763102,
+        "peakConnections": 5,
+        "peakWaiting": 45
+      }
+    },
+    "optimized": {
+      "runs": [
+        {
+          "throughput": 1401.583104114539,
+          "requests": 14061,
+          "p50": 33.9037,
+          "p95": 49.2377,
+          "p99": 59.77505999999999,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 544.29296875,
+          "cpuCorePercent": 41.33919254207632,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 17.702214493990592,
+          "peakConnections": 5,
+          "peakWaiting": 40
+        },
+        {
+          "throughput": 1392.979651778021,
+          "requests": 13970,
+          "p50": 33.87765,
+          "p95": 49.626715,
+          "p99": 63.049727999999924,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 551.45703125,
+          "cpuCorePercent": 44.95197442824563,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 17.8196740085899,
+          "peakConnections": 5,
+          "peakWaiting": 40
+        },
+        {
+          "throughput": 1364.4349401094107,
+          "requests": 13687,
+          "p50": 34.2688,
+          "p95": 51.48371999999999,
+          "p99": 60.25414599999999,
+          "errorRate": 0,
+          "timeoutRate": 0,
+          "peakMiB": 551.3125,
+          "cpuCorePercent": 39.67318363727308,
+          "queryEventsPerRead": 1,
+          "meanRepositoryMs": 18.135586907284235,
+          "peakConnections": 5,
+          "peakWaiting": 39
+        }
+      ],
+      "median": {
+        "throughput": 1392.979651778021,
+        "requests": 13970,
+        "p50": 33.9037,
+        "p95": 49.626715,
+        "p99": 60.25414599999999,
+        "errorRate": 0,
+        "timeoutRate": 0,
+        "peakMiB": 551.3125,
+        "cpuCorePercent": 41.33919254207632,
+        "queryEventsPerRead": 1,
+        "meanRepositoryMs": 17.8196740085899,
+        "peakConnections": 5,
+        "peakWaiting": 40
+      }
+    }
+  }
+}

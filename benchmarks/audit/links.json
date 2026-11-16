@@ -1,0 +1,272 @@
+[
+  {
+    "from": "README.md",
+    "target": "benchmarks/README.md",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "README.md",
+    "target": "benchmarks/audit/README.md",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "README.md",
+    "target": "src/shared/priming-provider-policy.ts",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "README.md",
+    "target": "public/fonts/OFL.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/baseline.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/optimized.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/results.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/architecture.md",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/audit/README.md",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/repository-baseline.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/restoration.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/verification.txt",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/README.md",
+    "target": "benchmarks/verification-status.md",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/reproduction/results.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/claims.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/memory/summary.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/README.md",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/architecture.md",
+    "exists": true,
+    "committed": true
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/memory/baseline.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/memory/optimized.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/claims.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/verification-status.md",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/verification.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/hygiene.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/npm-audit.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/README.md",
+    "target": "benchmarks/audit/npm-audit-production.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/verification.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/clean-clone.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/reproduction/results.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/reproduction/baseline.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/reproduction/optimized.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/memory/summary.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/claims.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/restoration.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/final-lint.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/python-install.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/pdf-fixtures.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/fixture-comparison.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/npm-audit.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/npm-audit-production.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/live-homepage.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/teardown.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/git-status.txt",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/links.json",
+    "exists": true,
+    "committed": false
+  },
+  {
+    "from": "benchmarks/audit/verification-status.md",
+    "target": "benchmarks/audit/source-manifest.json",
+    "exists": true,
+    "committed": false
+  }
+]

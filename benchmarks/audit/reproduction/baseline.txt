@@ -1,0 +1,642 @@
+{"command":"node --conditions=react-server scripts/bench/run.mjs baseline","at":"2026-11-16T05:36:06.918Z","outputRoot":"C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction","memoryProfile":false,"runtime":"v24.22.0","platform":"win32 10.0.22631 x64","cpu":"13th Gen Intel(R) Core(TM) i5-13600KF","logicalCpus":20,"systemMemoryBytes":34115325952,"k6":"k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)","postgres":"postgres (PostgreSQL) 17.5","poolMax":5,"metricsSampleMs":20,"scope":"production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked","baselineRepositorySha256":"124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8","currentRepositorySha256":"f9e8c301904d18db001df8a8f1885244d737b9246e7ba96b644c8908f4a0b428"}
+{"input":{"sources":50,"charactersEach":45614,"pagesEach":8},"workload":"closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup"}
+{"label":"warmup","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-warmup.json scripts/load-test.js","config":{"VUS":1,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=2.72ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 5079    507.848575/s
+    checks_succeeded...: 100.00% 5079 out of 5079
+    checks_failed......: 0.00%   0 out of 5079
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 5079
+
+    HTTP
+    http_req_duration..............: avg=1.94ms min=502.7µs med=1.85ms max=12.09ms p(95)=2.72ms p(99)=3.58ms
+      { expected_response:true }...: avg=1.94ms min=502.7µs med=1.85ms max=12.09ms p(95)=2.72ms p(99)=3.58ms
+    http_req_failed................: 0.00%  0 out of 5079
+    http_reqs......................: 5079   507.848575/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.96ms min=502.7µs med=1.86ms max=12.61ms p(95)=2.77ms p(99)=3.62ms
+    iterations.....................: 5079   507.848575/s
+    vus............................: 1      min=1         max=1
+    vus_max........................: 1      min=1         max=1
+
+    NETWORK
+    data_received..................: 468 MB 47 MB/s
+    data_sent......................: 1.5 MB 152 kB/s
+
+
+
+
+{"label":"warmup","exitCode":0,"resources":{"elapsedMs":10266.1714,"cpuCorePercent":47.18409435478547,"peakRssBytes":311836672,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":15.450111,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":15237,"errors":0,"totalMs":3080.8064000000263,"maxMs":2.5237999999999374,"buckets":[15184,53,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":5079,"errors":0,"totalMs":6258.095000000033,"maxMs":6.522600000000011,"buckets":[214,4864,1,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":5079,"errors":0,"totalMs":7991.446900000025,"maxMs":8.322100000000091,"buckets":[0,5076,3,0,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-1-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-1-r1.json scripts/load-test.js","config":{"VUS":1,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=2.5ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 5502    550.134264/s
+    checks_succeeded...: 100.00% 5502 out of 5502
+    checks_failed......: 0.00%   0 out of 5502
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 5502
+
+    HTTP
+    http_req_duration..............: avg=1.79ms min=501.8µs med=1.72ms max=5.86ms p(95)=2.5ms  p(99)=3.29ms
+      { expected_response:true }...: avg=1.79ms min=501.8µs med=1.72ms max=5.86ms p(95)=2.5ms  p(99)=3.29ms
+    http_req_failed................: 0.00%  0 out of 5502
+    http_reqs......................: 5502   550.134264/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.81ms min=501.8µs med=1.74ms max=6.37ms p(95)=2.52ms p(99)=3.32ms
+    iterations.....................: 5502   550.134264/s
+    vus............................: 1      min=1         max=1
+    vus_max........................: 1      min=1         max=1
+
+    NETWORK
+    data_received..................: 507 MB 51 MB/s
+    data_sent......................: 1.7 MB 165 kB/s
+
+
+
+
+{"label":"read-1-r1","exitCode":0,"resources":{"elapsedMs":10235.8031,"cpuCorePercent":11.147146822314316,"peakRssBytes":318058496,"peakConnections":1,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":14.991359,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":16506,"errors":0,"totalMs":3098.3965999999746,"maxMs":2.0524999999997817,"buckets":[16481,25,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":5502,"errors":0,"totalMs":6278.429300000023,"maxMs":4.9935999999997875,"buckets":[912,4590,0,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":5502,"errors":0,"totalMs":7993.460600000068,"maxMs":5.503699999999299,"buckets":[0,5501,1,0,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-5-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-5-r1.json scripts/load-test.js","config":{"VUS":5,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=6.43ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 9691    968.936754/s
+    checks_succeeded...: 100.00% 9691 out of 9691
+    checks_failed......: 0.00%   0 out of 9691
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 9691
+
+    HTTP
+    http_req_duration..............: avg=5.07ms min=2.52ms med=4.89ms max=35.68ms p(95)=6.43ms p(99)=8.17ms
+      { expected_response:true }...: avg=5.07ms min=2.52ms med=4.89ms max=35.68ms p(95)=6.43ms p(99)=8.17ms
+    http_req_failed................: 0.00%  0 out of 9691
+    http_reqs......................: 9691   968.936754/s
+
+    EXECUTION
+    iteration_duration.............: avg=5.15ms min=2.67ms med=4.96ms max=37.23ms p(95)=6.47ms p(99)=8.3ms 
+    iterations.....................: 9691   968.936754/s
+    vus............................: 5      min=5         max=5
+    vus_max........................: 5      min=5         max=5
+
+    NETWORK
+    data_received..................: 892 MB 89 MB/s
+    data_sent......................: 2.9 MB 291 kB/s
+
+
+
+
+{"label":"read-5-r1","exitCode":0,"resources":{"elapsedMs":10273.460000000003,"cpuCorePercent":36.34608009375613,"peakRssBytes":334475264,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.163391,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":29073,"errors":0,"totalMs":25723.048099999494,"maxMs":4.870500000000902,"buckets":[17458,11615,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":9691,"errors":0,"totalMs":37204.31029999984,"maxMs":31.205599999997503,"buckets":[0,9107,577,3,4,0,0,0,0,0,0,0]},"http.source.read":{"count":9691,"errors":0,"totalMs":39976.07789999991,"maxMs":31.48269999999684,"buckets":[0,8798,884,5,4,0,0,0,0,0,0,0]}}}}
+{"label":"read-10-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-10-r1.json scripts/load-test.js","config":{"VUS":10,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=11.81ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 9921    991.320109/s
+    checks_succeeded...: 100.00% 9921 out of 9921
+    checks_failed......: 0.00%   0 out of 9921
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 9921
+
+    HTTP
+    http_req_duration..............: avg=9.97ms  min=4.39ms med=9.74ms max=17.86ms p(95)=11.81ms p(99)=14.63ms
+      { expected_response:true }...: avg=9.97ms  min=4.39ms med=9.74ms max=17.86ms p(95)=11.81ms p(99)=14.63ms
+    http_req_failed................: 0.00%  0 out of 9921
+    http_reqs......................: 9921   991.320109/s
+
+    EXECUTION
+    iteration_duration.............: avg=10.07ms min=5.47ms med=9.84ms max=18.28ms p(95)=11.91ms p(99)=14.74ms
+    iterations.....................: 9921   991.320109/s
+    vus............................: 10     min=10        max=10
+    vus_max........................: 10     min=10        max=10
+
+    NETWORK
+    data_received..................: 913 MB 91 MB/s
+    data_sent......................: 3.0 MB 297 kB/s
+
+
+
+
+{"label":"read-10-r1","exitCode":0,"resources":{"elapsedMs":10280.547899999998,"cpuCorePercent":42.85763796694144,"peakRssBytes":336957440,"peakConnections":5,"peakWaiting":5,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.237119,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":29763,"errors":0,"totalMs":28942.02479999933,"maxMs":4.881000000001222,"buckets":[16952,12811,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":9921,"errors":0,"totalMs":84466.95469999991,"maxMs":16.308900000003632,"buckets":[0,6,9284,631,0,0,0,0,0,0,0,0]},"http.source.read":{"count":9921,"errors":0,"totalMs":87231.59429999985,"maxMs":16.657200000001467,"buckets":[0,4,8948,969,0,0,0,0,0,0,0,0]}}}}
+{"label":"read-25-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-25-r1.json scripts/load-test.js","config":{"VUS":25,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=28.51ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 10097   1007.551427/s
+    checks_succeeded...: 100.00% 10097 out of 10097
+    checks_failed......: 0.00%   0 out of 10097
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 10097
+
+    HTTP
+    http_req_duration..............: avg=24.68ms min=5.33ms med=24.31ms max=45.78ms p(95)=28.51ms p(99)=31.49ms
+      { expected_response:true }...: avg=24.68ms min=5.33ms med=24.31ms max=45.78ms p(95)=28.51ms p(99)=31.49ms
+    http_req_failed................: 0.00%  0 out of 10097
+    http_reqs......................: 10097  1007.551427/s
+
+    EXECUTION
+    iteration_duration.............: avg=24.78ms min=6.35ms med=24.4ms  max=45.78ms p(95)=28.64ms p(99)=31.64ms
+    iterations.....................: 10097  1007.551427/s
+    vus............................: 25     min=25         max=25
+    vus_max........................: 25     min=25         max=25
+
+    NETWORK
+    data_received..................: 930 MB 93 MB/s
+    data_sent......................: 3.0 MB 302 kB/s
+
+
+
+
+{"label":"read-25-r1","exitCode":0,"resources":{"elapsedMs":10266.006699999998,"cpuCorePercent":40.49286272139293,"peakRssBytes":442724352,"peakConnections":5,"peakWaiting":20,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.015935,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":30291,"errors":0,"totalMs":28887.9465000005,"maxMs":5.943200000001525,"buckets":[18316,11972,3,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":10097,"errors":0,"totalMs":234765.11170000018,"maxMs":43.5879000000059,"buckets":[0,3,6,8940,1148,0,0,0,0,0,0,0]},"http.source.read":{"count":10097,"errors":0,"totalMs":237431.6743000006,"maxMs":43.81460000000516,"buckets":[0,2,7,8775,1313,0,0,0,0,0,0,0]}}}}
+{"label":"read-50-r1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-50-r1.json scripts/load-test.js","config":{"VUS":50,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=56.09ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 9996    994.593188/s
+    checks_succeeded...: 100.00% 9996 out of 9996
+    checks_failed......: 0.00%   0 out of 9996
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 9996
+
+    HTTP
+    http_req_duration..............: avg=50.05ms min=6.58ms med=49.27ms max=64.53ms p(95)=56.09ms p(99)=59.51ms
+      { expected_response:true }...: avg=50.05ms min=6.58ms med=49.27ms max=64.53ms p(95)=56.09ms p(99)=59.51ms
+    http_req_failed................: 0.00%  0 out of 9996
+    http_reqs......................: 9996   994.593188/s
+
+    EXECUTION
+    iteration_duration.............: avg=50.15ms min=7.19ms med=49.36ms max=64.53ms p(95)=56.19ms p(99)=59.62ms
+    iterations.....................: 9996   994.593188/s
+    vus............................: 50     min=50        max=50
+    vus_max........................: 50     min=50        max=50
+
+    NETWORK
+    data_received..................: 920 MB 92 MB/s
+    data_sent......................: 3.0 MB 298 kB/s
+
+
+
+
+{"label":"read-50-r1","exitCode":0,"resources":{"elapsedMs":10297.1714,"cpuCorePercent":31.095918244111196,"peakRssBytes":446738432,"peakConnections":5,"peakWaiting":45,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.007743,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":29988,"errors":0,"totalMs":28922.284499999674,"maxMs":6.206399999995483,"buckets":[17912,12073,3,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":9996,"errors":0,"totalMs":485713.32769999973,"maxMs":63.05720000000292,"buckets":[0,0,9,16,7244,2727,0,0,0,0,0,0]},"http.source.read":{"count":9996,"errors":0,"totalMs":488386.0567999991,"maxMs":63.30659999999625,"buckets":[0,0,9,16,7045,2926,0,0,0,0,0,0]}}}}
+{"label":"read-25-r2","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-25-r2.json scripts/load-test.js","config":{"VUS":25,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=30.55ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 9744    972.544647/s
+    checks_succeeded...: 100.00% 9744 out of 9744
+    checks_failed......: 0.00%   0 out of 9744
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 9744
+
+    HTTP
+    http_req_duration..............: avg=25.57ms min=5.16ms med=24.96ms max=45.47ms p(95)=30.55ms p(99)=36.23ms
+      { expected_response:true }...: avg=25.57ms min=5.16ms med=24.96ms max=45.47ms p(95)=30.55ms p(99)=36.23ms
+    http_req_failed................: 0.00%  0 out of 9744
+    http_reqs......................: 9744   972.544647/s
+
+    EXECUTION
+    iteration_duration.............: avg=25.67ms min=6.3ms  med=25.06ms max=45.47ms p(95)=30.66ms p(99)=36.41ms
+    iterations.....................: 9744   972.544647/s
+    vus............................: 25     min=25        max=25
+    vus_max........................: 25     min=25        max=25
+
+    NETWORK
+    data_received..................: 897 MB 90 MB/s
+    data_sent......................: 2.9 MB 292 kB/s
+
+
+
+
+{"label":"read-25-r2","exitCode":0,"resources":{"elapsedMs":10271.129400000005,"cpuCorePercent":27.397181852270293,"peakRssBytes":441036800,"peakConnections":5,"peakWaiting":20,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":14.983167,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":29232,"errors":0,"totalMs":28968.29789999917,"maxMs":5.649700000001758,"buckets":[16919,12306,7,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":9744,"errors":0,"totalMs":234563.0164000009,"maxMs":44.252699999997276,"buckets":[0,5,5,7568,2166,0,0,0,0,0,0,0]},"http.source.read":{"count":9744,"errors":0,"totalMs":237199.67150000087,"maxMs":44.49240000000282,"buckets":[0,3,7,7241,2493,0,0,0,0,0,0,0]}}}}
+{"label":"read-50-r2","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-50-r2.json scripts/load-test.js","config":{"VUS":50,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=55.41ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 10055   1000.959268/s
+    checks_succeeded...: 100.00% 10055 out of 10055
+    checks_failed......: 0.00%   0 out of 10055
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 10055
+
+    HTTP
+    http_req_duration..............: avg=49.74ms min=6.76ms med=48.99ms max=74.34ms p(95)=55.41ms p(99)=61.17ms
+      { expected_response:true }...: avg=49.74ms min=6.76ms med=48.99ms max=74.34ms p(95)=55.41ms p(99)=61.17ms
+    http_req_failed................: 0.00%  0 out of 10055
+    http_reqs......................: 10055  1000.959268/s
+
+    EXECUTION
+    iteration_duration.............: avg=49.83ms min=7.38ms med=49.07ms max=74.34ms p(95)=55.52ms p(99)=61.27ms
+    iterations.....................: 10055  1000.959268/s
+    vus............................: 50     min=50         max=50
+    vus_max........................: 50     min=50         max=50
+
+    NETWORK
+    data_received..................: 926 MB 92 MB/s
+    data_sent......................: 3.0 MB 300 kB/s
+
+
+
+
+{"label":"read-50-r2","exitCode":0,"resources":{"elapsedMs":10309.353200000012,"cpuCorePercent":33.33865794800779,"peakRssBytes":484265984,"peakConnections":5,"peakWaiting":45,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.212543,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":30165,"errors":0,"totalMs":28989.287200000195,"maxMs":6.225999999995111,"buckets":[18032,12129,4,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":10055,"errors":0,"totalMs":485581.97779999947,"maxMs":73.43069999999716,"buckets":[0,0,9,8,7786,2252,0,0,0,0,0,0]},"http.source.read":{"count":10055,"errors":0,"totalMs":488253.4629000005,"maxMs":73.66869999999471,"buckets":[0,0,8,9,7564,2474,0,0,0,0,0,0]}}}}
+{"label":"read-25-r3","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-25-r3.json scripts/load-test.js","config":{"VUS":25,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=28.76ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 10111   1008.638589/s
+    checks_succeeded...: 100.00% 10111 out of 10111
+    checks_failed......: 0.00%   0 out of 10111
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 10111
+
+    HTTP
+    http_req_duration..............: avg=24.66ms min=5.01ms med=24.14ms max=46.17ms p(95)=28.76ms p(99)=37.4ms 
+      { expected_response:true }...: avg=24.66ms min=5.01ms med=24.14ms max=46.17ms p(95)=28.76ms p(99)=37.4ms 
+    http_req_failed................: 0.00%  0 out of 10111
+    http_reqs......................: 10111  1008.638589/s
+
+    EXECUTION
+    iteration_duration.............: avg=24.75ms min=6.22ms med=24.22ms max=46.17ms p(95)=28.88ms p(99)=37.71ms
+    iterations.....................: 10111  1008.638589/s
+    vus............................: 25     min=25         max=25
+    vus_max........................: 25     min=25         max=25
+
+    NETWORK
+    data_received..................: 931 MB 93 MB/s
+    data_sent......................: 3.0 MB 303 kB/s
+
+
+
+
+{"label":"read-25-r3","exitCode":0,"resources":{"elapsedMs":10269.9421,"cpuCorePercent":34.68373984309025,"peakRssBytes":449032192,"peakConnections":5,"peakWaiting":20,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.065087,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":30333,"errors":0,"totalMs":28921.86159999932,"maxMs":4.625400000004447,"buckets":[18404,11929,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":10111,"errors":0,"totalMs":234789.2917000004,"maxMs":42.20100000000093,"buckets":[0,4,5,8873,1229,0,0,0,0,0,0,0]},"http.source.read":{"count":10111,"errors":0,"totalMs":237444.74169999914,"maxMs":42.727699999988545,"buckets":[0,4,5,8734,1368,0,0,0,0,0,0,0]}}}}
+{"label":"read-50-r3","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-read-50-r3.json scripts/load-test.js","config":{"VUS":50,"DURATION":"10s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=57.42ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 9908    986.549982/s
+    checks_succeeded...: 100.00% 9908 out of 9908
+    checks_failed......: 0.00%   0 out of 9908
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 9908
+
+    HTTP
+    http_req_duration..............: avg=50.47ms min=6.6ms  med=49.54ms max=84.9ms p(95)=57.42ms p(99)=70.47ms
+      { expected_response:true }...: avg=50.47ms min=6.6ms  med=49.54ms max=84.9ms p(95)=57.42ms p(99)=70.47ms
+    http_req_failed................: 0.00%  0 out of 9908
+    http_reqs......................: 9908   986.549982/s
+
+    EXECUTION
+    iteration_duration.............: avg=50.56ms min=7.79ms med=49.62ms max=84.9ms p(95)=57.58ms p(99)=70.47ms
+    iterations.....................: 9908   986.549982/s
+    vus............................: 50     min=50        max=50
+    vus_max........................: 50     min=50        max=50
+
+    NETWORK
+    data_received..................: 912 MB 91 MB/s
+    data_sent......................: 3.0 MB 296 kB/s
+
+
+
+
+{"label":"read-50-r3","exitCode":0,"resources":{"elapsedMs":10297.237000000008,"cpuCorePercent":35.96110296383386,"peakRssBytes":480571392,"peakConnections":5,"peakWaiting":45,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.065087,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":29724,"errors":0,"totalMs":29022.470499999952,"maxMs":5.824099999997998,"buckets":[17483,12233,8,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":9908,"errors":0,"totalMs":485448.1517000027,"maxMs":82.72569999999541,"buckets":[0,0,9,14,7317,2568,0,0,0,0,0,0]},"http.source.read":{"count":9908,"errors":0,"totalMs":488102.3857000016,"maxMs":82.95960000000196,"buckets":[0,0,9,14,7066,2819,0,0,0,0,0,0]}}}}
+{"label":"sustained-10","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-sustained-10.json scripts/load-test.js","config":{"VUS":10,"DURATION":"30s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=11.53ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 30822   1027.184192/s
+    checks_succeeded...: 100.00% 30822 out of 30822
+    checks_failed......: 0.00%   0 out of 30822
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 30822
+
+    HTTP
+    http_req_duration..............: avg=9.64ms min=4.44ms med=9.38ms max=22.3ms p(95)=11.53ms p(99)=14.3ms 
+      { expected_response:true }...: avg=9.64ms min=4.44ms med=9.38ms max=22.3ms p(95)=11.53ms p(99)=14.3ms 
+    http_req_failed................: 0.00%  0 out of 30822
+    http_reqs......................: 30822  1027.184192/s
+
+    EXECUTION
+    iteration_duration.............: avg=9.73ms min=6.03ms med=9.46ms max=22.3ms p(95)=11.63ms p(99)=14.45ms
+    iterations.....................: 30822  1027.184192/s
+    vus............................: 10     min=10         max=10
+    vus_max........................: 10     min=10         max=10
+
+    NETWORK
+    data_received..................: 2.8 GB 95 MB/s
+    data_sent......................: 9.2 MB 308 kB/s
+
+
+
+
+{"label":"sustained-10","exitCode":0,"resources":{"elapsedMs":30267.5527,"cpuCorePercent":32.315133294539535,"peakRssBytes":446238720,"peakConnections":5,"peakWaiting":5,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":11.837439,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":92466,"errors":0,"totalMs":86841.09389999758,"maxMs":5.178199999994831,"buckets":[56686,35777,3,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":30822,"errors":0,"totalMs":253889.8788999967,"maxMs":20.09100000000035,"buckets":[0,4,29302,1516,0,0,0,0,0,0,0,0]},"http.source.read":{"count":30822,"errors":0,"totalMs":261900.06939999934,"maxMs":20.34580000001006,"buckets":[0,3,28842,1977,0,0,0,0,0,0,0,0]}}}}
+{"label":"spike-50","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-spike-50.json scripts/load-test.js","config":{"VUS":50,"DURATION":"5s","WORKLOAD":"read","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<250' p(95)=55.7ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 5026    996.227221/s
+    checks_succeeded...: 100.00% 5026 out of 5026
+    checks_failed......: 0.00%   0 out of 5026
+
+    ✓ 200 and full source
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 5026
+
+    HTTP
+    http_req_duration..............: avg=49.86ms min=6.33ms med=49.15ms max=72.88ms p(95)=55.7ms  p(99)=67.54ms
+      { expected_response:true }...: avg=49.86ms min=6.33ms med=49.15ms max=72.88ms p(95)=55.7ms  p(99)=67.54ms
+    http_req_failed................: 0.00%  0 out of 5026
+    http_reqs......................: 5026   996.227221/s
+
+    EXECUTION
+    iteration_duration.............: avg=49.96ms min=7.35ms med=49.26ms max=73.29ms p(95)=55.84ms p(99)=67.69ms
+    iterations.....................: 5026   996.227221/s
+    vus............................: 50     min=50        max=50
+    vus_max........................: 50     min=50        max=50
+
+    NETWORK
+    data_received..................: 463 MB 92 MB/s
+    data_sent......................: 1.5 MB 299 kB/s
+
+
+
+
+{"label":"spike-50","exitCode":0,"resources":{"elapsedMs":5299.326399999991,"cpuCorePercent":41.28826637287342,"peakRssBytes":450539520,"peakConnections":5,"peakWaiting":45,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":15.581183,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":0,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":15078,"errors":0,"totalMs":14521.410099999455,"maxMs":5.2753000000084285,"buckets":[8994,6083,1,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":5026,"errors":0,"totalMs":243242.45459999974,"maxMs":71.54940000001807,"buckets":[0,3,7,15,3748,1253,0,0,0,0,0,0]},"http.source.read":{"count":5026,"errors":0,"totalMs":244574.20340000084,"maxMs":71.81409999998868,"buckets":[0,2,8,15,3623,1378,0,0,0,0,0,0]}}}}
+{"label":"prepare-1","command":"k6 run --quiet --summary-export C:\\Users\\Myk\\Desktop\\projects\\Genius_Innovation_lab\\talk_to_YTVideo-and-PDF\\benchmarks\\audit\\reproduction\\raw\\baseline-prepare-1.json scripts/load-test.js","config":{"VUS":1,"DURATION":"10s","WORKLOAD":"prepare","timeout":"10s","BENCH_FIXTURES":"<ephemeral synthetic cookies; not committed>"}}
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration
+    ✓ 'p(95)<2000' p(95)=20.34ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+    request_timeouts
+    ✓ 'rate==0' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 40      3.88112/s
+    checks_succeeded...: 100.00% 40 out of 40
+    checks_failed......: 0.00%   0 out of 40
+
+    ✓ 201 and prepared source
+    ✓ cancel released ticket
+
+    CUSTOM
+    request_timeouts...............: 0.00%  0 out of 40
+
+    HTTP
+    http_req_duration..............: avg=7.32ms  min=503.29µs med=5.29ms   max=22.39ms  p(95)=20.34ms  p(99)=22.13ms 
+      { expected_response:true }...: avg=7.32ms  min=503.29µs med=5.29ms   max=22.39ms  p(95)=20.34ms  p(99)=22.13ms 
+    http_req_failed................: 0.00%  0 out of 40
+    http_reqs......................: 40     3.88112/s
+
+    EXECUTION
+    iteration_duration.............: avg=515.3ms min=510.53ms med=513.88ms max=523.78ms p(95)=522.84ms p(99)=523.59ms
+    iterations.....................: 20     1.94056/s
+    vus............................: 1      min=1       max=1
+    vus_max........................: 1      min=1       max=1
+
+    NETWORK
+    data_received..................: 5.1 MB 493 kB/s
+    data_sent......................: 16 kB  1.6 kB/s
+
+
+
+
+{"label":"prepare-1","exitCode":0,"resources":{"elapsedMs":10559.448600000003,"cpuCorePercent":0.7386749342195763,"peakRssBytes":451555328,"peakConnections":5,"peakWaiting":0,"currentConnections":1,"idleConnections":1,"eventLoopP99Ms":21.381119,"providerCalls":0,"voiceResources":{"entries":0,"timers":0,"replayEntries":20,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":300,"errors":0,"totalMs":91.55179999978282,"maxMs":2.3404999999911524,"buckets":[287,13,0,0,0,0,0,0,0,0,0,0]},"db.source.get":{"count":100,"errors":0,"totalMs":184.761199999979,"maxMs":6.480000000010477,"buckets":[4,92,4,0,0,0,0,0,0,0,0,0]},"http.voice.prepare":{"count":20,"errors":0,"totalMs":258.9573999999848,"maxMs":21.09299999999348,"buckets":[0,0,7,13,0,0,0,0,0,0,0,0]},"http.voice.cancel":{"count":20,"errors":0,"totalMs":5.294300000008661,"maxMs":0.6596999999892432,"buckets":[20,0,0,0,0,0,0,0,0,0,0,0]}}}}
+{"failures":[{"scenario":"malformed JSON","status":400,"ms":20.528499999985797},{"scenario":"foreign source","status":404,"ms":3.004899999999907},{"scenario":"table lock timeout","status":503,"ms":1518.3371000000043},{"scenario":"recovery after lock release","status":200,"ms":3.7577999999921303},{"scenario":"database stopped","status":503,"ms":3.5525000000197906},{"readinessMs":146.53470000001835,"sameProcess":true,"fullSourcePreserved":true,"scenario":"database restart to first success (includes pg_ctl readiness)","ms":284.99559999999474,"requestMs":138.38570000001346},{"scenario":"mock caption timeout","status":504,"ms":61.078899999993155},{"scenario":"mock caption upstream_failure","status":502,"ms":60.60089999999036},{"scenario":"mock caption success","status":201,"ms":83.30459999997402},{"scenario":"five visitors same caption, real DB writes, mocked provider","statuses":[201,201,201,201,201],"providerCalls":1,"maxMs":212.42259999999078},{"scenario":"same owner concurrent replacement admission","statuses":[201,429]},{"scenario":"real one-page PDF parse + persist","bytes":616,"status":201,"ms":139.03020000000834}],"finalResources":{"elapsedMs":13624.754000000015,"cpuCorePercent":1.1449748010129197,"peakRssBytes":451555328,"peakConnections":5,"peakWaiting":0,"currentConnections":5,"idleConnections":5,"eventLoopP99Ms":21.430271,"providerCalls":5,"voiceResources":{"entries":0,"timers":0,"replayEntries":20,"pendingMints":0},"boundsMs":[1,5,10,25,50,100,250,500,1000,3000,10000,"Infinity"],"operations":{"db.query":{"count":371,"errors":1,"totalMs":148.80819999988307,"maxMs":10.184800000017276,"buckets":[340,30,0,1,0,0,0,0,0,0,0,0]},"db.source.get":{"count":106,"errors":2,"totalMs":1844.329699999973,"maxMs":1516.726399999985,"buckets":[4,96,4,0,0,0,1,0,0,1,0,0]},"http.voice.prepare":{"count":21,"errors":1,"totalMs":259.25539999999455,"maxMs":21.09299999999348,"buckets":[1,0,7,13,0,0,0,0,0,0,0,0]},"http.voice.cancel":{"count":20,"errors":0,"totalMs":5.294300000008661,"maxMs":0.6596999999892432,"buckets":[20,0,0,0,0,0,0,0,0,0,0,0]},"http.source.read":{"count":6,"errors":3,"totalMs":1660.7239999999874,"maxMs":1516.915799999988,"buckets":[0,4,0,0,0,0,1,0,0,1,0,0]},"http.youtube":{"count":10,"errors":3,"totalMs":953.9014000000025,"maxMs":210.17360000000917,"buckets":[1,0,0,0,0,7,2,0,0,0,0,0]},"pdf.parse":{"count":1,"errors":0,"totalMs":131.68960000001243,"maxMs":131.68960000001243,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]},"http.source.upload":{"count":1,"errors":0,"totalMs":136.6530999999959,"maxMs":136.6530999999959,"buckets":[0,0,0,0,0,0,1,0,0,0,0,0]}}},"loadExitCodes":[0,0,0,0,0,0,0,0,0,0,0,0,0]}
+{"status":"PASS","serverLog":""}

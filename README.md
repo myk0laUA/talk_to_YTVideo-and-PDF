@@ -6,7 +6,7 @@ Ask questions about a PDF or YouTube video by voice or text. Import one source, 
 
 Built for the Genius Innovation Lab take-home assessment. Supports selectable-text PDFs, native English YouTube captions, source-grounded answers, light/dark themes and mobile layouts. No account is required.
 
-**[Reproducible backend benchmarks](benchmarks/README.md):** 50 local k6 virtual users against production source handlers and real PostgreSQL sustained **1,312 req/s at 54.48 ms p95**, with zero failures/timeouts. Removing a redundant read transaction improved throughput **39.4%** and p95 **13.9%** across three repetitions. Peak RSS increased; the evidence includes that tradeoff, raw results, outage tests, and exact scope (HTTP handler load, excluding Next routing and WebRTC).
+**[Reproducible backend benchmarks](benchmarks/README.md):** 50 local k6 VUs against real source handlers + PostgreSQL: **median 1,312 req/s and median run p95 54.48 ms** across three 10-second stages, with zero failed requests. Removing redundant read transactions improved throughput **39.4%** and p95 **13.9%**; median peak RSS worsened **356 → 544 MiB (+52.9%)**. **Next.js routing and WebRTC are excluded.** [Independent audit and fresh measurements](benchmarks/audit/README.md).
 
 ## Contents
 

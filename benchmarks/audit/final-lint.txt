@@ -1,0 +1,2 @@
+Running lint: node node_modules/eslint/bin/eslint.js . --max-warnings=0
+{ test: 'lint', exitCode: 0, elapsedMs: 5525.742700000001 }

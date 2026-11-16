@@ -1,0 +1,278 @@
+{
+  "baseline": [
+    {
+      "repeat": 1,
+      "requests": 7500,
+      "rate": 499.9841904998964,
+      "peakRssMiB": 307.921875,
+      "peakConnections": 5,
+      "loaded": {
+        "rss": 306.30859375,
+        "heapUsed": 85.96427917480469,
+        "heapTotal": 196.81640625,
+        "external": 35.81889724731445,
+        "arrayBuffers": 19.510321617126465,
+        "gcCount": 270,
+        "gcDurationMs": 244.16079902648926
+      },
+      "idle": {
+        "rss": 306.3125,
+        "heapUsed": 85.99807739257812,
+        "heapTotal": 196.81640625,
+        "external": 35.81889724731445,
+        "arrayBuffers": 19.510321617126465,
+        "gcCount": 270,
+        "gcDurationMs": 244.16079902648926
+      },
+      "collected": {
+        "rss": 283.05078125,
+        "heapUsed": 19.54218292236328,
+        "heapTotal": 42.81640625,
+        "external": 35.81889724731445,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 271,
+        "gcDurationMs": 249.62549901008606
+      }
+    },
+    {
+      "repeat": 2,
+      "requests": 7501,
+      "rate": 500.01127208453664,
+      "peakRssMiB": 319.8046875,
+      "peakConnections": 3,
+      "loaded": {
+        "rss": 319.8125,
+        "heapUsed": 66.52935028076172,
+        "heapTotal": 195.81640625,
+        "external": 32.56330490112305,
+        "arrayBuffers": 16.25472927093506,
+        "gcCount": 574,
+        "gcDurationMs": 488.59999907016754
+      },
+      "idle": {
+        "rss": 319.8125,
+        "heapUsed": 66.56808471679688,
+        "heapTotal": 195.81640625,
+        "external": 32.56330490112305,
+        "arrayBuffers": 16.25472927093506,
+        "gcCount": 574,
+        "gcDurationMs": 488.59999907016754
+      },
+      "collected": {
+        "rss": 294.92578125,
+        "heapUsed": 19.633995056152344,
+        "heapTotal": 159.81640625,
+        "external": 32.56330490112305,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 575,
+        "gcDurationMs": 493.14399909973145
+      }
+    },
+    {
+      "repeat": 3,
+      "requests": 7501,
+      "rate": 499.9835260727278,
+      "peakRssMiB": 311.26953125,
+      "peakConnections": 5,
+      "loaded": {
+        "rss": 308.96484375,
+        "heapUsed": 23.823570251464844,
+        "heapTotal": 152.81640625,
+        "external": 18.58942985534668,
+        "arrayBuffers": 2.2808542251586914,
+        "gcCount": 1557,
+        "gcDurationMs": 1029.4511991143227
+      },
+      "idle": {
+        "rss": 308.96484375,
+        "heapUsed": 23.854843139648438,
+        "heapTotal": 152.81640625,
+        "external": 18.58942985534668,
+        "arrayBuffers": 2.2808542251586914,
+        "gcCount": 1557,
+        "gcDurationMs": 1029.4511991143227
+      },
+      "collected": {
+        "rss": 308.96484375,
+        "heapUsed": 19.636436462402344,
+        "heapTotal": 152.31640625,
+        "external": 18.58942985534668,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 1558,
+        "gcDurationMs": 1034.9669991135597
+      }
+    },
+    {
+      "repeat": 4,
+      "requests": 7501,
+      "rate": 500.00818904226423,
+      "peakRssMiB": 314.02734375,
+      "peakConnections": 5,
+      "loaded": {
+        "rss": 310.25390625,
+        "heapUsed": 28.574905395507812,
+        "heapTotal": 152.06640625,
+        "external": 20.60534381866455,
+        "arrayBuffers": 4.2967681884765625,
+        "gcCount": 2514,
+        "gcDurationMs": 1577.3563988804817
+      },
+      "idle": {
+        "rss": 310.25390625,
+        "heapUsed": 28.607826232910156,
+        "heapTotal": 152.06640625,
+        "external": 20.60534381866455,
+        "arrayBuffers": 4.2967681884765625,
+        "gcCount": 2514,
+        "gcDurationMs": 1577.3563988804817
+      },
+      "collected": {
+        "rss": 294.56640625,
+        "heapUsed": 19.423545837402344,
+        "heapTotal": 151.56640625,
+        "external": 20.60534381866455,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 2515,
+        "gcDurationMs": 1580.410698890686
+      }
+    }
+  ],
+  "optimized": [
+    {
+      "repeat": 1,
+      "requests": 7501,
+      "rate": 500.02128140169145,
+      "peakRssMiB": 294.828125,
+      "peakConnections": 5,
+      "loaded": {
+        "rss": 294.84765625,
+        "heapUsed": 31.41974639892578,
+        "heapTotal": 151.81640625,
+        "external": 22.458393096923828,
+        "arrayBuffers": 6.186295509338379,
+        "gcCount": 505,
+        "gcDurationMs": 297.68960016965866
+      },
+      "idle": {
+        "rss": 294.84765625,
+        "heapUsed": 31.45343017578125,
+        "heapTotal": 151.81640625,
+        "external": 22.458393096923828,
+        "arrayBuffers": 6.186295509338379,
+        "gcCount": 505,
+        "gcDurationMs": 297.68960016965866
+      },
+      "collected": {
+        "rss": 294.8515625,
+        "heapUsed": 19.195648193359375,
+        "heapTotal": 24.81640625,
+        "external": 22.458393096923828,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 506,
+        "gcDurationMs": 300.9324001669884
+      }
+    },
+    {
+      "repeat": 2,
+      "requests": 7501,
+      "rate": 500.0131352604057,
+      "peakRssMiB": 298.85546875,
+      "peakConnections": 3,
+      "loaded": {
+        "rss": 284.14453125,
+        "heapUsed": 19.4874267578125,
+        "heapTotal": 152.06640625,
+        "external": 16.59959888458252,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 1476,
+        "gcDurationMs": 816.0260000824928
+      },
+      "idle": {
+        "rss": 284.14453125,
+        "heapUsed": 19.529006958007812,
+        "heapTotal": 152.06640625,
+        "external": 16.59959888458252,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 1476,
+        "gcDurationMs": 816.0260000824928
+      },
+      "collected": {
+        "rss": 284.1640625,
+        "heapUsed": 19.242225646972656,
+        "heapTotal": 23.56640625,
+        "external": 16.59959888458252,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 1477,
+        "gcDurationMs": 819.608000099659
+      }
+    },
+    {
+      "repeat": 3,
+      "requests": 7501,
+      "rate": 500.01054215001216,
+      "peakRssMiB": 300.38671875,
+      "peakConnections": 2,
+      "loaded": {
+        "rss": 297.4453125,
+        "heapUsed": 24.46844482421875,
+        "heapTotal": 151.56640625,
+        "external": 19.20350742340088,
+        "arrayBuffers": 2.9314098358154297,
+        "gcCount": 2432,
+        "gcDurationMs": 1320.7799010276794
+      },
+      "idle": {
+        "rss": 297.4453125,
+        "heapUsed": 24.50017547607422,
+        "heapTotal": 151.56640625,
+        "external": 19.20350742340088,
+        "arrayBuffers": 2.9314098358154297,
+        "gcCount": 2432,
+        "gcDurationMs": 1320.7799010276794
+      },
+      "collected": {
+        "rss": 284.05078125,
+        "heapUsed": 19.21692657470703,
+        "heapTotal": 151.31640625,
+        "external": 19.20350742340088,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 2433,
+        "gcDurationMs": 1326.690801024437
+      }
+    },
+    {
+      "repeat": 4,
+      "requests": 7501,
+      "rate": 499.9586622633868,
+      "peakRssMiB": 300.40234375,
+      "peakConnections": 3,
+      "loaded": {
+        "rss": 297.58203125,
+        "heapUsed": 23.052108764648438,
+        "heapTotal": 152.06640625,
+        "external": 18.55253028869629,
+        "arrayBuffers": 2.28043270111084,
+        "gcCount": 3383,
+        "gcDurationMs": 1842.8960011005402
+      },
+      "idle": {
+        "rss": 297.58203125,
+        "heapUsed": 23.083633422851562,
+        "heapTotal": 152.06640625,
+        "external": 18.55253028869629,
+        "arrayBuffers": 2.28043270111084,
+        "gcCount": 3383,
+        "gcDurationMs": 1842.8960011005402
+      },
+      "collected": {
+        "rss": 297.58203125,
+        "heapUsed": 19.21148681640625,
+        "heapTotal": 152.06640625,
+        "external": 18.55253028869629,
+        "arrayBuffers": 0.3275012969970703,
+        "gcCount": 3384,
+        "gcDurationMs": 1845.8879010677338
+      }
+    }
+  ]
+}

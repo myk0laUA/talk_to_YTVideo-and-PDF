@@ -10,9 +10,11 @@ import pg from 'pg';
 
 const mode = process.argv[2] ?? 'optimized';
 assert.ok(['baseline', 'optimized', 'smoke'].includes(mode));
+const outputRoot = path.resolve(process.env.BENCH_OUTPUT_DIR ?? 'benchmarks');
+const memoryProfile = process.env.BENCH_MEMORY === 'true';
 const root = path.resolve('artifacts/local/sre', `${mode}-${Date.now()}`);
-await mkdir(root, { recursive: true }); await mkdir('benchmarks/raw', { recursive: true });
-const output = path.resolve(`benchmarks/${mode}.txt`);
+await mkdir(root, { recursive: true }); await mkdir(path.join(outputRoot, 'raw'), { recursive: true });
+const output = path.join(outputRoot, `${mode}.txt`);
 let log = '';
 async function emit(line) { const value = typeof line === 'string' ? line : JSON.stringify(line);
   log += value + '\n'; console.log(value); await writeFile(output, log); }
@@ -38,7 +40,7 @@ for (const port of [3149, 55439]) await new Promise((resolve, reject) => {
 });
 const baseline = await readFile('benchmarks/repository-baseline.txt');
 await emit({ command: `node --conditions=react-server scripts/bench/run.mjs ${mode}`, at: new Date().toISOString(),
-  runtime: process.version, platform: `${os.platform()} ${os.release()} ${os.arch()}`, cpu: os.cpus()[0].model,
+  outputRoot, memoryProfile, runtime: process.version, platform: `${os.platform()} ${os.release()} ${os.arch()}`, cpu: os.cpus()[0].model,
   logicalCpus: os.cpus().length, systemMemoryBytes: os.totalmem(), k6: (await run(k6, ['version'])).text.trim(),
   postgres: (await run(exe('postgres'), ['--version'])).text.trim(), poolMax: 5, metricsSampleMs: 20,
   scope: 'production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked',
@@ -71,7 +73,7 @@ try {
     await emit({ command: `node ${args.join(' ')}`, scope: 'Two disposable local databases; no configured user database', exitCode: cleanup.code });
     await emit(cleanup.text); assert.equal(cleanup.code, 0, 'Real PostgreSQL cleanup regression');
   }
-  const args = ['--conditions=react-server', ...(mode === 'baseline' ? ['--import', './scripts/bench/baseline-loader.mjs'] : []), 'scripts/bench/server.mjs'];
+  const args = ['--conditions=react-server', ...(memoryProfile ? ['--expose-gc'] : []), ...(mode === 'baseline' ? ['--import', './scripts/bench/baseline-loader.mjs'] : []), 'scripts/bench/server.mjs'];
   child = spawn(process.execPath, args, { env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
   let serverLog = ''; child.stdout.on('data', x => { serverLog += x; }); child.stderr.on('data', x => { serverLog += x; });
   const ready = new Promise((resolve, reject) => {
@@ -86,26 +88,37 @@ try {
   const fixtures = await ready;
   const fixtureFile = path.join(root, 'fixtures.json'); await writeFile(fixtureFile, JSON.stringify(fixtures));
   await emit({ input: { sources: fixtures.length, charactersEach: fixtures[0].characters, pagesEach: 8 },
-    workload: 'closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup' });
+    workload: memoryProfile ? '500 arrivals/s, 50 preallocated/max VUs; four 15s stages; 2s idle then forced GC outside load; no warmup' : 'closed-loop, zero think time on reads, one outstanding request per VU, fully consumed and checked JSON; 10s warmup' });
   async function load(vus, duration, label, workload = 'read') {
     await command('reset');
-    const summary = path.resolve(`benchmarks/raw/${mode}-${label}.json`);
+    const summary = path.join(outputRoot, `raw/${mode}-${label}.json`);
     const args = ['run', '--quiet', '--summary-export', summary, 'scripts/load-test.js'];
-    await emit({ label, command: `k6 run --quiet --summary-export benchmarks/raw/${mode}-${label}.json scripts/load-test.js`,
-      config: { VUS: vus, DURATION: duration, WORKLOAD: workload, timeout: '10s', BENCH_FIXTURES: '<ephemeral synthetic cookies; not committed>' } });
-    const result = await run(k6, args, { env: { ...env, BENCH_FIXTURES: fixtureFile, VUS: String(vus), DURATION: duration, WORKLOAD: workload } });
+    await emit({ label, command: `k6 run --quiet --summary-export ${summary} scripts/load-test.js`,
+      config: { VUS: vus, DURATION: duration, WORKLOAD: workload, RATE: memoryProfile ? 500 : undefined, timeout: '10s', BENCH_FIXTURES: '<ephemeral synthetic cookies; not committed>' } });
+    const result = await run(k6, args, { env: { ...env, BENCH_FIXTURES: fixtureFile, VUS: String(vus), DURATION: duration, WORKLOAD: workload, RATE: memoryProfile ? '500' : '' } });
     await emit(result.text); await emit({ label, exitCode: result.code, resources: await command('snapshot') });
     // Preserve failures, continue matrix so saturation evidence is not hidden.
     return result.code;
   }
   const exits = [];
-  exits.push(await load(1, mode === 'smoke' ? '1s' : '10s', 'warmup'));
-  for (const vus of mode === 'smoke' ? [5] : [1, 5, 10, 25, 50]) exits.push(await load(vus, '10s', `read-${vus}-r1`));
-  if (mode !== 'smoke') {
-    for (let repeat = 2; repeat <= 3; repeat++) for (const vus of [25, 50]) exits.push(await load(vus, '10s', `read-${vus}-r${repeat}`));
-    exits.push(await load(10, '30s', 'sustained-10'));
-    exits.push(await load(50, '5s', 'spike-50'));
-    exits.push(await load(1, '10s', 'prepare-1', 'prepare'));
+  if (memoryProfile) {
+    await emit({ memory: 'initial', sample: await command('memory') });
+    for (let repeat = 1; repeat <= 4; repeat++) {
+      exits.push(await load(50, '15s', `memory-500-r${repeat}`));
+      await emit({ memory: `loaded-${repeat}`, sample: await command('memory') });
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await emit({ memory: `idle-${repeat}`, sample: await command('memory') });
+      await emit({ memory: `collected-${repeat}`, sample: await command('memory', { collect: true }) });
+    }
+  } else {
+    exits.push(await load(1, mode === 'smoke' ? '1s' : '10s', 'warmup'));
+    for (const vus of mode === 'smoke' ? [5] : [1, 5, 10, 25, 50]) exits.push(await load(vus, '10s', `read-${vus}-r1`));
+    if (mode !== 'smoke') {
+      for (let repeat = 2; repeat <= 3; repeat++) for (const vus of [25, 50]) exits.push(await load(vus, '10s', `read-${vus}-r${repeat}`));
+      exits.push(await load(10, '30s', 'sustained-10'));
+      exits.push(await load(50, '5s', 'spike-50'));
+      exits.push(await load(1, '10s', 'prepare-1', 'prepare'));
+    }
   }
   const origin = 'http://127.0.0.1:3149';
   async function request(index, route, body, method = body === undefined ? 'GET' : 'POST') {
@@ -128,11 +141,16 @@ try {
   try { r = await get(); assert.equal(r.status, 503); failures.push({ scenario: 'table lock timeout', status: r.status, ms: r.ms }); }
   finally { await blocker.query('ROLLBACK'); await blocker.end(); }
   r = await get(); assert.equal(r.status, 200); failures.push({ scenario: 'recovery after lock release', status: r.status, ms: r.ms });
+  const preservedSource = JSON.stringify(r.dto);
+  const serverPid = child.pid;
   await pgctl('stop'); running = false;
   r = await get(); assert.equal(r.status, 503); failures.push({ scenario: 'database stopped', status: r.status, ms: r.ms });
   const recoveryStart = performance.now(); await pgctl('start'); running = true;
+  const readinessMs = performance.now() - recoveryStart;
   r = await get(); assert.equal(r.status, 200);
-  failures.push({ scenario: 'database restart to first success (includes pg_ctl readiness)', ms: performance.now() - recoveryStart, requestMs: r.ms });
+  assert.equal(JSON.stringify(r.dto), preservedSource, 'Full source unchanged across restart');
+  assert.equal(child.pid, serverPid);
+  failures.push({ readinessMs, sameProcess: true, fullSourcePreserved: true, scenario: 'database restart to first success (includes pg_ctl readiness)', ms: performance.now() - recoveryStart, requestMs: r.ms });
   for (const mode of ['timeout', 'upstream_failure', 'success']) {
     await command('provider', { mode }); r = await request(45, '/api/sources/youtube', { video: 'bbbbbbbbbbb' });
     assert.equal(r.status, mode === 'success' ? 201 : mode === 'timeout' ? 504 : 502);

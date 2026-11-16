@@ -1,0 +1,114 @@
+{
+  "command": "node scripts/bench/audit.mjs",
+  "modes": {
+    "baseline": {
+      "rows": [
+        {
+          "throughput": 928.6395470427556,
+          "requests": 9335,
+          "p95": 63.308069999999994,
+          "peakMiB": 355.51953125
+        },
+        {
+          "throughput": 941.4657128338497,
+          "requests": 9460,
+          "p95": 60.925039999999996,
+          "peakMiB": 354.296875
+        },
+        {
+          "throughput": 942.9506216583079,
+          "requests": 9476,
+          "p95": 65.291575,
+          "peakMiB": 420.796875
+        }
+      ],
+      "metadata": {
+        "command": "node --conditions=react-server scripts/bench/run.mjs baseline",
+        "at": "2026-11-16T04:39:09.404Z",
+        "runtime": "v24.22.0",
+        "platform": "win32 10.0.22631 x64",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13600KF",
+        "logicalCpus": 20,
+        "systemMemoryBytes": 34115325952,
+        "k6": "k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)",
+        "postgres": "postgres (PostgreSQL) 17.5",
+        "poolMax": 5,
+        "metricsSampleMs": 20,
+        "scope": "production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked",
+        "baselineRepositorySha256": "124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8",
+        "currentRepositorySha256": "124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8"
+      }
+    },
+    "optimized": {
+      "rows": [
+        {
+          "throughput": 1287.0383187468992,
+          "requests": 12909,
+          "p95": 55.571339999999964,
+          "peakMiB": 535.21484375
+        },
+        {
+          "throughput": 1319.2706177158416,
+          "requests": 13233,
+          "p95": 53.60865999999999,
+          "peakMiB": 543.63671875
+        },
+        {
+          "throughput": 1312.36069813083,
+          "requests": 13164,
+          "p95": 54.482029999999995,
+          "peakMiB": 545.90625
+        }
+      ],
+      "metadata": {
+        "command": "node --conditions=react-server scripts/bench/run.mjs optimized",
+        "at": "2026-11-16T04:42:56.659Z",
+        "runtime": "v24.22.0",
+        "platform": "win32 10.0.22631 x64",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13600KF",
+        "logicalCpus": 20,
+        "systemMemoryBytes": 34115325952,
+        "k6": "k6.exe v2.4.0 (commit/dd9395906d, go1.26.11, windows/amd64)",
+        "postgres": "postgres (PostgreSQL) 17.5",
+        "poolMax": 5,
+        "metricsSampleMs": 20,
+        "scope": "production handler HTTP adapter + real local PostgreSQL; excludes Next routing and WebRTC; synthetic documents; captions/mint mocked",
+        "baselineRepositorySha256": "124ce2de7a07622f1c9423f5181be7e2904f8c2d750ce0dde01097428c046ff8",
+        "currentRepositorySha256": "f9e8c301904d18db001df8a8f1885244d737b9246e7ba96b644c8908f4a0b428"
+      }
+    }
+  },
+  "changesPercent": {
+    "throughputIncrease": 39.39548517179363,
+    "p95Reduction": 13.941413788163182,
+    "rssIncrease": 52.913320075154104
+  },
+  "archivedRepositoryMatchesParentExceptTimingWrapper": true,
+  "recovery": [
+    {
+      "file": "pilot/smoke.txt",
+      "scenario": "database restart to first success (includes pg_ctl readiness)",
+      "ms": 349.5330999999969,
+      "requestMs": 47.62970000000132
+    },
+    {
+      "file": "baseline.txt",
+      "scenario": "database restart to first success (includes pg_ctl readiness)",
+      "ms": 201.1468000000168,
+      "requestMs": 42.29999999998836
+    },
+    {
+      "file": "optimized.txt",
+      "scenario": "database restart to first success (includes pg_ctl readiness)",
+      "ms": 194.75010000000475,
+      "requestMs": 38.96529999998165
+    },
+    {
+      "file": "smoke.txt",
+      "scenario": "database restart to first success (includes pg_ctl readiness)",
+      "ms": 341.9076000000023,
+      "requestMs": 43.14770000000135
+    }
+  ],
+  "status": "PASS"
+}
