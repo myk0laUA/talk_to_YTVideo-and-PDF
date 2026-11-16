@@ -78,8 +78,3 @@ Run `npm run test:reliability` for the safe offline/local suite. It records comm
 
 The new regression checks cover single-statement authorization/expiry/record validation, redacted storage errors, pool deadlines, and metrics privacy/reset behavior. See [verification status](verification-status.md) for final outcomes and unrun checks. Historical test counts are not used as performance evidence.
 
-## Resume candidates
-
-- Load-tested a Next.js application's source handlers with k6 and local PostgreSQL at 50 concurrent virtual users, sustaining 1,312 requests/s at 54.48 ms p95 with zero failed requests in repeated bounded runs.
-- Removed redundant read transactions while preserving authorization and database timeouts, increasing measured throughput 39.4% and reducing p95 latency 13.9% across three local benchmark repetitions.
-- Added bounded operational metrics and real PostgreSQL outage/lock-contention tests, verifying safe errors and successful read recovery 195–350 ms after local database restarts across four probes.
